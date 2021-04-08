@@ -8,6 +8,8 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using Com.Lge.Display;
 using Google;
+using Java.Interop;
+using Java.IO;
 using System;
 
 namespace SoftWing
@@ -23,26 +25,34 @@ namespace SoftWing
             base.OnCreate(savedInstanceState);
 
             Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            //SetContentView(SoftWing.Resource.Layout.activity_main);
+            SetContentView(SoftWing.Resource.Layout.input);
+            //MoveTaskToBack(true);
+        }
 
-            var imm = (InputMethodManager)
-                    GetSystemService(Context.InputMethodService);
-            imm.ShowSoftInput(new View(this), ShowFlags.Implicit);
+        [Export("testButtonClicked")]
+        public void testButtonClicked(View v)
+        {
+            Log.Debug(TAG, "testButtonClicked()");
+
+
+            SoftWingInput.ClickTestButton(this);
+            //Action keypress_action = SendKeypressEvent;
+            //var t = new Java.Lang.Thread(new Java.Lang.Runnable(keypress_action));
+            //t.Start();
+        }
+
+        public static void SendKeypressEvent()
+        {
+            var process = Java.Lang.Runtime.GetRuntime().Exec("input keyevent 29");
+            var bufferedReader = new BufferedReader(
+            new InputStreamReader(process.InputStream));
+            bufferedReader.ReadLine();
         }
 
         protected override void OnDestroy()
         {
             Log.Debug(TAG, "OnDestroy()");
             base.OnDestroy();
-
-            var current_focus = CurrentFocus;
-            if (current_focus == null)
-            {
-                return;
-            }
-            var imm = (InputMethodManager)
-                    GetSystemService(Context.InputMethodService);
-            imm.HideSoftInputFromWindow(current_focus.WindowToken, HideSoftInputFlags.None);
         }
     }
 
@@ -50,20 +60,34 @@ namespace SoftWing
     public class ServiceScreenSwapper : Activity
     {
         public static bool IsActive = false;
-        public static IBinder CurrentWindowToken;
         private DisplayManagerHelper mDisplayManagerHelper;
         private LgSwivelStateCallback mSwivelStateCallback;
+        public static string EditorPackageName = "";
+        public static string EditorFieldName = "";
+        public static int EditorFieldId = 0;
+        public static Android.Text.InputTypes EditorInputType;
+        public static Activity RunningSwapperActivity;
+
+        public static View GetEditorInput()
+        {
+            if (RunningSwapperActivity == null)
+            {
+                return null;
+            }
+            int id = RunningSwapperActivity.Resources.GetIdentifier(EditorFieldName, "id", EditorPackageName);
+            //View view = findViewById(id);
+            return RunningSwapperActivity.FindViewById(id);
+        }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            CurrentWindowToken = CurrentFocus?.WindowToken;
-
             mDisplayManagerHelper = new DisplayManagerHelper(this);
             mSwivelStateCallback = new LgSwivelStateCallback(this, mDisplayManagerHelper);
             mDisplayManagerHelper.RegisterSwivelStateCallback(mSwivelStateCallback);
             MoveTaskToBack(true);
+            RunningSwapperActivity = this;
         }
 
         protected override void OnStart()
@@ -75,7 +99,7 @@ namespace SoftWing
         protected override void OnStop()
         {
             base.OnStop();
-            IsActive = false;
+            //IsActive = false;
         }
     }
 
@@ -148,7 +172,7 @@ namespace SoftWing
             {
                 options.SetLaunchDisplayId(parent_manager.CoverDisplayId);
             }
-            var flags = ActivityFlags.NewTask;
+            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
             intent.AddFlags(flags);
             parent_context.StartActivity(intent, options.ToBundle());
         }

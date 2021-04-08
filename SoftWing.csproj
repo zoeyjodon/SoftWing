@@ -69,6 +69,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NotificationReceiver.cs" />
     <Compile Include="ServiceScreenSwapper.cs" />
     <Compile Include="SoftWingInput.cs" />
     <Compile Include="MainActivity.cs" />
@@ -117,6 +118,12 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\input.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\mipmap-anydpi-v26\ic_notification.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
