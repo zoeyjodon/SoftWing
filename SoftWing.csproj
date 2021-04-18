@@ -72,7 +72,7 @@
     <Compile Include="System\MessageDispatcher.cs" />
     <Compile Include="System\MessageSubscriber.cs" />
     <Compile Include="NotificationReceiver.cs" />
-    <Compile Include="ServiceScreenSwapper.cs" />
+    <Compile Include="SwDisplayManager.cs" />
     <Compile Include="SoftWingInput.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />

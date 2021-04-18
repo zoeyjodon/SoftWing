@@ -29,6 +29,7 @@ namespace SoftWing
 
             Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
             SetContentView(Resource.Layout.input);
+            SwDisplayManager.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
         }
 
         protected override void OnStart()
@@ -80,7 +81,7 @@ namespace SoftWing
             Log.Debug(TAG, "testButtonClicked()");
 
 
-            ServiceScreenSwapper.RunningSwapperActivity.StartNewActivity();
+            SwDisplayManager.RunningSwapperActivity.StartNewActivity();
             //ServiceScreenSwapper.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
             //SoftWingInput.ClickTestButton(this);
         }
@@ -92,15 +93,15 @@ namespace SoftWing
         }
     }
 
-    [Activity(Label = "ServiceScreenSwapper")]
+    [Activity(Label = "SwDisplayManager")]
     [MetaData("com.lge.special_display", Value = "true")]
     [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
     [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class ServiceScreenSwapper : Activity
+    public class SwDisplayManager : Activity
     {
         public static DisplayManagerHelper mDisplayManagerHelper;
         private LgSwivelStateCallback mSwivelStateCallback;
-        public static ServiceScreenSwapper RunningSwapperActivity;
+        public static SwDisplayManager RunningSwapperActivity;
         public static System.MessageDispatcher Dispatcher = null;
 
         protected override void OnCreate(Bundle savedInstanceState)

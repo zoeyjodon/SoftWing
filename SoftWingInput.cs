@@ -57,9 +57,9 @@ namespace SoftWing
             base.OnStartInputView(info, restarting);
 
             // If we aren't running the swapper yet, we should be
-            if (ServiceScreenSwapper.RunningSwapperActivity == null)
+            if (SwDisplayManager.RunningSwapperActivity == null)
             {
-                var intent = new Intent(this, typeof(ServiceScreenSwapper));
+                var intent = new Intent(this, typeof(SwDisplayManager));
                 var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
                 intent.AddFlags(flags);
                 StartActivity(intent);
