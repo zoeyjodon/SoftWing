@@ -2,32 +2,43 @@
 using Android.Content;
 using Android.InputMethodServices;
 using Android.OS;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
+using Android.Widget;
 using AndroidX.Core.App;
 using Java.Interop;
 using System;
+using System.Threading.Tasks;
 
 namespace SoftWing
 {
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
     [MetaData("android.view.im", Resource = "@xml/method")]
+    [MetaData("com.lge.special_display", Value = "true")]
+    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
+    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
     public class SoftWingInput : InputMethodService
     {
         private const String TAG = "SoftWingInput";
         public static IInputConnection Connection = null;
         public static SoftWingInput Instance = null;
-        private NotificationReceiver mNotificationReceiver;
+        private static NotificationReceiver mNotificationReceiver = null;
         private static String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
         private static int NOTIFICATION_ONGOING_ID = 1001;
+        private static IWindowManager mWindowManager = null;
 
         public override void OnCreate()
         {
+            Log.Debug(TAG, "onCreate()");
             base.OnCreate();
 
-            SetNotification();
+            if (mNotificationReceiver == null)
+            {
+                SetNotification();
+            }
         }
 
         public override View OnCreateInputView()
@@ -42,40 +53,24 @@ namespace SoftWing
 
         public override void OnStartInputView(EditorInfo info, bool restarting)
         {
+            Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
 
             // If we aren't running the swapper yet, we should be
-            if (!ServiceScreenSwapper.IsActive)
+            if (ServiceScreenSwapper.RunningSwapperActivity == null)
             {
-                ServiceScreenSwapper.EditorPackageName = info.PackageName;
-                ServiceScreenSwapper.EditorFieldName = info.FieldName;
-                ServiceScreenSwapper.EditorFieldId = info.FieldId;
-                ServiceScreenSwapper.EditorInputType = info.InputType;
-                Log.Info("1PackageName", ServiceScreenSwapper.EditorPackageName);
-                Log.Info("1FieldName", ServiceScreenSwapper.EditorFieldName);
-                Log.Info("1FieldId", ServiceScreenSwapper.EditorFieldId.ToString());
-                Log.Info("1InputType", ServiceScreenSwapper.EditorInputType.ToString());
-
                 var intent = new Intent(this, typeof(ServiceScreenSwapper));
                 var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
                 intent.AddFlags(flags);
                 StartActivity(intent);
             }
-            else
-            {
-                Log.Info("2PackageName", ServiceScreenSwapper.EditorPackageName);
-                Log.Info("2FieldName", ServiceScreenSwapper.EditorFieldName);
-                Log.Info("2FieldId", ServiceScreenSwapper.EditorFieldId.ToString());
-                Log.Info("2InputType", ServiceScreenSwapper.EditorInputType.ToString());
-                CurrentInputEditorInfo.PackageName = ServiceScreenSwapper.EditorPackageName;
-                CurrentInputEditorInfo.FieldName = ServiceScreenSwapper.EditorFieldName;
-                CurrentInputEditorInfo.FieldId = ServiceScreenSwapper.EditorFieldId;
-                CurrentInputEditorInfo.InputType = ServiceScreenSwapper.EditorInputType;
-            }
+            SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
+            SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
         }
 
         public override AbstractInputMethodImpl OnCreateInputMethodInterface()
         {
+            Log.Debug(TAG, "OnCreateInputMethodInterface()");
             return new MyInputMethodImpl(this);
         }
 
@@ -89,10 +84,11 @@ namespace SoftWing
 
             public override void AttachToken(IBinder token)
             {
-                base.AttachToken(token);
                 Log.Info(TAG, "attachToken " + token);
+                base.AttachToken(token);
                 if (mToken == null)
                 {
+                    Log.Info(TAG, "Saving new token");
                     mToken = token;
                 }
             }
@@ -110,12 +106,8 @@ namespace SoftWing
         public void testButtonClicked(View v)
         {
             Log.Debug(TAG, "testButtonClicked()");
-            var ic = CurrentInputConnection;
-            if (ServiceScreenSwapper.GetEditorInput() != null)
-            {
-                ic = new BaseInputConnection(ServiceScreenSwapper.GetEditorInput(), true);
-            }
-            ic.CommitText("BUTTON", 1);
+            SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
+            SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
         }
 
         private void CreateNotificationChannel()

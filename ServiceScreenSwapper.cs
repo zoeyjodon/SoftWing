@@ -14,7 +14,48 @@ using System;
 
 namespace SoftWing
 {
-    [Activity(Label = "InputServiceLauncher", WindowSoftInputMode = SoftInput.StateAlwaysVisible)]
+    [Activity(Label = "MainInputLauncher")]
+    [MetaData("com.lge.special_display", Value = "true")]
+    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
+    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
+    public class MainInputLauncher : Activity
+    {
+        private const String TAG = "MainInputLauncher";
+
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            Log.Debug(TAG, "OnCreate()");
+            base.OnCreate(savedInstanceState);
+
+            Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
+            SetContentView(Resource.Layout.input);
+        }
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+            MoveTaskToBack(true);
+        }
+
+        [Export("testButtonClicked")]
+        public void testButtonClicked(View v)
+        {
+            Log.Debug(TAG, "testButtonClicked()");
+            //ServiceScreenSwapper.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
+            //SoftWingInput.ClickTestButton(this);
+        }
+
+        protected override void OnDestroy()
+        {
+            Log.Debug(TAG, "OnDestroy()");
+            base.OnDestroy();
+        }
+    }
+
+    [Activity(Label = "InputServiceLauncher")]
+    [MetaData("com.lge.special_display", Value = "true")]
+    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
+    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
     public class InputServiceLauncher : Activity
     {
         private const String TAG = "InputServiceLauncher";
@@ -25,8 +66,12 @@ namespace SoftWing
             base.OnCreate(savedInstanceState);
 
             Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            SetContentView(SoftWing.Resource.Layout.input);
-            //MoveTaskToBack(true);
+            SetContentView(Resource.Layout.input);
+        }
+
+        protected override void OnStart()
+        {
+            base.OnStart();
         }
 
         [Export("testButtonClicked")]
@@ -35,18 +80,9 @@ namespace SoftWing
             Log.Debug(TAG, "testButtonClicked()");
 
 
-            SoftWingInput.ClickTestButton(this);
-            //Action keypress_action = SendKeypressEvent;
-            //var t = new Java.Lang.Thread(new Java.Lang.Runnable(keypress_action));
-            //t.Start();
-        }
-
-        public static void SendKeypressEvent()
-        {
-            var process = Java.Lang.Runtime.GetRuntime().Exec("input keyevent 29");
-            var bufferedReader = new BufferedReader(
-            new InputStreamReader(process.InputStream));
-            bufferedReader.ReadLine();
+            ServiceScreenSwapper.RunningSwapperActivity.StartNewActivity();
+            //ServiceScreenSwapper.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
+            //SoftWingInput.ClickTestButton(this);
         }
 
         protected override void OnDestroy()
@@ -57,27 +93,15 @@ namespace SoftWing
     }
 
     [Activity(Label = "ServiceScreenSwapper")]
+    [MetaData("com.lge.special_display", Value = "true")]
+    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
+    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
     public class ServiceScreenSwapper : Activity
     {
-        public static bool IsActive = false;
-        private DisplayManagerHelper mDisplayManagerHelper;
+        public static DisplayManagerHelper mDisplayManagerHelper;
         private LgSwivelStateCallback mSwivelStateCallback;
-        public static string EditorPackageName = "";
-        public static string EditorFieldName = "";
-        public static int EditorFieldId = 0;
-        public static Android.Text.InputTypes EditorInputType;
-        public static Activity RunningSwapperActivity;
-
-        public static View GetEditorInput()
-        {
-            if (RunningSwapperActivity == null)
-            {
-                return null;
-            }
-            int id = RunningSwapperActivity.Resources.GetIdentifier(EditorFieldName, "id", EditorPackageName);
-            //View view = findViewById(id);
-            return RunningSwapperActivity.FindViewById(id);
-        }
+        public static ServiceScreenSwapper RunningSwapperActivity;
+        public static System.MessageDispatcher Dispatcher = null;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -88,19 +112,35 @@ namespace SoftWing
             mDisplayManagerHelper.RegisterSwivelStateCallback(mSwivelStateCallback);
             MoveTaskToBack(true);
             RunningSwapperActivity = this;
+            if (Dispatcher == null)
+            {
+                Dispatcher = new System.MessageDispatcher(this);
+                Dispatcher.Subscribe(System.MessageType.DisplayUpdate, NotificationReceiver.Instance);
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            RunningSwapperActivity = null;
         }
 
         protected override void OnStart()
         {
             base.OnStart();
-            IsActive = true;
         }
 
-        protected override void OnStop()
+        public void StartNewActivity()
         {
-            base.OnStop();
-            //IsActive = false;
+            var intent = new Intent(this, typeof(MainInputLauncher));
+            ActivityOptions options = ActivityOptions.MakeBasic();
+            // set Display ID where your activity will be launched
+            options.SetLaunchDisplayId(mDisplayManagerHelper.CoverDisplayId);
+            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
+            intent.AddFlags(flags);
+            StartActivity(intent, options.ToBundle());
         }
+
     }
 
     /**
@@ -143,7 +183,7 @@ namespace SoftWing
                 case DisplayManagerHelper.NonSwivelEnd:
                     // Non Swivel complete
                     Log.Debug(TAG, "Swivel Closed end");
-                    StartInputService();
+                    //StartInputService();
                     break;
                 default:
                     // default value
@@ -172,7 +212,7 @@ namespace SoftWing
             {
                 options.SetLaunchDisplayId(parent_manager.CoverDisplayId);
             }
-            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
+            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask;
             intent.AddFlags(flags);
             parent_context.StartActivity(intent, options.ToBundle());
         }
