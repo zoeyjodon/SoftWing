@@ -11,17 +11,55 @@ using AndroidX.Core.App;
 using Com.Lge.Display;
 using Java.Interop;
 using System;
+using SoftWing.System.Messages;
 using System.Threading.Tasks;
+using static Android.Views.View;
+using SoftWing.System;
 
 namespace SoftWing
 {
+    public class TestTouchListener : Java.Lang.Object, IOnTouchListener
+    {
+        private const String TAG = "TestTouchListener";
+
+        public TestTouchListener()
+        {
+            Log.Info(TAG, "TestTouchListener");
+        }
+
+        ~TestTouchListener()
+        {
+            Log.Info(TAG, "~TestTouchListener");
+        }
+
+        public bool OnTouch(View v, MotionEvent e)
+        {
+            switch (e.Action)
+            {
+                case MotionEventActions.Down:
+                    Log.Info(TAG, "OnTouch - Down");
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownPressed));
+                    break;
+                case MotionEventActions.Up:
+                    Log.Info(TAG, "OnTouch - Up");
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownReleased));
+                    break;
+                default:
+                    Log.Info(TAG, "OnTouch - Other");
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownHeld));
+                    break;
+            }
+            return true;
+        }
+    }
+
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
     [MetaData("android.view.im", Resource = "@xml/method")]
     [MetaData("com.lge.special_display", Value = "true")]
     [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
     [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class SoftWingInput : InputMethodService
+    public class SoftWingInput : InputMethodService, System.MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
         private static NotificationReceiver mNotificationReceiver = null;
@@ -75,63 +113,35 @@ namespace SoftWing
             Log.Debug(TAG, "onCreateInputView()");
 
             var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
+            SetTestButtonListener((ViewGroup)keyboardView);
 
             return keyboardView;
+        }
+
+        private void SetTestButtonListener(ViewGroup keyboard_view_group)
+        {
+            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
+            {
+                View nextChild = keyboard_view_group.GetChildAt(index);
+                if (nextChild.Id == Resource.Id.testButton)
+                {
+                    nextChild.SetOnTouchListener(new TestTouchListener());
+                    break;
+                }
+            }
         }
 
         public override void OnStartInputView(EditorInfo info, bool restarting)
         {
             Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
-
-            var mDisplayManagerHelper = SwDisplayManager.mDisplayManagerHelper;
-            if (mDisplayManagerHelper == null)
-            {
-                return;
-            }
-            else if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
-                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.CoverDisplayId))
-            {
-                Handler handler = new Handler(Looper.MainLooper);
-                handler.Post(() =>
-                {
-                    while (CurrentInputConnection == null) { }
-                    SwDisplayManager.Instance.RunOnUiThread(() =>
-                    {
-                        SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
-                        SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
-                    });
-
-                    handler.PostDelayed(() =>
-                    {
-                        SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
-                    }, 500);
-                });
-            }
+            SwDisplayManager.Dispatcher.Subscribe(System.MessageType.ControlUpdate, this);
         }
 
         public override AbstractInputMethodImpl OnCreateInputMethodInterface()
         {
             Log.Debug(TAG, "OnCreateInputMethodInterface()");
             return new SwInputMethodImpl(this);
-        }
-
-        [Export("testButtonClicked")]
-        public void testButtonClicked(View v)
-        {
-            Log.Debug(TAG, "testButtonClicked()");
-
-            var mDisplayManagerHelper = SwDisplayManager.mDisplayManagerHelper;
-            if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
-                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.MultiDisplayId))
-            {
-                SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.CoverDisplayId);
-            }
-            else if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
-                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.CoverDisplayId))
-            {
-                SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
-            }
         }
 
         private void CreateNotificationChannel()
@@ -186,6 +196,29 @@ namespace SoftWing
 
             // notificationId is a unique int for each notification that you must define
             notificationManager.Notify(NOTIFICATION_ONGOING_ID, mBuilder.Build());
+        }
+
+        public void Accept(SystemMessage message)
+        {
+            if (message.getMessageType() != MessageType.ControlUpdate)
+            {
+                return;
+            }
+            var control_message = (ControlUpdateMessage)message;
+            switch (control_message.getUpdateType())
+            {
+                case ControlUpdateMessage.UpdateType.DownPressed:
+                    SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
+                    SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+                    break;
+                case ControlUpdateMessage.UpdateType.DownReleased:
+                    break;
+                case ControlUpdateMessage.UpdateType.DownHeld:
+                    SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

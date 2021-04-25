@@ -13,6 +13,5 @@
         android:textColor="#ffffffff"
         android:background="#ff000000"
         android:textSize="30px"
-        android:id="@+id/testButton"
-        android:onClick="testButtonClicked" />
+        android:id="@+id/testButton" />
 </RelativeLayout>

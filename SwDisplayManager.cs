@@ -104,17 +104,47 @@ namespace SoftWing
             FocusedDisplay = displayId;
         }
 
+        public void UseLgKeyboard()
+        {
+            InputMethodManager imm = (InputMethodManager)
+                GetSystemService(InputMethodService);
+
+            foreach (var InputMethod in imm.EnabledInputMethodList)
+            {
+                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
+                if (InputMethod.Id.Contains("LgeImeImpl"))
+                {
+                    Log.Debug(TAG, "Setting Input Method");
+                    imm.SetInputMethod(SoftWingInput.mToken, InputMethod.Id);
+                    return;
+                }
+            }
+        }
+
+        public void UseSwKeyboard()
+        {
+            InputMethodManager imm = (InputMethodManager)
+                GetSystemService(InputMethodService);
+
+            foreach (var InputMethod in imm.EnabledInputMethodList)
+            {
+                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
+                if (InputMethod.Id.Contains("SoftWingInput"))
+                {
+                    Log.Debug(TAG, "Setting Input Method");
+                    imm.SetInputMethod(SoftWingInput.mToken, InputMethod.Id);
+                    return;
+                }
+            }
+        }
+
         public void Accept(SystemMessage message)
         {
             Log.Debug(TAG, "Accept");
             Log.Debug(TAG, "mDisplayManagerHelper.SwivelState = " + mDisplayManagerHelper.SwivelState.ToString());
             if (mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
-                FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
-            }
-            else if (mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelNormal)
-            {
-                FocusOnDisplay(mDisplayManagerHelper.CoverDisplayId);
+                UseLgKeyboard();
             }
         }
     }

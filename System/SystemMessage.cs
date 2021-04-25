@@ -11,6 +11,7 @@ namespace SoftWing.System
     {
         Invalid,
         DisplayUpdate,
+        ControlUpdate,
     }
 
     public interface SystemMessage

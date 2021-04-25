@@ -31,20 +31,6 @@ namespace SoftWing
             var test_input = FindViewById<EditText>(Resource.Id.testInput);
             test_input.RequestFocus();
             Window.SetSoftInputMode(SoftInput.StateAlwaysVisible);
-
-            //// Not working yet, maybe I need to force switch to SWing first?
-            //InputMethodManager imm = (InputMethodManager)
-            //    GetSystemService(Context.InputMethodService);
-
-            //foreach (var InputMethod in imm.EnabledInputMethodList)
-            //{
-            //    Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-            //    if (InputMethod.Id.Contains("SoftWingInput"))
-            //    {
-            //        Log.Debug(TAG, "Setting Input Method");
-            //        imm.SetInputMethod(test_input.WindowToken, InputMethod.Id);
-            //    }
-            //}
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
