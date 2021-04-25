@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.App;
+using Com.Lge.Display;
 using Java.Interop;
 using System;
 using System.Threading.Tasks;
@@ -23,63 +24,19 @@ namespace SoftWing
     public class SoftWingInput : InputMethodService
     {
         private const String TAG = "SoftWingInput";
-        public static IInputConnection Connection = null;
-        public static SoftWingInput Instance = null;
         private static NotificationReceiver mNotificationReceiver = null;
-        private static String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
-        private static int NOTIFICATION_ONGOING_ID = 1001;
-        private static IWindowManager mWindowManager = null;
-
-        public override void OnCreate()
-        {
-            Log.Debug(TAG, "onCreate()");
-            base.OnCreate();
-
-            if (mNotificationReceiver == null)
-            {
-                SetNotification();
-            }
-        }
-
-        public override View OnCreateInputView()
-        {
-            Log.Debug(TAG, "onCreateInputView()");
-
-            var keyboardView = LayoutInflater.Inflate(SoftWing.Resource.Layout.input, null);
-            Instance = this;
-
-            return keyboardView;
-        }
-
-        public override void OnStartInputView(EditorInfo info, bool restarting)
-        {
-            Log.Debug(TAG, "OnStartInputView()");
-            base.OnStartInputView(info, restarting);
-
-            // If we aren't running the swapper yet, we should be
-            if (SwDisplayManager.RunningSwapperActivity == null)
-            {
-                var intent = new Intent(this, typeof(SwDisplayManager));
-                var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
-                intent.AddFlags(flags);
-                StartActivity(intent);
-            }
-            SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
-            SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
-        }
-
-        public override AbstractInputMethodImpl OnCreateInputMethodInterface()
-        {
-            Log.Debug(TAG, "OnCreateInputMethodInterface()");
-            return new MyInputMethodImpl(this);
-        }
+        private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private const int NOTIFICATION_ONGOING_ID = 1001;
 
         public static IBinder mToken;
-        public class MyInputMethodImpl : InputMethodImpl
+
+        public class SwInputMethodImpl : InputMethodImpl
         {
-            public MyInputMethodImpl(InputMethodService owner)
-                : base(owner)
+            private SoftWingInput owner;
+            public SwInputMethodImpl(SoftWingInput _owner)
+                : base(_owner)
             {
+                owner = _owner;
             }
 
             public override void AttachToken(IBinder token)
@@ -94,20 +51,87 @@ namespace SoftWing
             }
         }
 
-        public static void ClickTestButton(Context calling_context)
+        public override void OnCreate()
         {
-            if (Instance != null)
+            Log.Debug(TAG, "onCreate()");
+            base.OnCreate();
+
+            if (mNotificationReceiver == null)
             {
-                Instance.testButtonClicked(new View(calling_context));
+                SetNotification();
             }
+            // If we aren't running the swapper yet, we should be
+            if (SwDisplayManager.Instance == null)
+            {
+                var intent = new Intent(this, typeof(SwDisplayManager));
+                var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
+                intent.AddFlags(flags);
+                StartActivity(intent);
+            }
+        }
+
+        public override View OnCreateInputView()
+        {
+            Log.Debug(TAG, "onCreateInputView()");
+
+            var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
+
+            return keyboardView;
+        }
+
+        public override void OnStartInputView(EditorInfo info, bool restarting)
+        {
+            Log.Debug(TAG, "OnStartInputView()");
+            base.OnStartInputView(info, restarting);
+
+            var mDisplayManagerHelper = SwDisplayManager.mDisplayManagerHelper;
+            if (mDisplayManagerHelper == null)
+            {
+                return;
+            }
+            else if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
+                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.CoverDisplayId))
+            {
+                Handler handler = new Handler(Looper.MainLooper);
+                handler.Post(() =>
+                {
+                    while (CurrentInputConnection == null) { }
+                    SwDisplayManager.Instance.RunOnUiThread(() =>
+                    {
+                        SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
+                        SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+                    });
+
+                    handler.PostDelayed(() =>
+                    {
+                        SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
+                    }, 500);
+                });
+            }
+        }
+
+        public override AbstractInputMethodImpl OnCreateInputMethodInterface()
+        {
+            Log.Debug(TAG, "OnCreateInputMethodInterface()");
+            return new SwInputMethodImpl(this);
         }
 
         [Export("testButtonClicked")]
         public void testButtonClicked(View v)
         {
             Log.Debug(TAG, "testButtonClicked()");
-            SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
-            SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+
+            var mDisplayManagerHelper = SwDisplayManager.mDisplayManagerHelper;
+            if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
+                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.MultiDisplayId))
+            {
+                SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.CoverDisplayId);
+            }
+            else if ((mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled) &&
+                (SwDisplayManager.FocusedDisplay == mDisplayManagerHelper.CoverDisplayId))
+            {
+                SwDisplayManager.Instance.FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
+            }
         }
 
         private void CreateNotificationChannel()

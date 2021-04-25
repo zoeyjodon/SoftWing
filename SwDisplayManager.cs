@@ -10,17 +10,18 @@ using Com.Lge.Display;
 using Google;
 using Java.Interop;
 using Java.IO;
+using SoftWing.System;
 using System;
 
 namespace SoftWing
 {
-    [Activity(Label = "MainInputLauncher")]
+    [Activity(Label = "DisplayFocusActivity")]
     [MetaData("com.lge.special_display", Value = "true")]
     [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
     [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class MainInputLauncher : Activity
+    public class DisplayFocusActivity : Activity
     {
-        private const String TAG = "MainInputLauncher";
+        private const String TAG = "DisplayFocusActivity";
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -28,62 +29,15 @@ namespace SoftWing
             base.OnCreate(savedInstanceState);
 
             Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            SetContentView(Resource.Layout.input);
-            SwDisplayManager.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
-        }
-
-        protected override void OnStart()
-        {
-            base.OnStart();
+            SetContentView(Resource.Layout.activity_main);
             MoveTaskToBack(true);
         }
 
-        [Export("testButtonClicked")]
-        public void testButtonClicked(View v)
-        {
-            Log.Debug(TAG, "testButtonClicked()");
-            //ServiceScreenSwapper.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
-            //SoftWingInput.ClickTestButton(this);
-        }
-
-        protected override void OnDestroy()
-        {
-            Log.Debug(TAG, "OnDestroy()");
-            base.OnDestroy();
-        }
-    }
-
-    [Activity(Label = "InputServiceLauncher")]
-    [MetaData("com.lge.special_display", Value = "true")]
-    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
-    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class InputServiceLauncher : Activity
-    {
-        private const String TAG = "InputServiceLauncher";
-
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            Log.Debug(TAG, "OnCreate()");
-            base.OnCreate(savedInstanceState);
-
-            Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            SetContentView(Resource.Layout.input);
-        }
-
         protected override void OnStart()
         {
+            Log.Debug(TAG, "OnStart()");
             base.OnStart();
-        }
-
-        [Export("testButtonClicked")]
-        public void testButtonClicked(View v)
-        {
-            Log.Debug(TAG, "testButtonClicked()");
-
-
-            SwDisplayManager.RunningSwapperActivity.StartNewActivity();
-            //ServiceScreenSwapper.Dispatcher.Post(new System.Messages.DisplayUpdateMessage());
-            //SoftWingInput.ClickTestButton(this);
+            Finish();
         }
 
         protected override void OnDestroy()
@@ -97,51 +51,72 @@ namespace SoftWing
     [MetaData("com.lge.special_display", Value = "true")]
     [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
     [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class SwDisplayManager : Activity
+    public class SwDisplayManager : Activity, System.MessageSubscriber
     {
+        private const String TAG = "SwDisplayManager";
         public static DisplayManagerHelper mDisplayManagerHelper;
         private LgSwivelStateCallback mSwivelStateCallback;
-        public static SwDisplayManager RunningSwapperActivity;
+        public static SwDisplayManager Instance;
         public static System.MessageDispatcher Dispatcher = null;
+        public static int FocusedDisplay = 0;
+        public static ViewGroup ImeView = null;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            Log.Debug(TAG, "OnCreate");
             base.OnCreate(savedInstanceState);
 
             mDisplayManagerHelper = new DisplayManagerHelper(this);
-            mSwivelStateCallback = new LgSwivelStateCallback(this, mDisplayManagerHelper);
-            mDisplayManagerHelper.RegisterSwivelStateCallback(mSwivelStateCallback);
             MoveTaskToBack(true);
-            RunningSwapperActivity = this;
+            Instance = this;
             if (Dispatcher == null)
             {
                 Dispatcher = new System.MessageDispatcher(this);
-                Dispatcher.Subscribe(System.MessageType.DisplayUpdate, NotificationReceiver.Instance);
+                Dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
             }
+            mSwivelStateCallback = new LgSwivelStateCallback(Dispatcher);
+            mDisplayManagerHelper.RegisterSwivelStateCallback(mSwivelStateCallback);
         }
 
         protected override void OnDestroy()
         {
+            Log.Debug(TAG, "OnDestroy");
             base.OnDestroy();
-            RunningSwapperActivity = null;
+            Instance = null;
         }
 
         protected override void OnStart()
         {
+            Log.Debug(TAG, "OnStart");
             base.OnStart();
         }
 
-        public void StartNewActivity()
+        public void FocusOnDisplay(int displayId)
         {
-            var intent = new Intent(this, typeof(MainInputLauncher));
+            Log.Debug(TAG, "FocusOnDisplay(" + displayId.ToString() + ")");
+            var intent = new Intent(this, typeof(DisplayFocusActivity));
             ActivityOptions options = ActivityOptions.MakeBasic();
             // set Display ID where your activity will be launched
-            options.SetLaunchDisplayId(mDisplayManagerHelper.CoverDisplayId);
+            options.SetLaunchDisplayId(displayId);
             var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
             intent.AddFlags(flags);
             StartActivity(intent, options.ToBundle());
+            FocusedDisplay = displayId;
         }
 
+        public void Accept(SystemMessage message)
+        {
+            Log.Debug(TAG, "Accept");
+            Log.Debug(TAG, "mDisplayManagerHelper.SwivelState = " + mDisplayManagerHelper.SwivelState.ToString());
+            if (mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+            {
+                FocusOnDisplay(mDisplayManagerHelper.MultiDisplayId);
+            }
+            else if (mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelNormal)
+            {
+                FocusOnDisplay(mDisplayManagerHelper.CoverDisplayId);
+            }
+        }
     }
 
     /**
@@ -152,14 +127,11 @@ namespace SoftWing
     public class LgSwivelStateCallback : DisplayManagerHelper.SwivelStateCallback
     {
         private const String TAG = "LgSwivelStateCallback";
-        private Activity parent_context;
-        private DisplayManagerHelper parent_manager;
-        private const int DISPATCH_DELAY_MS = 500;
+        private MessageDispatcher dispatcher;
 
-        public LgSwivelStateCallback(Activity _parent_context, DisplayManagerHelper _parent_manager)
+        public LgSwivelStateCallback(MessageDispatcher _dispatcher)
         {
-            parent_context = _parent_context;
-            parent_manager = _parent_manager;
+            dispatcher = _dispatcher;
         }
 
         public override void OnSwivelStateChanged(int state)
@@ -169,53 +141,25 @@ namespace SoftWing
                 case DisplayManagerHelper.SwivelStart:
                     // Swivel start
                     Log.Debug(TAG, "Swivel Open start");
-                    KillActiveInputActivity();
                     break;
                 case DisplayManagerHelper.SwivelEnd:
                     // Swivel complete
                     Log.Debug(TAG, "Swivel Open end");
-                    StartInputService();
+                    dispatcher.Post(new System.Messages.DisplayUpdateMessage());
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     // Non Swivel start
                     Log.Debug(TAG, "Swivel Closed start");
-                    KillActiveInputActivity();
                     break;
                 case DisplayManagerHelper.NonSwivelEnd:
                     // Non Swivel complete
                     Log.Debug(TAG, "Swivel Closed end");
-                    //StartInputService();
+                    dispatcher.Post(new System.Messages.DisplayUpdateMessage());
                     break;
                 default:
                     // default value
                     break;
             }
-        }
-
-        private void KillActiveInputActivity()
-        {
-            Log.Debug(TAG, "Killing the active input activity");
-            var intent = new Intent(parent_context, typeof(InputServiceLauncher));
-            parent_context.StopService(intent);
-        }
-
-        private void StartInputService()
-        {
-            Log.Debug(TAG, "Starting a new input service");
-            var intent = new Intent(parent_context, typeof(InputServiceLauncher));
-            ActivityOptions options = ActivityOptions.MakeBasic();
-            // set Display ID where your activity will be launched
-            if (parent_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
-            {
-                options.SetLaunchDisplayId(parent_manager.MultiDisplayId);
-            }
-            else
-            {
-                options.SetLaunchDisplayId(parent_manager.CoverDisplayId);
-            }
-            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask;
-            intent.AddFlags(flags);
-            parent_context.StartActivity(intent, options.ToBundle());
         }
     }
 }

@@ -7,8 +7,8 @@
     android:layout_height="match_parent"
     android:id="@+id/input">
     <Button
-        android:layout_width="100px"
-        android:layout_height="100px"
+        android:layout_width="500px"
+        android:layout_height="200px"
         android:text="Button"
         android:textColor="#ffffffff"
         android:background="#ff000000"
