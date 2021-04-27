@@ -21,10 +21,12 @@ namespace SoftWing
     public class TestTouchListener : Java.Lang.Object, IOnTouchListener
     {
         private const String TAG = "TestTouchListener";
+        private ControlUpdateMessage.ControlType _control;
 
-        public TestTouchListener()
+        public TestTouchListener(ControlUpdateMessage.ControlType control)
         {
             Log.Info(TAG, "TestTouchListener");
+            _control = control;
         }
 
         ~TestTouchListener()
@@ -38,15 +40,15 @@ namespace SoftWing
             {
                 case MotionEventActions.Down:
                     Log.Info(TAG, "OnTouch - Down");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownPressed));
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Pressed));
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownReleased));
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Released));
                     break;
                 default:
                     Log.Info(TAG, "OnTouch - Other");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(ControlUpdateMessage.UpdateType.DownHeld));
+                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Held));
                     break;
             }
             return true;
@@ -120,13 +122,29 @@ namespace SoftWing
 
         private void SetTestButtonListener(ViewGroup keyboard_view_group)
         {
+            Log.Debug(TAG, "SetTestButtonListener");
             for (int index = 0; index < keyboard_view_group.ChildCount; index++)
             {
                 View nextChild = keyboard_view_group.GetChildAt(index);
-                if (nextChild.Id == Resource.Id.testButton)
+                switch (nextChild.Id)
                 {
-                    nextChild.SetOnTouchListener(new TestTouchListener());
-                    break;
+                    case (Resource.Id.d_pad_up):
+                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Up));
+                        break;
+                    case (Resource.Id.d_pad_down):
+                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Down));
+                        break;
+                    case (Resource.Id.d_pad_left):
+                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Left));
+                        break;
+                    case (Resource.Id.d_pad_right):
+                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Right));
+                        break;
+                    case (Resource.Id.d_pad_center):
+                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Center));
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -177,8 +195,8 @@ namespace SoftWing
             PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, 0);
             //PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-            String title = "Show SoftWing Keyboard";
-            String body = "Select this to open the keyboard. Disable in settings.";
+            String title = "Show SoftWing Controller";
+            String body = "Select this to open the controller.";
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .SetSmallIcon(Resource.Mipmap.ic_notification)
@@ -205,16 +223,44 @@ namespace SoftWing
                 return;
             }
             var control_message = (ControlUpdateMessage)message;
+            var key_code = Android.Views.Keycode.DpadCenter;
+            switch (control_message.getControlType())
+            {
+                case ControlUpdateMessage.ControlType.Down:
+                    Log.Debug(TAG, "Accept(ControlType.Down)");
+                    key_code = Android.Views.Keycode.DpadDown;
+                    break;
+                case ControlUpdateMessage.ControlType.Up:
+                    Log.Debug(TAG, "Accept(ControlType.Up)");
+                    key_code = Android.Views.Keycode.DpadUp;
+                    break;
+                case ControlUpdateMessage.ControlType.Left:
+                    Log.Debug(TAG, "Accept(ControlType.Left)");
+                    key_code = Android.Views.Keycode.DpadLeft;
+                    break;
+                case ControlUpdateMessage.ControlType.Right:
+                    Log.Debug(TAG, "Accept(ControlType.Right)");
+                    key_code = Android.Views.Keycode.DpadRight;
+                    break;
+                case ControlUpdateMessage.ControlType.Center:
+                    Log.Debug(TAG, "Accept(ControlType.Center)");
+                    key_code = Android.Views.Keycode.DpadCenter;
+                    break;
+                default:
+                    break;
+            }
             switch (control_message.getUpdateType())
             {
-                case ControlUpdateMessage.UpdateType.DownPressed:
-                    SendDownUpKeyEvents(Android.Views.Keycode.DpadCenter);
-                    SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+                case ControlUpdateMessage.UpdateType.Pressed:
+                    Log.Debug(TAG, "Accept(UpdateType.Pressed)");
+                    SendDownUpKeyEvents(key_code);
                     break;
-                case ControlUpdateMessage.UpdateType.DownReleased:
+                case ControlUpdateMessage.UpdateType.Released:
+                    Log.Debug(TAG, "Accept(UpdateType.Released)");
                     break;
-                case ControlUpdateMessage.UpdateType.DownHeld:
-                    SendDownUpKeyEvents(Android.Views.Keycode.DpadDown);
+                case ControlUpdateMessage.UpdateType.Held:
+                    Log.Debug(TAG, "Accept(UpdateType.Held)");
+                    SendDownUpKeyEvents(key_code);
                     break;
                 default:
                     break;
