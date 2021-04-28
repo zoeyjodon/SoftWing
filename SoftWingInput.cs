@@ -43,41 +43,16 @@ namespace SoftWing
                 case MotionEventActions.Down:
                     Log.Info(TAG, "OnTouch - Down");
                     SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Pressed));
-                    BeginKeypressLoop();
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
                     SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Released));
-                    EndKeypressLoop();
                     break;
                 default:
                     Log.Info(TAG, "OnTouch - Other");
                     break;
             }
             return true;
-        }
-
-        private void BeginKeypressLoop()
-        {
-            SwDisplayManager.Instance.RunOnUiThread(() => { loop_active = true; });
-            KeypressLoopCallback();
-        }
-
-        private void EndKeypressLoop()
-        {
-            SwDisplayManager.Instance.RunOnUiThread(() => { loop_active = false; });
-        }
-
-        private void KeypressLoopCallback()
-        {
-            handler.PostDelayed(() =>
-            {
-                SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Held));
-                SwDisplayManager.Instance.RunOnUiThread(() =>
-                {
-                    if (loop_active) { KeypressLoopCallback(); }
-                });
-            }, 10);
         }
     }
 
@@ -237,6 +212,11 @@ namespace SoftWing
             {
                 return;
             }
+            if (CurrentInputConnection == null)
+            {
+                Log.Debug(TAG, "Connection is null, ignoring key update");
+                return;
+            }
             var control_message = (ControlUpdateMessage)message;
             var key_code = Android.Views.Keycode.DpadCenter;
             switch (control_message.getControlType())
@@ -268,14 +248,14 @@ namespace SoftWing
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
                     Log.Debug(TAG, "Accept(UpdateType.Pressed)");
-                    SendDownUpKeyEvents(key_code);
+                    CurrentInputConnection.SendKeyEvent(new KeyEvent(KeyEventActions.Down, key_code));
                     break;
                 case ControlUpdateMessage.UpdateType.Released:
                     Log.Debug(TAG, "Accept(UpdateType.Released)");
+                    CurrentInputConnection.SendKeyEvent(new KeyEvent(KeyEventActions.Up, key_code));
                     break;
                 case ControlUpdateMessage.UpdateType.Held:
                     Log.Debug(TAG, "Accept(UpdateType.Held)");
-                    SendDownUpKeyEvents(key_code);
                     break;
                 default:
                     break;
