@@ -7,6 +7,7 @@
     android:layout_height="wrap_content"
     android:columnCount="3"
     android:rowCount="3"
+    android:background="@android:color/black"
     android:id="@+id/input">
     <ImageView
         android:layout_row="2"

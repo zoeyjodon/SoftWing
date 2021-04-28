@@ -83,11 +83,7 @@ namespace SoftWing
             {
                 Log.Info(TAG, "attachToken " + token);
                 base.AttachToken(token);
-                if (mToken == null)
-                {
-                    Log.Info(TAG, "Saving new token");
-                    mToken = token;
-                }
+                mToken = token;
             }
         }
 
@@ -96,10 +92,7 @@ namespace SoftWing
             Log.Debug(TAG, "onCreate()");
             base.OnCreate();
 
-            if (mNotificationReceiver == null)
-            {
-                SetNotification();
-            }
+            SetNotification();
             // If we aren't running the swapper yet, we should be
             if (SwDisplayManager.Instance == null)
             {
@@ -178,13 +171,9 @@ namespace SoftWing
         private void SetNotification()
         {
             Log.Debug(TAG, "SetNotification()");
-            String ns = Context.NotificationService;
-            NotificationManager mNotificationManager = (NotificationManager)GetSystemService(ns);
 
             CreateNotificationChannel();
-            int icon = Resource.Drawable.notification_icon_background;
             var text = "Keyboard notification enabled.";
-            long when = Java.Lang.JavaSystem.CurrentTimeMillis();
 
             // TODO: clean this up?
             mNotificationReceiver = new NotificationReceiver(this);

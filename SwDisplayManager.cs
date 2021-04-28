@@ -57,9 +57,8 @@ namespace SoftWing
         public static DisplayManagerHelper mDisplayManagerHelper;
         private LgSwivelStateCallback mSwivelStateCallback;
         public static SwDisplayManager Instance;
-        public static System.MessageDispatcher Dispatcher = null;
+        public static MessageDispatcher Dispatcher = null;
         public static int FocusedDisplay = 0;
-        public static ViewGroup ImeView = null;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -82,6 +81,8 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnDestroy");
             base.OnDestroy();
+            mDisplayManagerHelper = null;
+            Dispatcher = null;
             Instance = null;
         }
 
@@ -158,6 +159,7 @@ namespace SoftWing
     {
         private const String TAG = "LgSwivelStateCallback";
         private MessageDispatcher dispatcher;
+        private bool IgnoreTransition = true;
 
         public LgSwivelStateCallback(MessageDispatcher _dispatcher)
         {
@@ -166,6 +168,13 @@ namespace SoftWing
 
         public override void OnSwivelStateChanged(int state)
         {
+            // The callback manager runs once on startup to report the initial state.
+            // We only want updates if that state changes.
+            if (IgnoreTransition)
+            {
+                IgnoreTransition = false;
+                return;
+            }
             switch (state)
             {
                 case DisplayManagerHelper.SwivelStart:
