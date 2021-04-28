@@ -168,10 +168,12 @@ namespace SoftWing
 
         public override void OnSwivelStateChanged(int state)
         {
+            Log.Debug(TAG, "OnSwivelStateChanged");
             // The callback manager runs once on startup to report the initial state.
             // We only want updates if that state changes.
             if (IgnoreTransition)
             {
+                Log.Debug(TAG, "Ignoring first swivel action");
                 IgnoreTransition = false;
                 return;
             }

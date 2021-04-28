@@ -22,6 +22,8 @@ namespace SoftWing
     {
         private const String TAG = "TestTouchListener";
         private ControlUpdateMessage.ControlType _control;
+        private bool loop_active = false;
+        private Handler handler = new Handler();
 
         public TestTouchListener(ControlUpdateMessage.ControlType control)
         {
@@ -41,17 +43,41 @@ namespace SoftWing
                 case MotionEventActions.Down:
                     Log.Info(TAG, "OnTouch - Down");
                     SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Pressed));
+                    BeginKeypressLoop();
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
                     SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Released));
+                    EndKeypressLoop();
                     break;
                 default:
                     Log.Info(TAG, "OnTouch - Other");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Held));
                     break;
             }
             return true;
+        }
+
+        private void BeginKeypressLoop()
+        {
+            SwDisplayManager.Instance.RunOnUiThread(() => { loop_active = true; });
+            KeypressLoopCallback();
+        }
+
+        private void EndKeypressLoop()
+        {
+            SwDisplayManager.Instance.RunOnUiThread(() => { loop_active = false; });
+        }
+
+        private void KeypressLoopCallback()
+        {
+            handler.PostDelayed(() =>
+            {
+                SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Held));
+                SwDisplayManager.Instance.RunOnUiThread(() =>
+                {
+                    if (loop_active) { KeypressLoopCallback(); }
+                });
+            }, 10);
         }
     }
 
