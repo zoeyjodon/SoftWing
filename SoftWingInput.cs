@@ -23,6 +23,7 @@ namespace SoftWing
         private const String TAG = "SoftWingInput";
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
         private const int NOTIFICATION_ONGOING_ID = 1001;
+        private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
         private MessageDispatcher dispatcher;
         private static NotificationReceiver notification_receiver = null;
 
@@ -59,7 +60,14 @@ namespace SoftWing
             var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
             SetTestButtonListener((ViewGroup)keyboardView);
 
+            keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
+
             return keyboardView;
+        }
+
+        public override bool OnEvaluateFullscreenMode()
+        {
+            return true;
         }
 
         private void SetTestButtonListener(ViewGroup keyboard_view_group)
@@ -71,19 +79,37 @@ namespace SoftWing
                 switch (nextChild.Id)
                 {
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadUp));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadUp));
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadDown));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadDown));
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadLeft));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadLeft));
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadRight));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadRight));
                         break;
                     case (Resource.Id.d_pad_center):
-                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadCenter));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadCenter));
+                        break;
+                    case (Resource.Id.a_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonA));
+                        break;
+                    case (Resource.Id.b_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonB));
+                        break;
+                    case (Resource.Id.y_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonY));
+                        break;
+                    case (Resource.Id.x_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonX));
+                        break;
+                    case (Resource.Id.l_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonL1));
+                        break;
+                    case (Resource.Id.r_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonR1));
                         break;
                     default:
                         break;

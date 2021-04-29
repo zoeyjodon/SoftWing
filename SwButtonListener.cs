@@ -11,12 +11,14 @@ namespace SoftWing
     public class SwButtonListener : Java.Lang.Object, IOnTouchListener
     {
         private const String TAG = "SwButtonListener";
+        private View button;
         private Keycode key;
         private MessageDispatcher dispatcher;
 
-        public SwButtonListener(Keycode key_in)
+        public SwButtonListener(View button_in, Keycode key_in)
         {
             Log.Info(TAG, "SwButtonListener");
+            button = button_in;
             key = key_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
@@ -32,10 +34,12 @@ namespace SoftWing
             {
                 case MotionEventActions.Down:
                     Log.Info(TAG, "OnTouch - Down");
+                    button.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
                     dispatcher.Post(new ControlUpdateMessage(key, ControlUpdateMessage.UpdateType.Pressed));
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
+                    button.SetBackgroundColor(Android.Graphics.Color.Transparent);
                     dispatcher.Post(new ControlUpdateMessage(key, ControlUpdateMessage.UpdateType.Released));
                     break;
                 default:
