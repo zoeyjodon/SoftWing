@@ -8,13 +8,10 @@ namespace SoftWing
     class NotificationReceiver : BroadcastReceiver
     {
         private const String TAG = "NotificationReceiver";
-        private SoftWingInput mIME;
         public const String ACTION_SHOW = "org.pocketworkstation.pckeyboard.SHOW";
 
-        public NotificationReceiver(SoftWingInput ime)
+        public NotificationReceiver()
         {
-            mIME = ime;
-            Log.Info(TAG, "NotificationReceiver created, ime=" + mIME);
         }
 
         public override void OnReceive(Context context, Intent intent)
@@ -24,11 +21,11 @@ namespace SoftWing
 
             if (action.Equals(ACTION_SHOW))
             {
-                InputMethodManager imm = (InputMethodManager)
+                InputMethodManager input_manager = (InputMethodManager)
                     context.GetSystemService(Context.InputMethodService);
-                if (imm != null)
+                if (input_manager != null)
                 {
-                    imm.ShowSoftInputFromInputMethod(SoftWingInput.mToken, ShowFlags.Forced);
+                    input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
                 }
             }
         }

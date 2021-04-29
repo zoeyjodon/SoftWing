@@ -2,60 +2,16 @@
 using Android.Content;
 using Android.InputMethodServices;
 using Android.OS;
-using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.Core.App;
-using Com.Lge.Display;
-using Java.Interop;
 using System;
 using SoftWing.System.Messages;
-using System.Threading.Tasks;
-using static Android.Views.View;
 using SoftWing.System;
 
 namespace SoftWing
 {
-    public class TestTouchListener : Java.Lang.Object, IOnTouchListener
-    {
-        private const String TAG = "TestTouchListener";
-        private ControlUpdateMessage.ControlType _control;
-        private bool loop_active = false;
-        private Handler handler = new Handler();
-
-        public TestTouchListener(ControlUpdateMessage.ControlType control)
-        {
-            Log.Info(TAG, "TestTouchListener");
-            _control = control;
-        }
-
-        ~TestTouchListener()
-        {
-            Log.Info(TAG, "~TestTouchListener");
-        }
-
-        public bool OnTouch(View v, MotionEvent e)
-        {
-            switch (e.Action)
-            {
-                case MotionEventActions.Down:
-                    Log.Info(TAG, "OnTouch - Down");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Pressed));
-                    break;
-                case MotionEventActions.Up:
-                    Log.Info(TAG, "OnTouch - Up");
-                    SwDisplayManager.Dispatcher.Post(new ControlUpdateMessage(_control, ControlUpdateMessage.UpdateType.Released));
-                    break;
-                default:
-                    Log.Info(TAG, "OnTouch - Other");
-                    break;
-            }
-            return true;
-        }
-    }
-
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
     [MetaData("android.view.im", Resource = "@xml/method")]
@@ -65,26 +21,25 @@ namespace SoftWing
     public class SoftWingInput : InputMethodService, System.MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
-        private static NotificationReceiver mNotificationReceiver = null;
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
         private const int NOTIFICATION_ONGOING_ID = 1001;
+        private MessageDispatcher dispatcher;
+        private static NotificationReceiver notification_receiver = null;
 
-        public static IBinder mToken;
+        public static IBinder InputSessionToken;
 
         public class SwInputMethodImpl : InputMethodImpl
         {
-            private SoftWingInput owner;
             public SwInputMethodImpl(SoftWingInput _owner)
                 : base(_owner)
             {
-                owner = _owner;
             }
 
             public override void AttachToken(IBinder token)
             {
                 Log.Info(TAG, "attachToken " + token);
                 base.AttachToken(token);
-                mToken = token;
+                InputSessionToken = token;
             }
         }
 
@@ -94,14 +49,7 @@ namespace SoftWing
             base.OnCreate();
 
             SetNotification();
-            // If we aren't running the swapper yet, we should be
-            if (SwDisplayManager.Instance == null)
-            {
-                var intent = new Intent(this, typeof(SwDisplayManager));
-                var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
-                intent.AddFlags(flags);
-                StartActivity(intent);
-            }
+            SwDisplayManager.StartSwDisplayManager(this);
         }
 
         public override View OnCreateInputView()
@@ -123,19 +71,19 @@ namespace SoftWing
                 switch (nextChild.Id)
                 {
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Up));
+                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadUp));
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Down));
+                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadDown));
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Left));
+                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadLeft));
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Right));
+                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadRight));
                         break;
                     case (Resource.Id.d_pad_center):
-                        nextChild.SetOnTouchListener(new TestTouchListener(ControlUpdateMessage.ControlType.Center));
+                        nextChild.SetOnTouchListener(new SwButtonListener(Android.Views.Keycode.DpadCenter));
                         break;
                     default:
                         break;
@@ -147,7 +95,8 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
-            SwDisplayManager.Dispatcher.Subscribe(System.MessageType.ControlUpdate, this);
+            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher.Subscribe(System.MessageType.ControlUpdate, this);
         }
 
         public override AbstractInputMethodImpl OnCreateInputMethodInterface()
@@ -174,16 +123,14 @@ namespace SoftWing
             Log.Debug(TAG, "SetNotification()");
 
             CreateNotificationChannel();
-            var text = "Keyboard notification enabled.";
+            var text = "Controller notification enabled.";
 
-            // TODO: clean this up?
-            mNotificationReceiver = new NotificationReceiver(this);
+            notification_receiver = new NotificationReceiver();
             var pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
-            RegisterReceiver(mNotificationReceiver, pFilter);
+            RegisterReceiver(notification_receiver, pFilter);
 
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
             PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, 0);
-            //PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
             String title = "Show SoftWing Controller";
             String body = "Select this to open the controller.";
@@ -191,7 +138,7 @@ namespace SoftWing
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .SetSmallIcon(Resource.Mipmap.ic_notification)
                     .SetColor(Resource.Color.accent_material_dark)
-                    .SetAutoCancel(false) //Make this notification automatically dismissed when the user touches it -> false.
+                    .SetAutoCancel(false)
                     .SetTicker(text)
                     .SetContentTitle(title)
                     .SetContentText(body)
@@ -202,7 +149,6 @@ namespace SoftWing
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.From(this);
 
-            // notificationId is a unique int for each notification that you must define
             notificationManager.Notify(NOTIFICATION_ONGOING_ID, mBuilder.Build());
         }
 
@@ -218,33 +164,8 @@ namespace SoftWing
                 return;
             }
             var control_message = (ControlUpdateMessage)message;
-            var key_code = Android.Views.Keycode.DpadCenter;
-            switch (control_message.getControlType())
-            {
-                case ControlUpdateMessage.ControlType.Down:
-                    Log.Debug(TAG, "Accept(ControlType.Down)");
-                    key_code = Android.Views.Keycode.DpadDown;
-                    break;
-                case ControlUpdateMessage.ControlType.Up:
-                    Log.Debug(TAG, "Accept(ControlType.Up)");
-                    key_code = Android.Views.Keycode.DpadUp;
-                    break;
-                case ControlUpdateMessage.ControlType.Left:
-                    Log.Debug(TAG, "Accept(ControlType.Left)");
-                    key_code = Android.Views.Keycode.DpadLeft;
-                    break;
-                case ControlUpdateMessage.ControlType.Right:
-                    Log.Debug(TAG, "Accept(ControlType.Right)");
-                    key_code = Android.Views.Keycode.DpadRight;
-                    break;
-                case ControlUpdateMessage.ControlType.Center:
-                    Log.Debug(TAG, "Accept(ControlType.Center)");
-                    key_code = Android.Views.Keycode.DpadCenter;
-                    break;
-                default:
-                    break;
-            }
-            switch (control_message.getUpdateType())
+            var key_code = control_message.Key;
+            switch (control_message.Update)
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
                     Log.Debug(TAG, "Accept(UpdateType.Pressed)");
@@ -253,9 +174,6 @@ namespace SoftWing
                 case ControlUpdateMessage.UpdateType.Released:
                     Log.Debug(TAG, "Accept(UpdateType.Released)");
                     CurrentInputConnection.SendKeyEvent(new KeyEvent(KeyEventActions.Up, key_code));
-                    break;
-                case ControlUpdateMessage.UpdateType.Held:
-                    Log.Debug(TAG, "Accept(UpdateType.Held)");
                     break;
                 default:
                     break;

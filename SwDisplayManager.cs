@@ -7,102 +7,60 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Com.Lge.Display;
-using Google;
-using Java.Interop;
-using Java.IO;
 using SoftWing.System;
 using System;
 
 namespace SoftWing
 {
-    [Activity(Label = "DisplayFocusActivity")]
-    [MetaData("com.lge.special_display", Value = "true")]
-    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
-    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
-    public class DisplayFocusActivity : Activity
-    {
-        private const String TAG = "DisplayFocusActivity";
-
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            Log.Debug(TAG, "OnCreate()");
-            base.OnCreate(savedInstanceState);
-
-            Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            SetContentView(Resource.Layout.activity_main);
-            MoveTaskToBack(true);
-        }
-
-        protected override void OnStart()
-        {
-            Log.Debug(TAG, "OnStart()");
-            base.OnStart();
-            Finish();
-        }
-
-        protected override void OnDestroy()
-        {
-            Log.Debug(TAG, "OnDestroy()");
-            base.OnDestroy();
-        }
-    }
-
     [Activity(Label = "SwDisplayManager")]
-    [MetaData("com.lge.special_display", Value = "true")]
-    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
-    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
     public class SwDisplayManager : Activity, System.MessageSubscriber
     {
         private const String TAG = "SwDisplayManager";
-        public static DisplayManagerHelper mDisplayManagerHelper;
-        private LgSwivelStateCallback mSwivelStateCallback;
-        public static SwDisplayManager Instance;
-        public static MessageDispatcher Dispatcher = null;
-        public static int FocusedDisplay = 0;
+        private DisplayManagerHelper lg_display_manager;
+        private LgSwivelStateCallback swivel_state_cb;
+        private MessageDispatcher dispatcher;
+        private static SwDisplayManager instance;
+
+
+        public static void StartSwDisplayManager(Context calling_context)
+        {
+            if (instance != null)
+            {
+                return;
+            }
+            var intent = new Intent(calling_context, typeof(SwDisplayManager));
+            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
+            intent.AddFlags(flags);
+            calling_context.StartActivity(intent);
+        }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             Log.Debug(TAG, "OnCreate");
             base.OnCreate(savedInstanceState);
 
-            mDisplayManagerHelper = new DisplayManagerHelper(this);
+            lg_display_manager = new DisplayManagerHelper(this);
+            instance = this;
+
+            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
+
+            swivel_state_cb = new LgSwivelStateCallback();
+            lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
+
             MoveTaskToBack(true);
-            Instance = this;
-            if (Dispatcher == null)
-            {
-                Dispatcher = new System.MessageDispatcher(this);
-                Dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
-            }
-            mSwivelStateCallback = new LgSwivelStateCallback(Dispatcher);
-            mDisplayManagerHelper.RegisterSwivelStateCallback(mSwivelStateCallback);
         }
 
         protected override void OnDestroy()
         {
             Log.Debug(TAG, "OnDestroy");
             base.OnDestroy();
-            mDisplayManagerHelper = null;
-            Dispatcher = null;
-            Instance = null;
         }
 
         protected override void OnStart()
         {
             Log.Debug(TAG, "OnStart");
             base.OnStart();
-        }
-
-        public void FocusOnDisplay(int displayId)
-        {
-            Log.Debug(TAG, "FocusOnDisplay(" + displayId.ToString() + ")");
-            var intent = new Intent(this, typeof(DisplayFocusActivity));
-            ActivityOptions options = ActivityOptions.MakeBasic();
-            // set Display ID where your activity will be launched
-            options.SetLaunchDisplayId(displayId);
-            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
-            intent.AddFlags(flags);
-            StartActivity(intent, options.ToBundle());
-            FocusedDisplay = displayId;
         }
 
         public void UseLgKeyboard()
@@ -116,7 +74,7 @@ namespace SoftWing
                 if (InputMethod.Id.Contains("LgeImeImpl"))
                 {
                     Log.Debug(TAG, "Setting Input Method");
-                    imm.SetInputMethod(SoftWingInput.mToken, InputMethod.Id);
+                    imm.SetInputMethod(SoftWingInput.InputSessionToken, InputMethod.Id);
                     return;
                 }
             }
@@ -133,7 +91,7 @@ namespace SoftWing
                 if (InputMethod.Id.Contains("SoftWingInput"))
                 {
                     Log.Debug(TAG, "Setting Input Method");
-                    imm.SetInputMethod(SoftWingInput.mToken, InputMethod.Id);
+                    imm.SetInputMethod(SoftWingInput.InputSessionToken, InputMethod.Id);
                     return;
                 }
             }
@@ -142,8 +100,7 @@ namespace SoftWing
         public void Accept(SystemMessage message)
         {
             Log.Debug(TAG, "Accept");
-            Log.Debug(TAG, "mDisplayManagerHelper.SwivelState = " + mDisplayManagerHelper.SwivelState.ToString());
-            if (mDisplayManagerHelper.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
                 UseLgKeyboard();
             }
@@ -159,11 +116,11 @@ namespace SoftWing
     {
         private const String TAG = "LgSwivelStateCallback";
         private MessageDispatcher dispatcher;
-        private bool IgnoreTransition = true;
+        private bool ignore_transition = true;
 
-        public LgSwivelStateCallback(MessageDispatcher _dispatcher)
+        public LgSwivelStateCallback()
         {
-            dispatcher = _dispatcher;
+            dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
 
         public override void OnSwivelStateChanged(int state)
@@ -171,10 +128,10 @@ namespace SoftWing
             Log.Debug(TAG, "OnSwivelStateChanged");
             // The callback manager runs once on startup to report the initial state.
             // We only want updates if that state changes.
-            if (IgnoreTransition)
+            if (ignore_transition)
             {
                 Log.Debug(TAG, "Ignoring first swivel action");
-                IgnoreTransition = false;
+                ignore_transition = false;
                 return;
             }
             switch (state)

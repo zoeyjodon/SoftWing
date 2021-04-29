@@ -7,26 +7,24 @@
 ***********************************************************************/
 using Android.App;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SoftWing.System
 {
     public class MessageDispatcher
     {
         /*------------------ Private member variables ------------------*/
-        private static Dictionary<MessageType, List<MessageSubscriber>> system_message_subs = new Dictionary<MessageType, List<MessageSubscriber>>();
-        public static Activity calling_activity = null;
-        private static MessageDispatcher Instance = null;
+        private Dictionary<MessageType, List<MessageSubscriber>> system_message_subs = new Dictionary<MessageType, List<MessageSubscriber>>();
+        private Activity calling_activity = null;
+        private static MessageDispatcher instance = null;
 
         /*------------------ Public member functions ------------------*/
-        public MessageDispatcher(Activity _calling_activity)
+        public static MessageDispatcher GetInstance(Activity _calling_activity)
         {
-            if (Instance != null)
+            if (instance == null)
             {
-                return;
+                return new MessageDispatcher(_calling_activity);
             }
-            Instance = this;
-            calling_activity = _calling_activity;
+            return instance;
         }
 
         /**
@@ -102,6 +100,13 @@ namespace SoftWing.System
                     sub.Accept(message);
                 }
             });
+        }
+
+        /*------------------ Private member functions ------------------*/
+        private MessageDispatcher(Activity _calling_activity)
+        {
+            instance = this;
+            calling_activity = _calling_activity;
         }
     }
 }

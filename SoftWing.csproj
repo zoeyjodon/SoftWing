@@ -69,6 +69,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SwButtonListener.cs" />
     <Compile Include="System\MessageDispatcher.cs" />
     <Compile Include="System\MessageSubscriber.cs" />
     <Compile Include="NotificationReceiver.cs" />
