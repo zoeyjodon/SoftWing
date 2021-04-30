@@ -57,8 +57,8 @@
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AndroidJoyStick">
-      <HintPath>.\AndroidJoyStick.dll</HintPath>
+    <Reference Include="LgKeyboardLib">
+      <HintPath>..\LgKeyboardLib\bin\Debug\LgKeyboardLib.dll</HintPath>
     </Reference>
     <Reference Include="LGMultiScreenSDK">
       <HintPath>.\LGMultiScreenSDK.dll</HintPath>

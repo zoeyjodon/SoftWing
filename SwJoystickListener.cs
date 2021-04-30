@@ -35,15 +35,23 @@ namespace SoftWing
         private const double ANGLE_DOWN_MAX = ANGLE_DOWN + ANGLE_TOLERANCE;
         private const double ANGLE_DOWN_MIN = ANGLE_DOWN - ANGLE_TOLERANCE;
 
+        private Keycode up_keycode;
+        private Keycode down_keycode;
+        private Keycode left_keycode;
+        private Keycode right_keycode;
         private MessageDispatcher dispatcher;
         private bool up_pressed = false;
         private bool down_pressed = false;
         private bool left_pressed = false;
         private bool right_pressed = false;
 
-        public SwJoystickListener()
+        public SwJoystickListener(Keycode up_keycode_in, Keycode down_keycode_in, Keycode left_keycode_in, Keycode right_keycode_in)
         {
             Log.Info(TAG, "SwJoystickListener");
+            up_keycode = up_keycode_in;
+            down_keycode = down_keycode_in;
+            left_keycode = left_keycode_in;
+            right_keycode = right_keycode_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
 
@@ -73,14 +81,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Right Pressed");
                     right_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(Keycode.DpadRight, ControlUpdateMessage.UpdateType.Pressed));
+                    dispatcher.Post(new ControlUpdateMessage(right_keycode, ControlUpdateMessage.UpdateType.Pressed));
                 }
             }
             else if (right_pressed)
             {
                 Log.Info(TAG, "Right Released");
                 right_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadRight, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(right_keycode, ControlUpdateMessage.UpdateType.Released));
             }
         }
 
@@ -92,14 +100,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Left Pressed");
                     left_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(Keycode.DpadLeft, ControlUpdateMessage.UpdateType.Pressed));
+                    dispatcher.Post(new ControlUpdateMessage(left_keycode, ControlUpdateMessage.UpdateType.Pressed));
                 }
             }
             else if (left_pressed)
             {
                 Log.Info(TAG, "Left Released");
                 left_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadLeft, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(left_keycode, ControlUpdateMessage.UpdateType.Released));
             }
         }
 
@@ -111,14 +119,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Up Pressed");
                     up_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(Keycode.DpadUp, ControlUpdateMessage.UpdateType.Pressed));
+                    dispatcher.Post(new ControlUpdateMessage(up_keycode, ControlUpdateMessage.UpdateType.Pressed));
                 }
             }
             else if (up_pressed)
             {
                 Log.Info(TAG, "Up Released");
                 up_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadUp, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(up_keycode, ControlUpdateMessage.UpdateType.Released));
             }
         }
 
@@ -130,14 +138,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Down Pressed");
                     down_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(Keycode.DpadDown, ControlUpdateMessage.UpdateType.Pressed));
+                    dispatcher.Post(new ControlUpdateMessage(down_keycode, ControlUpdateMessage.UpdateType.Pressed));
                 }
             }
             else if (down_pressed)
             {
                 Log.Info(TAG, "Down Released");
                 down_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadDown, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(down_keycode, ControlUpdateMessage.UpdateType.Released));
             }
         }
 
@@ -146,22 +154,22 @@ namespace SoftWing
             if (up_pressed)
             {
                 Log.Info(TAG, "Up Released");
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadUp, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(up_keycode, ControlUpdateMessage.UpdateType.Released));
             }
             if (down_pressed)
             {
                 Log.Info(TAG, "Down Released");
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadDown, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(down_keycode, ControlUpdateMessage.UpdateType.Released));
             }
             if (left_pressed)
             {
                 Log.Info(TAG, "Left Released");
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadLeft, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(left_keycode, ControlUpdateMessage.UpdateType.Released));
             }
             if (right_pressed)
             {
                 Log.Info(TAG, "Right Released");
-                dispatcher.Post(new ControlUpdateMessage(Keycode.DpadRight, ControlUpdateMessage.UpdateType.Released));
+                dispatcher.Post(new ControlUpdateMessage(right_keycode, ControlUpdateMessage.UpdateType.Released));
             }
             up_pressed = false;
             down_pressed = false;
