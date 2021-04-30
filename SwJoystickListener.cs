@@ -15,7 +15,7 @@ namespace SoftWing
     public class SwJoystickListener : Java.Lang.Object, JoyStickView.IOnMoveListener
     {
         private const String TAG = "SwJoystickListener";
-        private const int STRENGTH_THRESHOLD = 50;
+        private const int STRENGTH_THRESHOLD = 25;
 
         private const double ANGLE_TOLERANCE = 67.5;
 
