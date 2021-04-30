@@ -57,8 +57,11 @@
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AndroidJoyStick">
+      <HintPath>.\AndroidJoyStick.dll</HintPath>
+    </Reference>
     <Reference Include="LGMultiScreenSDK">
-      <HintPath>..\LGMultiScreenSDK\bin\Debug\LGMultiScreenSDK.dll</HintPath>
+      <HintPath>.\LGMultiScreenSDK.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Android.Export" />
     <Reference Include="System" />
@@ -69,6 +72,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SwJoystickListener.cs" />
     <Compile Include="SwButtonListener.cs" />
     <Compile Include="System\MessageDispatcher.cs" />
     <Compile Include="System\MessageSubscriber.cs" />

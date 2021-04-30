@@ -6,11 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:columnCount="7"
-    android:rowCount="5"
+    android:rowCount="7"
     android:background="@android:color/black"
     android:id="@+id/input">
+    <com.jackandphantom.joystickview.JoyStickView
+        android:layout_row="1"
+        android:layout_column="0"
+        android:layout_rowSpan="3"
+        android:layout_columnSpan="3"
+        android:layout_width="450px"
+        android:layout_height="450px"
+        android:background="@android:color/transparent"
+        android:id="@+id/joyStick" />
     <ImageView
-        android:layout_row="3"
+        android:layout_row="6"
         android:layout_column="1"
         android:layout_width="150px"
         android:layout_height="150px"
@@ -18,7 +27,7 @@
         android:background="@android:color/transparent"
         android:id="@+id/d_pad_down" />
     <ImageView
-        android:layout_row="1"
+        android:layout_row="4"
         android:layout_column="1"
         android:layout_width="150px"
         android:layout_height="150px"
@@ -26,7 +35,7 @@
         android:background="@android:color/transparent"
         android:id="@+id/d_pad_up" />
     <ImageView
-        android:layout_row="2"
+        android:layout_row="5"
         android:layout_column="0"
         android:layout_width="150px"
         android:layout_height="150px"
@@ -34,7 +43,7 @@
         android:background="@android:color/transparent"
         android:id="@+id/d_pad_left" />
     <ImageView
-        android:layout_row="2"
+        android:layout_row="5"
         android:layout_column="2"
         android:layout_width="150px"
         android:layout_height="150px"
@@ -42,7 +51,7 @@
         android:background="@android:color/transparent"
         android:id="@+id/d_pad_right" />
     <ImageView
-        android:layout_row="2"
+        android:layout_row="5"
         android:layout_column="1"
         android:layout_width="150px"
         android:layout_height="150px"

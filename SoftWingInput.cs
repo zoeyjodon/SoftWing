@@ -8,6 +8,7 @@ using Android.Views.InputMethods;
 using AndroidX.Core.App;
 using System;
 using SoftWing.System.Messages;
+using Com.Jackandphantom.Joystickview;
 using SoftWing.System;
 
 namespace SoftWing
@@ -70,6 +71,12 @@ namespace SoftWing
             return true;
         }
 
+        private void SetJoystickListener(JoyStickView joystick)
+        {
+            var listener = new SwJoystickListener();
+            joystick.SetOnMoveListener(listener);
+        }
+
         private void SetTestButtonListener(ViewGroup keyboard_view_group)
         {
             Log.Debug(TAG, "SetTestButtonListener");
@@ -78,17 +85,20 @@ namespace SoftWing
                 View nextChild = keyboard_view_group.GetChildAt(index);
                 switch (nextChild.Id)
                 {
+                    case (Resource.Id.joyStick):
+                        SetJoystickListener((JoyStickView)nextChild);
+                        break;
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadUp));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.W));
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadDown));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.S));
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadLeft));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.A));
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadRight));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.D));
                         break;
                     case (Resource.Id.d_pad_center):
                         nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadCenter));
