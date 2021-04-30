@@ -86,7 +86,7 @@ namespace SoftWing
                 switch (nextChild.Id)
                 {
                     case (Resource.Id.left_joyStick):
-                        SetJoystickListener((JoyStickView)nextChild, Android.Views.Keycode.W, Android.Views.Keycode.A, Android.Views.Keycode.S, Android.Views.Keycode.D);
+                        SetJoystickListener((JoyStickView)nextChild, Android.Views.Keycode.W, Android.Views.Keycode.S, Android.Views.Keycode.A, Android.Views.Keycode.D);
                         break;
                     case (Resource.Id.right_joyStick):
                         SetJoystickListener((JoyStickView)nextChild, Android.Views.Keycode.Button1, Android.Views.Keycode.Button2, Android.Views.Keycode.Button3, Android.Views.Keycode.Button4);
