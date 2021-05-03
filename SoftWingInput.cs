@@ -16,9 +16,6 @@ namespace SoftWing
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
     [MetaData("android.view.im", Resource = "@xml/method")]
-    [MetaData("com.lge.special_display", Value = "true")]
-    [MetaData("android.allow_multiple_resumed_activities", Value = "true")]
-    [MetaData("com.android.internal.R.bool.config_perDisplayFocusEnabled", Value = "true")]
     public class SoftWingInput : InputMethodService, System.MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
@@ -51,15 +48,16 @@ namespace SoftWing
             base.OnCreate();
 
             SetNotification();
-            SwDisplayManager.StartSwDisplayManager(this);
         }
 
         public override View OnCreateInputView()
         {
             Log.Debug(TAG, "onCreateInputView()");
 
+            SwDisplayManager.StartSwDisplayManager(this);
+
             var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
-            SetTestButtonListener((ViewGroup)keyboardView);
+            SetInputListeners((ViewGroup)keyboardView);
 
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
 
@@ -68,7 +66,7 @@ namespace SoftWing
 
         public override bool OnEvaluateFullscreenMode()
         {
-            return true;
+            return false;
         }
 
         private void SetJoystickListener(JoyStickView joystick, Android.Views.Keycode up, Android.Views.Keycode down, Android.Views.Keycode left, Android.Views.Keycode right)
@@ -77,9 +75,9 @@ namespace SoftWing
             joystick.SetOnMoveListener(listener);
         }
 
-        private void SetTestButtonListener(ViewGroup keyboard_view_group)
+        private void SetInputListeners(ViewGroup keyboard_view_group)
         {
-            Log.Debug(TAG, "SetTestButtonListener");
+            Log.Debug(TAG, "SetInputListeners");
             for (int index = 0; index < keyboard_view_group.ChildCount; index++)
             {
                 View nextChild = keyboard_view_group.GetChildAt(index);

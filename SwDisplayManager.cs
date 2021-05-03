@@ -12,7 +12,7 @@ using System;
 
 namespace SoftWing
 {
-    [Activity(Label = "SwDisplayManager")]
+    [Activity(Label = "SwDisplayManager", Theme = "@android:style/Theme.NoDisplay")]
     public class SwDisplayManager : Activity, System.MessageSubscriber
     {
         private const String TAG = "SwDisplayManager";
@@ -48,7 +48,6 @@ namespace SoftWing
             swivel_state_cb = new LgSwivelStateCallback();
             lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
 
-            MoveTaskToBack(true);
         }
 
         protected override void OnDestroy()
@@ -61,6 +60,12 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnStart");
             base.OnStart();
+        }
+
+        protected override void OnResume()
+        {
+            Finish();
+            base.OnResume();
         }
 
         public void UseLgKeyboard()
