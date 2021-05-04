@@ -122,6 +122,9 @@ namespace SoftWing
                     case (Resource.Id.r_button):
                         nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonR1));
                         break;
+                    case (Resource.Id.start_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonStart));
+                        break;
                     default:
                         break;
                 }
