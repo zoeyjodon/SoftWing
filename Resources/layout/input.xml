@@ -71,7 +71,7 @@
         android:layout_height="150px"
         android:src="@drawable/ic_empty_circle"
         android:background="@android:color/transparent"
-        android:id="@+id/x_button" />
+        android:id="@+id/y_button" />
     <ImageView
         android:layout_row="3"
         android:layout_column="7"
@@ -79,7 +79,7 @@
         android:layout_height="150px"
         android:src="@drawable/ic_empty_circle"
         android:background="@android:color/transparent"
-        android:id="@+id/y_button" />
+        android:id="@+id/x_button" />
     <RelativeLayout
         android:layout_width="490px"
         android:layout_height="30px"
