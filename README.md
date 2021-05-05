@@ -12,9 +12,7 @@ However, I was able to make a controller that could piggyback on the LG keyboard
 
 ## Use
 1. Start with the wing closed.
-2. Select any text box on the main display
-
- to open the controller (This gives the keyboard an initial connection token and posts the notification used to open the input method).
+2. Select any text box on the main display to open the controller (This gives the keyboard an initial connection token and posts the notification used to open the input method).
 3. A silent SoftWing notification should appear in your notification tray, this is what you will use to open the controller later.
 4. Leave the textbox and open the game you want to play.
 5. Tap the SoftWing notification to open the controller on the main display. (Note, if this does not open the controller go back to step 2)
