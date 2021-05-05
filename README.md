@@ -19,3 +19,9 @@ However, I was able to make a controller that could piggyback on the LG keyboard
 6. Swivel open the LG Wing, if the process was successful you should see the LG keyboard open on the second display.
 7. Tap the keyboard switching icon in the bottom right corner of the LG keyboard.
 8. Select the Soft Wing Input from the menu. (Note, if the controller does not appear, close your wing and return to step 5)
+
+https://user-images.githubusercontent.com/76182954/117141419-81ca4980-ad7c-11eb-8f7e-dd0716529cb4.mp4
+
+https://user-images.githubusercontent.com/76182954/117141442-88f15780-ad7c-11eb-9675-96cce74c54c6.mp4
+
+https://user-images.githubusercontent.com/76182954/117141455-8c84de80-ad7c-11eb-825e-749efe06a8be.mp4
