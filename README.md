@@ -25,3 +25,9 @@ https://user-images.githubusercontent.com/76182954/117141419-81ca4980-ad7c-11eb-
 https://user-images.githubusercontent.com/76182954/117141442-88f15780-ad7c-11eb-9675-96cce74c54c6.mp4
 
 https://user-images.githubusercontent.com/76182954/117141455-8c84de80-ad7c-11eb-825e-749efe06a8be.mp4
+
+
+
+## Key Mapping
+The controller currently has the following mapping to Android key codes:
+![controller_key_mapping](https://user-images.githubusercontent.com/76182954/117514180-4341b400-af61-11eb-98a3-b3a2d54a919d.png)
