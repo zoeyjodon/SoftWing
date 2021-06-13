@@ -1,24 +1,39 @@
-﻿using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
+﻿using Android.Util;
 using Android.Views;
-using Android.Widget;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace SoftWing.System
 {
     public static class KeymapStorage
     {
-        private static string KEYMAP_PATH = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "keymap.txt");
+        private static string TAG = "KeymapStorage";
+        private static string KEYMAP_FILENAME = "keymap.txt";
+        private static string KEYMAP_PATH = Path.Combine(FileSystem.AppDataDirectory, KEYMAP_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private static bool local_keymap_updated = false;
-        public enum ControlId
+        private const Keycode Default_L_Button = Keycode.ButtonL1;
+        private const Keycode Default_R_Button = Keycode.ButtonR1;
+        private const Keycode Default_L_Analog_Up = Keycode.W;
+        private const Keycode Default_L_Analog_Down = Keycode.S;
+        private const Keycode Default_L_Analog_Left = Keycode.A;
+        private const Keycode Default_L_Analog_Right = Keycode.D;
+        private const Keycode Default_R_Analog_Up = Keycode.Button1;
+        private const Keycode Default_R_Analog_Down = Keycode.Button2;
+        private const Keycode Default_R_Analog_Left = Keycode.Button3;
+        private const Keycode Default_R_Analog_Right = Keycode.Button4;
+        private const Keycode Default_X_Button = Keycode.ButtonX;
+        private const Keycode Default_Y_Button = Keycode.ButtonY;
+        private const Keycode Default_A_Button = Keycode.ButtonA;
+        private const Keycode Default_B_Button = Keycode.ButtonB;
+        private const Keycode Default_Start_Button = Keycode.ButtonStart;
+        private const Keycode Default_D_Pad_Up = Keycode.DpadUp;
+        private const Keycode Default_D_Pad_Down = Keycode.DpadDown;
+        private const Keycode Default_D_Pad_Left = Keycode.DpadLeft;
+        private const Keycode Default_D_Pad_Right = Keycode.DpadRight;
+        private const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
+        public enum ControlId : int
         {
             L_Button,
             R_Button,
@@ -119,75 +134,133 @@ namespace SoftWing.System
         };
         private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
         {
-            { ControlId.L_Button, Keycode.ButtonL1 },
-            { ControlId.R_Button, Keycode.ButtonR1 },
-            { ControlId.L_Analog_Up, Keycode.W },
-            { ControlId.L_Analog_Down, Keycode.S },
-            { ControlId.L_Analog_Left, Keycode.A },
-            { ControlId.L_Analog_Right, Keycode.D },
-            { ControlId.R_Analog_Up, Keycode.Button1 },
-            { ControlId.R_Analog_Down, Keycode.Button2 },
-            { ControlId.R_Analog_Left, Keycode.Button3 },
-            { ControlId.R_Analog_Right, Keycode.Button4 },
-            { ControlId.X_Button, Keycode.ButtonX },
-            { ControlId.Y_Button, Keycode.ButtonY },
-            { ControlId.A_Button, Keycode.ButtonA },
-            { ControlId.B_Button, Keycode.ButtonB },
-            { ControlId.Start_Button, Keycode.ButtonStart },
-            { ControlId.D_Pad_Up, Keycode.DpadUp },
-            { ControlId.D_Pad_Down, Keycode.DpadDown },
-            { ControlId.D_Pad_Left, Keycode.DpadLeft },
-            { ControlId.D_Pad_Right, Keycode.DpadRight },
-            { ControlId.D_Pad_Center, Keycode.DpadCenter }
+            { ControlId.L_Button        , Default_L_Button       },
+            { ControlId.R_Button        , Default_R_Button       },
+            { ControlId.L_Analog_Up     , Default_L_Analog_Up    },
+            { ControlId.L_Analog_Down   , Default_L_Analog_Down  },
+            { ControlId.L_Analog_Left   , Default_L_Analog_Left  },
+            { ControlId.L_Analog_Right  , Default_L_Analog_Right },
+            { ControlId.R_Analog_Up     , Default_R_Analog_Up    },
+            { ControlId.R_Analog_Down   , Default_R_Analog_Down  },
+            { ControlId.R_Analog_Left   , Default_R_Analog_Left  },
+            { ControlId.R_Analog_Right  , Default_R_Analog_Right },
+            { ControlId.X_Button        , Default_X_Button       },
+            { ControlId.Y_Button        , Default_Y_Button       },
+            { ControlId.A_Button        , Default_A_Button       },
+            { ControlId.B_Button        , Default_B_Button       },
+            { ControlId.Start_Button    , Default_Start_Button   },
+            { ControlId.D_Pad_Up        , Default_D_Pad_Up       },
+            { ControlId.D_Pad_Down      , Default_D_Pad_Down     },
+            { ControlId.D_Pad_Left      , Default_D_Pad_Left     },
+            { ControlId.D_Pad_Right     , Default_D_Pad_Right    },
+            { ControlId.D_Pad_Center    , Default_D_Pad_Center   }
         };
+
+        public static void SetDefaultKeycodes()
+        {
+            CONTROL_TO_KEY_MAP[ControlId.L_Button] = Default_L_Button;
+            CONTROL_TO_KEY_MAP[ControlId.R_Button] = Default_R_Button;
+            CONTROL_TO_KEY_MAP[ControlId.L_Analog_Up] = Default_L_Analog_Up;
+            CONTROL_TO_KEY_MAP[ControlId.L_Analog_Down] = Default_L_Analog_Down;
+            CONTROL_TO_KEY_MAP[ControlId.L_Analog_Left] = Default_L_Analog_Left;
+            CONTROL_TO_KEY_MAP[ControlId.L_Analog_Right] = Default_L_Analog_Right;
+            CONTROL_TO_KEY_MAP[ControlId.R_Analog_Up] = Default_R_Analog_Up;
+            CONTROL_TO_KEY_MAP[ControlId.R_Analog_Down] = Default_R_Analog_Down;
+            CONTROL_TO_KEY_MAP[ControlId.R_Analog_Left] = Default_R_Analog_Left;
+            CONTROL_TO_KEY_MAP[ControlId.R_Analog_Right] = Default_R_Analog_Right;
+            CONTROL_TO_KEY_MAP[ControlId.X_Button] = Default_X_Button;
+            CONTROL_TO_KEY_MAP[ControlId.Y_Button] = Default_Y_Button;
+            CONTROL_TO_KEY_MAP[ControlId.A_Button] = Default_A_Button;
+            CONTROL_TO_KEY_MAP[ControlId.B_Button] = Default_B_Button;
+            CONTROL_TO_KEY_MAP[ControlId.Start_Button] = Default_Start_Button;
+            CONTROL_TO_KEY_MAP[ControlId.D_Pad_Up] = Default_D_Pad_Up;
+            CONTROL_TO_KEY_MAP[ControlId.D_Pad_Down] = Default_D_Pad_Down;
+            CONTROL_TO_KEY_MAP[ControlId.D_Pad_Left] = Default_D_Pad_Left;
+            CONTROL_TO_KEY_MAP[ControlId.D_Pad_Right] = Default_D_Pad_Right;
+            CONTROL_TO_KEY_MAP[ControlId.D_Pad_Center] = Default_D_Pad_Center;
+            UpdateStoredKeymap();
+        }
 
         public static void SetControlKeycode(ControlId control, Keycode key)
         {
             CONTROL_TO_KEY_MAP[control] = key;
-            UpdateStoredKeymap().Wait();
-        }
-        public static void GetControlKeycode(ControlId control, Keycode key)
-        {
-            UpdateLocalKeymap().Wait();
-            CONTROL_TO_KEY_MAP[control] = key;
+            UpdateStoredKeymap();
         }
 
-        private static async Task UpdateLocalKeymap()
+        public static Keycode GetControlKeycode(ControlId control)
         {
+            UpdateLocalKeymap();
+            return CONTROL_TO_KEY_MAP[control];
+        }
+
+        private static void UpdateLocalKeymap()
+        {
+            Log.Debug(TAG, "UpdateLocalKeymap");
             // Only need to update from storage once per session
             if (local_keymap_updated)
             {
-                return;
-            }
-            if (!File.Exists(KEYMAP_PATH))
-            {
+                Log.Debug(TAG, "Already updated");
                 return;
             }
             local_keymap_updated = true;
-            using (var reader = new StreamReader(KEYMAP_PATH, true))
+            if (!File.Exists(KEYMAP_PATH))
             {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
+                Log.Debug(TAG, "Keymap not found");
+                return;
+            }
+            var stream = File.OpenRead(KEYMAP_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                string line = reader.ReadLine();
+                while (line != null)
                 {
                     var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
-                    var control = (ControlId)Int32.Parse(control_key_str[0]);
-                    var key = (Keycode)Int32.Parse(control_key_str[1]);
+                    var control = GetControlFromString(control_key_str[0]);
+                    var key = STRING_TO_KEYCODE_MAP[control_key_str[1]];
                     CONTROL_TO_KEY_MAP[control] = key;
+                    line = reader.ReadLine();
                 }
             }
         }
 
-        private static async Task UpdateStoredKeymap()
+        private static void UpdateStoredKeymap()
         {
+            Log.Debug(TAG, "UpdateStoredKeymap");
             using (var writer = File.CreateText(KEYMAP_PATH))
             {
                 foreach (var control in CONTROL_TO_KEY_MAP.Keys)
                 {
                     Keycode key;
                     CONTROL_TO_KEY_MAP.TryGetValue(control, out key);
-                    await writer.WriteLineAsync(control.ToString() + CONTROL_KEY_DELIMITER + key.ToString());
+
+                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromKeycode(key);
+                    writer.WriteLine(writetext);
                 }
             }
+        }
+
+        private static string GetStringFromKeycode(Keycode key)
+        {
+            foreach (var key_string in STRING_TO_KEYCODE_MAP.Keys)
+            {
+                if (STRING_TO_KEYCODE_MAP[key_string] == key)
+                {
+                    return key_string;
+                }
+            }
+            return "";
+        }
+
+        private static ControlId GetControlFromString(string control_string)
+        {
+            foreach (var control in CONTROL_TO_STRING_MAP.Keys)
+            {
+                if (CONTROL_TO_STRING_MAP[control] == control_string)
+                {
+                    return control;
+                }
+            }
+            return 0;
         }
     }
 }

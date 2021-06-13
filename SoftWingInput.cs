@@ -84,46 +84,58 @@ namespace SoftWing
                 switch (nextChild.Id)
                 {
                     case (Resource.Id.left_joyStick):
-                        SetJoystickListener((JoyStickView)nextChild, Android.Views.Keycode.W, Android.Views.Keycode.S, Android.Views.Keycode.A, Android.Views.Keycode.D);
+                        {
+                            var up = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Up);
+                            var down = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Down);
+                            var left = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Left);
+                            var right = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Right);
+                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                        }
                         break;
                     case (Resource.Id.right_joyStick):
-                        SetJoystickListener((JoyStickView)nextChild, Android.Views.Keycode.Button1, Android.Views.Keycode.Button2, Android.Views.Keycode.Button3, Android.Views.Keycode.Button4);
+                        {
+                            var up = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Up);
+                            var down = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Down);
+                            var left = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Left);
+                            var right = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Right);
+                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                        }
                         break;
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadUp));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Up)));
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadDown));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Down)));
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadLeft));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Left)));
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadRight));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Right)));
                         break;
                     case (Resource.Id.d_pad_center):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.DpadCenter));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Center)));
                         break;
                     case (Resource.Id.a_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonA));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.A_Button)));
                         break;
                     case (Resource.Id.b_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonB));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.B_Button)));
                         break;
                     case (Resource.Id.y_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonY));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.Y_Button)));
                         break;
                     case (Resource.Id.x_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonX));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.X_Button)));
                         break;
                     case (Resource.Id.l_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonL1));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Button)));
                         break;
                     case (Resource.Id.r_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonR1));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Button)));
                         break;
                     case (Resource.Id.start_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, Android.Views.Keycode.ButtonStart));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.Start_Button)));
                         break;
                     default:
                         break;
