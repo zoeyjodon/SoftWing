@@ -7,7 +7,7 @@ However, I was able to make a controller that could piggyback on the LG keyboard
 ## Setup
 1. [Install the SoftWing apk on your LG Wing](https://www.javatpoint.com/how-to-install-apk-on-android)
 2. Make sure "Show Icon For Switching Keyboards" is enabled in your device settings. (Note, disabling "Show icon for hiding keyboard" is also helpful to avoid accidentially closing the controller)
-3. Enable the "Soft Wing Input" keyboard under "Manage Keyboards".
+3. Enable both the "LG Keyboard" and the "Soft Wing Input" under "Manage Keyboards".
 4. Set your default keyboard to "Soft Wing Input".
 
 ## Use
