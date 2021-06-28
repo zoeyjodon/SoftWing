@@ -1,4 +1,5 @@
 ﻿using Android.Content;
+using Android.OS;
 using Android.Util;
 using Android.Views.InputMethods;
 using System;
@@ -9,6 +10,7 @@ namespace SoftWing
     {
         private const String TAG = "NotificationReceiver";
         public const String ACTION_SHOW = "org.pocketworkstation.pckeyboard.SHOW";
+        public const int SHOW_IME_DELAY_MS = 500;
 
         public NotificationReceiver()
         {
@@ -21,12 +23,17 @@ namespace SoftWing
 
             if (action.Equals(ACTION_SHOW))
             {
-                InputMethodManager input_manager = (InputMethodManager)
-                    context.GetSystemService(Context.InputMethodService);
-                if (input_manager != null)
+                SwDisplayManager.UseSwKeyboard();
+                // Give the IME time to update
+                new Handler().PostDelayed(delegate
                 {
-                    input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
-                }
+                    InputMethodManager input_manager = (InputMethodManager)
+                        context.GetSystemService(Context.InputMethodService);
+                    if (input_manager != null)
+                    {
+                        input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
+                    }
+                }, SHOW_IME_DELAY_MS);
             }
         }
     }

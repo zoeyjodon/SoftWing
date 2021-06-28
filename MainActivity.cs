@@ -32,6 +32,12 @@ namespace SoftWing
             ForceInputOpen();
         }
 
+        protected override void OnStart()
+        {
+            base.OnStart();
+            SwDisplayManager.StartSwDisplayManager(this);
+        }
+
         private void ConfigureResetButton()
         {
             Button reset_button = FindViewById<Button>(Resource.Id.resetToDefaultButton);

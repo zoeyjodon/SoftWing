@@ -14,7 +14,7 @@ namespace SoftWing.System
     {
         /*------------------ Private member variables ------------------*/
         private Dictionary<MessageType, List<MessageSubscriber>> system_message_subs = new Dictionary<MessageType, List<MessageSubscriber>>();
-        private Activity calling_activity = null;
+        private static Activity calling_activity = null;
         private static MessageDispatcher instance = null;
 
         /*------------------ Public member functions ------------------*/
@@ -22,7 +22,20 @@ namespace SoftWing.System
         {
             if (instance == null)
             {
-                return new MessageDispatcher(_calling_activity);
+                return new MessageDispatcher();
+            }
+            if (calling_activity == null)
+            {
+                calling_activity = _calling_activity;
+            }
+            return instance;
+        }
+
+        public static MessageDispatcher GetInstance()
+        {
+            if (instance == null)
+            {
+                return new MessageDispatcher();
             }
             return instance;
         }
@@ -35,27 +48,37 @@ namespace SoftWing.System
          */
         public void Subscribe(MessageType t, MessageSubscriber sub)
         {
+            if (calling_activity == null)
+            {
+                AddSubscription(t, sub);
+                return;
+            }
             // Make sure all dispatcher functions are synced with the main thread
             calling_activity.RunOnUiThread(() =>
             {
-                List<MessageSubscriber> sub_list;
-                if (!system_message_subs.TryGetValue(t, out sub_list))
-                {
-                    // Create a new subscriber list
-                    sub_list = new List<MessageSubscriber> { sub };
-                    system_message_subs.Add(t, sub_list);
-                }
-                else
-                {
-                    // Append to existing subscriber list if it isn't already there
-                    if (sub_list.Find(x => x == sub) != null)
-                    {
-                        return;
-                    }
-                    sub_list.Add(sub);
-                    system_message_subs[t] = sub_list;
-                }
+                AddSubscription(t, sub);
             });
+        }
+
+        private void AddSubscription(MessageType t, MessageSubscriber sub)
+        {
+            List<MessageSubscriber> sub_list;
+            if (!system_message_subs.TryGetValue(t, out sub_list))
+            {
+                // Create a new subscriber list
+                sub_list = new List<MessageSubscriber> { sub };
+                system_message_subs.Add(t, sub_list);
+            }
+            else
+            {
+                // Append to existing subscriber list if it isn't already there
+                if (sub_list.Find(x => x == sub) != null)
+                {
+                    return;
+                }
+                sub_list.Add(sub);
+                system_message_subs[t] = sub_list;
+            }
         }
 
         /**
@@ -66,16 +89,26 @@ namespace SoftWing.System
          */
         public void Unsubscribe(MessageType t, MessageSubscriber sub)
         {
+            if (calling_activity == null)
+            {
+                RemoveSubscription(t, sub);
+                return;
+            }
             // Make sure all dispatcher functions are synced with the main thread
             calling_activity.RunOnUiThread(() =>
             {
-                List<MessageSubscriber> sub_list;
-                if (system_message_subs.TryGetValue(t, out sub_list))
-                {
-                    // Remove from existing subscriber list
-                    sub_list.Remove(sub);
-                }
+                RemoveSubscription(t, sub);
             });
+        }
+
+        private void RemoveSubscription(MessageType t, MessageSubscriber sub)
+        {
+            List<MessageSubscriber> sub_list;
+            if (system_message_subs.TryGetValue(t, out sub_list))
+            {
+                // Remove from existing subscriber list
+                sub_list.Remove(sub);
+            }
         }
 
         /**
@@ -85,28 +118,37 @@ namespace SoftWing.System
          */
         public void Post(SystemMessage message)
         {
+            if (calling_activity == null)
+            {
+                Dispatch(message);
+                return;
+            }
             // Make sure all dispatcher functions are synced with the main thread
             calling_activity.RunOnUiThread(() =>
             {
-                List<MessageSubscriber> sub_list;
-                if (!system_message_subs.TryGetValue(message.getMessageType(), out sub_list))
-                {
-                    // No subscribers to message, nothing to do here.
-                    return;
-                }
-
-                foreach (var sub in sub_list)
-                {
-                    sub.Accept(message);
-                }
+                Dispatch(message);
             });
         }
 
+        private void Dispatch(SystemMessage message)
+        {
+            List<MessageSubscriber> sub_list;
+            if (!system_message_subs.TryGetValue(message.getMessageType(), out sub_list))
+            {
+                // No subscribers to message, nothing to do here.
+                return;
+            }
+
+            foreach (var sub in sub_list)
+            {
+                sub.Accept(message);
+            }
+        }
+
         /*------------------ Private member functions ------------------*/
-        private MessageDispatcher(Activity _calling_activity)
+        private MessageDispatcher()
         {
             instance = this;
-            calling_activity = _calling_activity;
         }
     }
 }

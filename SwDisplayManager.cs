@@ -1,102 +1,175 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.InputMethodServices;
 using Android.OS;
 using Android.Util;
-using Android.Views;
+using AndroidX.Core.App;
 using Android.Views.InputMethods;
-using Android.Widget;
 using Com.Lge.Display;
 using SoftWing.System;
+using Android.Provider;
 using System;
 
 namespace SoftWing
 {
-    [Activity(Label = "SwDisplayManager", Theme = "@android:style/Theme.NoDisplay")]
-    public class SwDisplayManager : Activity, System.MessageSubscriber
+    [Service(Exported = true, Enabled = true, Name = "com.jodonlucas.softwing.SoftWing.SwDisplayManager")]
+    public class SwDisplayManager : Service, System.MessageSubscriber
     {
         private const String TAG = "SwDisplayManager";
+        private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private const int NOTIFICATION_ONGOING_ID = 1001;
+        private const int LG_KEYBOARD_TIMEOUT_MS = 500;
         private DisplayManagerHelper lg_display_manager;
         private LgSwivelStateCallback swivel_state_cb;
         private MessageDispatcher dispatcher;
         private static SwDisplayManager instance;
+        private static NotificationReceiver notification_receiver = null;
 
 
         public static void StartSwDisplayManager(Context calling_context)
         {
+            Log.Debug(TAG, "StartSwDisplayManager");
             if (instance != null)
             {
+                Log.Debug(TAG, "Display manager exists, skipping");
                 return;
             }
-            var intent = new Intent(calling_context, typeof(SwDisplayManager));
-            var flags = ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.ClearTop;
-            intent.AddFlags(flags);
-            calling_context.StartActivity(intent);
+            var intent = new Intent(Application.Context, typeof(SwDisplayManager));
+            Application.Context.StartForegroundService(intent);
         }
 
-        protected override void OnCreate(Bundle savedInstanceState)
+        public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
-            Log.Debug(TAG, "OnCreate");
-            base.OnCreate(savedInstanceState);
+            Log.Debug(TAG, "OnStartCommand");
+            SetNotification();
+            return StartCommandResult.Sticky;
+        }
+
+        public SwDisplayManager()
+        {
+            Log.Debug(TAG, "SwDisplayManager");
 
             lg_display_manager = new DisplayManagerHelper(this);
             instance = this;
 
-            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
 
             swivel_state_cb = new LgSwivelStateCallback();
             lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
-
         }
 
-        protected override void OnDestroy()
+        ~SwDisplayManager()
         {
-            Log.Debug(TAG, "OnDestroy");
-            base.OnDestroy();
+            Log.Debug(TAG, "~SwDisplayManager");
         }
 
-        protected override void OnStart()
+        private void CreateNotificationChannel()
         {
-            Log.Debug(TAG, "OnStart");
-            base.OnStart();
+            var name = "SoftWing";
+            var description = "SoftWing";
+            var importance = NotificationImportance.Low;
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            channel.Description = description;
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
+            notificationManager.CreateNotificationChannel(channel);
         }
 
-        protected override void OnResume()
+        private void SetNotification()
         {
-            Finish();
-            base.OnResume();
+            Log.Debug(TAG, "SetNotification()");
+
+            CreateNotificationChannel();
+            var text = "Controller notification enabled.";
+
+            notification_receiver = new NotificationReceiver();
+            var pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
+            RegisterReceiver(notification_receiver, pFilter);
+
+            Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
+            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, 0);
+
+            String title = "Show SoftWing Controller";
+            String body = "Select this to open the controller.";
+
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .SetSmallIcon(Resource.Mipmap.ic_notification)
+                    .SetColor(Resource.Color.accent_material_dark)
+                    .SetAutoCancel(false)
+                    .SetTicker(text)
+                    .SetContentTitle(title)
+                    .SetContentText(body)
+                    .SetContentIntent(contentIntent)
+                    .SetOngoing(true)
+                    .SetVisibility((int)NotificationVisibility.Public)
+                    .SetPriority(NotificationCompat.PriorityDefault);
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.From(this);
+            StartForeground(NOTIFICATION_ONGOING_ID, mBuilder.Build());
         }
 
-        public void UseLgKeyboard()
+        private static void LockOrientation()
+        {
+            Log.Debug(TAG, "Locking phone orientation");
+            try
+            {
+                Settings.System.PutInt(Application.Context.ContentResolver, Settings.System.AccelerometerRotation, 0);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(TAG, "Failed to lock phone orientation");
+            }
+        }
+
+        private static void SetInputMethod(string input_method_id)
+        {
+            Log.Debug(TAG, "Setting Input Method");
+            try
+            {
+                // Note, to be able to perform this action you need to grant this app secure settings permissions
+                // With debugging enabled on your device and adb installed on your PC, connect your phone and run the following command:
+                // adb shell pm grant com.jodonlucas.softwing android.permission.WRITE_SECURE_SETTINGS
+                Settings.Secure.PutString(Application.Context.ContentResolver, Settings.Secure.DefaultInputMethod, input_method_id);
+            }
+            catch (Exception ex)
+            {
+                // If we can't write the setting directly, try the old fashioned way.
+                // Note: This will only work if SoftWing is the current input method.
+                Log.Debug(TAG, "Failed to write secure setting, using IMM");
+                InputMethodManager imm = (InputMethodManager)
+                    Application.Context.GetSystemService(InputMethodService);
+                imm.SetInputMethod(SoftWingInput.InputSessionToken, input_method_id);
+            }
+        }
+
+        public static void UseLgKeyboard()
         {
             InputMethodManager imm = (InputMethodManager)
-                GetSystemService(InputMethodService);
+                Application.Context.GetSystemService(InputMethodService);
 
             foreach (var InputMethod in imm.EnabledInputMethodList)
             {
                 Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
                 if (InputMethod.Id.Contains("LgeImeImpl"))
                 {
-                    Log.Debug(TAG, "Setting Input Method");
-                    imm.SetInputMethod(SoftWingInput.InputSessionToken, InputMethod.Id);
+                    SetInputMethod(InputMethod.Id);
                     return;
                 }
             }
         }
 
-        public void UseSwKeyboard()
+        public static void UseSwKeyboard()
         {
             InputMethodManager imm = (InputMethodManager)
-                GetSystemService(InputMethodService);
+                Application.Context.GetSystemService(InputMethodService);
 
             foreach (var InputMethod in imm.EnabledInputMethodList)
             {
                 Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
                 if (InputMethod.Id.Contains("SoftWingInput"))
                 {
-                    Log.Debug(TAG, "Setting Input Method");
-                    imm.SetInputMethod(SoftWingInput.InputSessionToken, InputMethod.Id);
+                    SetInputMethod(InputMethod.Id);
                     return;
                 }
             }
@@ -107,8 +180,21 @@ namespace SoftWing
             Log.Debug(TAG, "Accept");
             if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
+                // Lock the phone's orientation to prevent unexpected behavior
+                LockOrientation();
                 UseLgKeyboard();
+                // Give the LG keyboard time to perform the screen transition
+                new Handler().PostDelayed(delegate
+                {
+                    UseSwKeyboard();
+                }, LG_KEYBOARD_TIMEOUT_MS);
             }
+        }
+
+        public override IBinder OnBind(Intent intent)
+        {
+            Log.Debug(TAG, "OnBind");
+            return null;
         }
     }
 

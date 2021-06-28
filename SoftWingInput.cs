@@ -5,7 +5,6 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
-using AndroidX.Core.App;
 using System;
 using SoftWing.System.Messages;
 using Com.Jackandphantom.Joystickview;
@@ -19,11 +18,8 @@ namespace SoftWing
     public class SoftWingInput : InputMethodService, System.MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
-        private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
-        private const int NOTIFICATION_ONGOING_ID = 1001;
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
         private MessageDispatcher dispatcher;
-        private static NotificationReceiver notification_receiver = null;
 
         public static IBinder InputSessionToken;
 
@@ -46,8 +42,6 @@ namespace SoftWing
         {
             Log.Debug(TAG, "onCreate()");
             base.OnCreate();
-
-            SetNotification();
         }
 
         public override View OnCreateInputView()
@@ -155,53 +149,6 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnCreateInputMethodInterface()");
             return new SwInputMethodImpl(this);
-        }
-
-        private void CreateNotificationChannel()
-        {
-            var name = "SoftWing";
-            var description = "SoftWing";
-            var importance = NotificationImportance.Low;
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
-            channel.Description = description;
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
-            notificationManager.CreateNotificationChannel(channel);
-        }
-
-        private void SetNotification()
-        {
-            Log.Debug(TAG, "SetNotification()");
-
-            CreateNotificationChannel();
-            var text = "Controller notification enabled.";
-
-            notification_receiver = new NotificationReceiver();
-            var pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
-            RegisterReceiver(notification_receiver, pFilter);
-
-            Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
-            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, 0);
-
-            String title = "Show SoftWing Controller";
-            String body = "Select this to open the controller.";
-
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                    .SetSmallIcon(Resource.Mipmap.ic_notification)
-                    .SetColor(Resource.Color.accent_material_dark)
-                    .SetAutoCancel(false)
-                    .SetTicker(text)
-                    .SetContentTitle(title)
-                    .SetContentText(body)
-                    .SetContentIntent(contentIntent)
-                    .SetOngoing(true)
-                    .SetVisibility((int)NotificationVisibility.Public)
-                    .SetPriority(NotificationCompat.PriorityDefault);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.From(this);
-
-            notificationManager.Notify(NOTIFICATION_ONGOING_ID, mBuilder.Build());
         }
 
         public void Accept(SystemMessage message)

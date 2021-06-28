@@ -18,4 +18,6 @@
 	<uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
 	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
 </manifest>
