@@ -122,6 +122,12 @@ namespace SoftWing
             }
         }
 
+        private static bool IsUsingSwKeyboard()
+        {
+            var current_ime = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.DefaultInputMethod);
+            return current_ime.Contains("SoftWingInput");
+        }
+
         private static void SetInputMethod(string input_method_id)
         {
             Log.Debug(TAG, "Setting Input Method");
@@ -141,6 +147,18 @@ namespace SoftWing
                     Application.Context.GetSystemService(InputMethodService);
                 imm.SetInputMethod(SoftWingInput.InputSessionToken, input_method_id);
             }
+        }
+
+        public static void ShowSwKeyboard()
+        {
+            InputMethodManager input_manager = (InputMethodManager)
+                Application.Context.GetSystemService(Context.InputMethodService);
+            if (input_manager != null)
+            {
+                input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
+            }
+            // If we start from the open position, we want to execute the swivel transition immediately
+            instance.dispatcher.Post(new System.Messages.DisplayUpdateMessage());
         }
 
         public static void UseLgKeyboard()
@@ -178,6 +196,11 @@ namespace SoftWing
         public void Accept(SystemMessage message)
         {
             Log.Debug(TAG, "Accept");
+            // We don't want to impose this behavior unless we are using the SoftWing IME
+            if (!IsUsingSwKeyboard())
+            {
+                return;
+            }
             if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
                 // Lock the phone's orientation to prevent unexpected behavior

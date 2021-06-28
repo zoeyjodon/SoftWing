@@ -27,12 +27,7 @@ namespace SoftWing
                 // Give the IME time to update
                 new Handler().PostDelayed(delegate
                 {
-                    InputMethodManager input_manager = (InputMethodManager)
-                        context.GetSystemService(Context.InputMethodService);
-                    if (input_manager != null)
-                    {
-                        input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
-                    }
+                    SwDisplayManager.ShowSwKeyboard();
                 }, SHOW_IME_DELAY_MS);
             }
         }
