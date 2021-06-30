@@ -48,7 +48,7 @@ namespace SoftWing
         {
             Log.Debug(TAG, "onCreateInputView()");
 
-            SwDisplayManager.StartSwDisplayManager(this);
+            SwDisplayManager.StartSwDisplayManager();
 
             var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
             SetInputListeners((ViewGroup)keyboardView);

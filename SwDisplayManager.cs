@@ -31,7 +31,7 @@ namespace SoftWing
         private static SwDisplayManager instance;
         private static NotificationReceiver notification_receiver = null;
 
-        public static void StartSwDisplayManager(Context calling_context)
+        public static void StartSwDisplayManager()
         {
             Log.Debug(TAG, "StartSwDisplayManager");
             if (instance != null)

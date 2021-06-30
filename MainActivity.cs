@@ -43,7 +43,7 @@ namespace SoftWing
         protected override void OnStart()
         {
             base.OnStart();
-            SwDisplayManager.StartSwDisplayManager(this);
+            SwDisplayManager.StartSwDisplayManager();
             RequestAppPermissions();
         }
 
