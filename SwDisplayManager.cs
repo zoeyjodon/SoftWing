@@ -33,14 +33,19 @@ namespace SoftWing
 
         public static void StartSwDisplayManager()
         {
+            StartSwDisplayManager(Application.Context);
+        }
+
+        public static void StartSwDisplayManager(Context calling_context)
+        {
             Log.Debug(TAG, "StartSwDisplayManager");
             if (instance != null)
             {
                 Log.Debug(TAG, "Display manager exists, skipping");
                 return;
             }
-            var intent = new Intent(Application.Context, typeof(SwDisplayManager));
-            Application.Context.StartForegroundService(intent);
+            var intent = new Intent(calling_context, typeof(SwDisplayManager));
+            calling_context.StartForegroundService(intent);
         }
 
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
@@ -260,8 +265,9 @@ namespace SoftWing
                 {
                     return;
                 }
-                // Lock the phone's orientation to prevent unexpected behavior
-                LockOrientation();
+                // Lock the phone's orientation to prevent unexpected behavior.
+                // Disabled for being more annoying than useful.
+                //LockOrientation();
                 UseLgKeyboard();
                 // Give the LG keyboard time to perform the screen transition
                 new Android.OS.Handler().PostDelayed(delegate

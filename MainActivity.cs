@@ -12,6 +12,7 @@ using Android.Content.PM;
 using AndroidX.Core.App;
 using Android;
 using Android.Support.Design.Widget;
+using Android.Content;
 
 namespace SoftWing
 {
@@ -20,9 +21,14 @@ namespace SoftWing
     {
         private const String TAG = "MainActivity";
         private const int REQUEST_EXTERNAL_STORAGE = 1;
-        private static String[] PERMISSIONS_STORAGE = {
+        private static String[] PERMISSIONS_LIST = {
             Manifest.Permission.ReadExternalStorage,
-            Manifest.Permission.WriteExternalStorage
+            Manifest.Permission.WriteExternalStorage,
+            Manifest.Permission.BindInputMethod,
+            Manifest.Permission.Vibrate,
+            Manifest.Permission.ForegroundService,
+            Manifest.Permission.WriteSettings,
+            Manifest.Permission.ReceiveBootCompleted
         };
         private Dictionary<int, KeymapStorage.ControlId> spinnerToControlMap = new Dictionary<int, KeymapStorage.ControlId>();
         private int ignore_keyset_count = 0;
@@ -44,13 +50,29 @@ namespace SoftWing
         {
             base.OnStart();
             SwDisplayManager.StartSwDisplayManager();
-            RequestAppPermissions();
+            RequestAllPermissions();
+            RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionScreenOn));
+            RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
+            RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
         }
 
-        private void RequestAppPermissions()
+        private void RequestAllPermissions()
+        {
+            foreach (var permission in PERMISSIONS_LIST)
+            {
+                if (CheckSelfPermission(permission) != Permission.Granted)
+                {
+                    RequestAppPermission(permission);
+                }
+            }
+        }
+
+        private void RequestAppPermission(string permission)
         {
             Log.Debug(TAG, "RequestAppPermissions");
-            if (ActivityCompat.ShouldShowRequestPermissionRationale(this, Manifest.Permission.WriteExternalStorage))
+
+            string[] permissions = { permission };
+            if (ActivityCompat.ShouldShowRequestPermissionRationale(this, permission))
             {
                 Log.Info(TAG, "Displaying storage permission rationale to provide additional context.");
 
@@ -61,14 +83,14 @@ namespace SoftWing
                         .SetAction(Resource.String.ok,
                                    new Action<View>(delegate (View obj)
                                    {
-                                       ActivityCompat.RequestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+                                       ActivityCompat.RequestPermissions(this, permissions, 1);
                                    }
                         )
                 ).Show();
             }
             else
             {
-                ActivityCompat.RequestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+                ActivityCompat.RequestPermissions(this, permissions, 1);
             }
         }
 

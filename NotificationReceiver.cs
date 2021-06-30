@@ -1,7 +1,5 @@
 ﻿using Android.Content;
-using Android.OS;
 using Android.Util;
-using Android.Views.InputMethods;
 using System;
 
 namespace SoftWing
