@@ -1,13 +1,14 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Util;
 using AndroidX.Core.App;
 using Android.Views.InputMethods;
 using Com.Lge.Display;
-using SoftWing.System;
 using Android.Provider;
 using System;
+using Android.Media;
+using SoftWing.System.Messages;
+using System.IO;
 
 namespace SoftWing
 {
@@ -16,11 +17,16 @@ namespace SoftWing
     {
         private const String TAG = "SwDisplayManager";
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private static String STORAGE_DIR = Android.OS.Environment.ExternalStorageDirectory.Path;
+        private static String MUSIC_DIR = STORAGE_DIR + "/Music/";
+        private static String OPEN_SOUND_PATH = MUSIC_DIR + "SwivelOpen.mp3";
+        private static String CLOSE_SOUND_PATH = MUSIC_DIR + "SwivelClose.mp3";
         private const int NOTIFICATION_ONGOING_ID = 1001;
         private const int LG_KEYBOARD_TIMEOUT_MS = 500;
         private DisplayManagerHelper lg_display_manager;
         private LgSwivelStateCallback swivel_state_cb;
-        private MessageDispatcher dispatcher;
+        private System.MessageDispatcher dispatcher;
+        private MediaPlayer player;
         private static SwDisplayManager instance;
         private static NotificationReceiver notification_receiver = null;
 
@@ -51,7 +57,7 @@ namespace SoftWing
             lg_display_manager = new DisplayManagerHelper(this);
             instance = this;
 
-            dispatcher = MessageDispatcher.GetInstance();
+            dispatcher = System.MessageDispatcher.GetInstance();
             dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
 
             swivel_state_cb = new LgSwivelStateCallback();
@@ -158,7 +164,7 @@ namespace SoftWing
                 input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
             }
             // If we start from the open position, we want to execute the swivel transition immediately
-            instance.dispatcher.Post(new System.Messages.DisplayUpdateMessage());
+            instance.dispatcher.Post(new DisplayUpdateMessage(DisplayManagerHelper.SwivelSwiveled));
         }
 
         public static void UseLgKeyboard()
@@ -193,28 +199,61 @@ namespace SoftWing
             }
         }
 
-        public void Accept(SystemMessage message)
+        public void PlayWingSound(String audio_path)
         {
-            Log.Debug(TAG, "Accept");
-            // We don't want to impose this behavior unless we are using the SoftWing IME
-            if (!IsUsingSwKeyboard())
+            Log.Debug(TAG, "PlayWingSound");
+            if (!File.Exists(audio_path))
             {
-                return;
+                Log.Debug(TAG, audio_path + " File Not Found!");
             }
-            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+            try
             {
-                // Lock the phone's orientation to prevent unexpected behavior
-                LockOrientation();
-                UseLgKeyboard();
-                // Give the LG keyboard time to perform the screen transition
-                new Handler().PostDelayed(delegate
-                {
-                    UseSwKeyboard();
-                }, LG_KEYBOARD_TIMEOUT_MS);
+                player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
+                //player.Prepare();
+                player.Start();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(TAG, "Failed to play audio");
             }
         }
 
-        public override IBinder OnBind(Intent intent)
+        public void Accept(SoftWing.System.SystemMessage message)
+        {
+            Log.Debug(TAG, "Accept");
+
+            var display_message = (DisplayUpdateMessage)message;
+            switch (display_message.SwivelState)
+            {
+                case DisplayManagerHelper.SwivelSwiveled:
+                    {
+                        // We don't want to impose this behavior unless we are using the SoftWing IME
+                        if (!IsUsingSwKeyboard())
+                        {
+                            return;
+                        }
+                        // Lock the phone's orientation to prevent unexpected behavior
+                        LockOrientation();
+                        UseLgKeyboard();
+                        // Give the LG keyboard time to perform the screen transition
+                        new Android.OS.Handler().PostDelayed(delegate
+                        {
+                            UseSwKeyboard();
+                        }, LG_KEYBOARD_TIMEOUT_MS);
+                    }
+                    break;
+                case DisplayManagerHelper.SwivelStart:
+                    PlayWingSound(OPEN_SOUND_PATH);
+                    break;
+                case DisplayManagerHelper.NonSwivelStart:
+                    PlayWingSound(CLOSE_SOUND_PATH);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public override Android.OS.IBinder OnBind(Intent intent)
         {
             Log.Debug(TAG, "OnBind");
             return null;
@@ -229,12 +268,12 @@ namespace SoftWing
     public class LgSwivelStateCallback : DisplayManagerHelper.SwivelStateCallback
     {
         private const String TAG = "LgSwivelStateCallback";
-        private MessageDispatcher dispatcher;
+        private System.MessageDispatcher dispatcher;
         private bool ignore_transition = true;
 
         public LgSwivelStateCallback()
         {
-            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher = System.MessageDispatcher.GetInstance(new Activity());
         }
 
         public override void OnSwivelStateChanged(int state)
@@ -248,30 +287,8 @@ namespace SoftWing
                 ignore_transition = false;
                 return;
             }
-            switch (state)
-            {
-                case DisplayManagerHelper.SwivelStart:
-                    // Swivel start
-                    Log.Debug(TAG, "Swivel Open start");
-                    break;
-                case DisplayManagerHelper.SwivelEnd:
-                    // Swivel complete
-                    Log.Debug(TAG, "Swivel Open end");
-                    dispatcher.Post(new System.Messages.DisplayUpdateMessage());
-                    break;
-                case DisplayManagerHelper.NonSwivelStart:
-                    // Non Swivel start
-                    Log.Debug(TAG, "Swivel Closed start");
-                    break;
-                case DisplayManagerHelper.NonSwivelEnd:
-                    // Non Swivel complete
-                    Log.Debug(TAG, "Swivel Closed end");
-                    dispatcher.Post(new System.Messages.DisplayUpdateMessage());
-                    break;
-                default:
-                    // default value
-                    break;
-            }
+
+            dispatcher.Post(new DisplayUpdateMessage(state));
         }
     }
 }

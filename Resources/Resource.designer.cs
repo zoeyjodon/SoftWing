@@ -4633,25 +4633,31 @@ namespace SoftWing
 			public const int mtrl_chip_close_icon_content_description = 2131558436;
 			
 			// aapt resource value: 0x7F0D0025
-			public const int password_toggle_content_description = 2131558437;
+			public const int ok = 2131558437;
 			
 			// aapt resource value: 0x7F0D0026
-			public const int path_password_eye = 2131558438;
+			public const int password_toggle_content_description = 2131558438;
 			
 			// aapt resource value: 0x7F0D0027
-			public const int path_password_eye_mask_strike_through = 2131558439;
+			public const int path_password_eye = 2131558439;
 			
 			// aapt resource value: 0x7F0D0028
-			public const int path_password_eye_mask_visible = 2131558440;
+			public const int path_password_eye_mask_strike_through = 2131558440;
 			
 			// aapt resource value: 0x7F0D0029
-			public const int path_password_strike_through = 2131558441;
+			public const int path_password_eye_mask_visible = 2131558441;
 			
 			// aapt resource value: 0x7F0D002A
-			public const int search_menu_title = 2131558442;
+			public const int path_password_strike_through = 2131558442;
 			
 			// aapt resource value: 0x7F0D002B
-			public const int status_bar_notification_info_overflow = 2131558443;
+			public const int permissions_rationale = 2131558443;
+			
+			// aapt resource value: 0x7F0D002C
+			public const int search_menu_title = 2131558444;
+			
+			// aapt resource value: 0x7F0D002D
+			public const int status_bar_notification_info_overflow = 2131558445;
 			
 			static String()
 			{

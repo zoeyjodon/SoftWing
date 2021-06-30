@@ -9,6 +9,9 @@ using Android.Widget;
 using Android.Views;
 using System.Collections.Generic;
 using Android.Content.PM;
+using AndroidX.Core.App;
+using Android;
+using Android.Support.Design.Widget;
 
 namespace SoftWing
 {
@@ -16,6 +19,11 @@ namespace SoftWing
     public class MainActivity : AppCompatActivity
     {
         private const String TAG = "MainActivity";
+        private const int REQUEST_EXTERNAL_STORAGE = 1;
+        private static String[] PERMISSIONS_STORAGE = {
+            Manifest.Permission.ReadExternalStorage,
+            Manifest.Permission.WriteExternalStorage
+        };
         private Dictionary<int, KeymapStorage.ControlId> spinnerToControlMap = new Dictionary<int, KeymapStorage.ControlId>();
         private int ignore_keyset_count = 0;
 
@@ -36,6 +44,32 @@ namespace SoftWing
         {
             base.OnStart();
             SwDisplayManager.StartSwDisplayManager(this);
+            RequestAppPermissions();
+        }
+
+        private void RequestAppPermissions()
+        {
+            Log.Debug(TAG, "RequestAppPermissions");
+            if (ActivityCompat.ShouldShowRequestPermissionRationale(this, Manifest.Permission.WriteExternalStorage))
+            {
+                Log.Info(TAG, "Displaying storage permission rationale to provide additional context.");
+
+                var main_view = FindViewById<View>(Resource.Id.mainLayout);
+                Snackbar.Make(main_view,
+                               Resource.String.permissions_rationale,
+                               Snackbar.LengthIndefinite)
+                        .SetAction(Resource.String.ok,
+                                   new Action<View>(delegate (View obj)
+                                   {
+                                       ActivityCompat.RequestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+                                   }
+                        )
+                ).Show();
+            }
+            else
+            {
+                ActivityCompat.RequestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+            }
         }
 
         private void ConfigureResetButton()
@@ -168,6 +202,7 @@ namespace SoftWing
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
+            Log.Debug(TAG, "OnRequestPermissionsResult");
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
