@@ -22,7 +22,7 @@ namespace SoftWing.System
         {
             if (instance == null)
             {
-                return new MessageDispatcher();
+                instance = new MessageDispatcher();
             }
             if (calling_activity == null)
             {
@@ -35,7 +35,7 @@ namespace SoftWing.System
         {
             if (instance == null)
             {
-                return new MessageDispatcher();
+                instance = new MessageDispatcher();
             }
             return instance;
         }

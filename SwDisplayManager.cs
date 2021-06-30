@@ -23,13 +23,13 @@ namespace SoftWing
         private static String CLOSE_SOUND_PATH = MUSIC_DIR + "SwivelClose.mp3";
         private const int NOTIFICATION_ONGOING_ID = 1001;
         private const int LG_KEYBOARD_TIMEOUT_MS = 500;
+        private const int SHOW_IME_DELAY_MS = 500;
         private DisplayManagerHelper lg_display_manager;
         private LgSwivelStateCallback swivel_state_cb;
         private System.MessageDispatcher dispatcher;
         private MediaPlayer player;
         private static SwDisplayManager instance;
         private static NotificationReceiver notification_receiver = null;
-
 
         public static void StartSwDisplayManager(Context calling_context)
         {
@@ -59,6 +59,7 @@ namespace SoftWing
 
             dispatcher = System.MessageDispatcher.GetInstance();
             dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
+            dispatcher.Subscribe(System.MessageType.ShowIme, this);
 
             swivel_state_cb = new LgSwivelStateCallback();
             lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
@@ -155,8 +156,9 @@ namespace SoftWing
             }
         }
 
-        public static void ShowSwKeyboard()
+        private void ShowSwKeyboard()
         {
+            Log.Debug(TAG, "ShowSwKeyboard");
             InputMethodManager input_manager = (InputMethodManager)
                 Application.Context.GetSystemService(Context.InputMethodService);
             if (input_manager != null)
@@ -164,7 +166,7 @@ namespace SoftWing
                 input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
             }
             // If we start from the open position, we want to execute the swivel transition immediately
-            instance.dispatcher.Post(new DisplayUpdateMessage(DisplayManagerHelper.SwivelSwiveled));
+            instance.dispatcher.Post(new DisplayUpdateMessage(lg_display_manager.SwivelState));
         }
 
         public static void UseLgKeyboard()
@@ -185,6 +187,11 @@ namespace SoftWing
 
         public static void UseSwKeyboard()
         {
+            if (IsUsingSwKeyboard())
+            {
+                Log.Debug(TAG, "Already using SW IME, skipping");
+                return;
+            }
             InputMethodManager imm = (InputMethodManager)
                 Application.Context.GetSystemService(InputMethodService);
 
@@ -209,7 +216,6 @@ namespace SoftWing
             try
             {
                 player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
-                //player.Prepare();
                 player.Start();
             }
             catch (Exception ex)
@@ -222,34 +228,46 @@ namespace SoftWing
         {
             Log.Debug(TAG, "Accept");
 
+            if (message.getMessageType() == System.MessageType.ShowIme)
+            {
+                UseSwKeyboard();
+                // Give the IME time to update
+                new Android.OS.Handler().PostDelayed(delegate
+                {
+                    ShowSwKeyboard();
+                }, SHOW_IME_DELAY_MS);
+                return;
+            }
             var display_message = (DisplayUpdateMessage)message;
             switch (display_message.SwivelState)
             {
-                case DisplayManagerHelper.SwivelSwiveled:
-                    {
-                        // We don't want to impose this behavior unless we are using the SoftWing IME
-                        if (!IsUsingSwKeyboard())
-                        {
-                            return;
-                        }
-                        // Lock the phone's orientation to prevent unexpected behavior
-                        LockOrientation();
-                        UseLgKeyboard();
-                        // Give the LG keyboard time to perform the screen transition
-                        new Android.OS.Handler().PostDelayed(delegate
-                        {
-                            UseSwKeyboard();
-                        }, LG_KEYBOARD_TIMEOUT_MS);
-                    }
-                    break;
                 case DisplayManagerHelper.SwivelStart:
+                    Log.Debug(TAG, "DisplayManagerHelper.SwivelStart");
                     PlayWingSound(OPEN_SOUND_PATH);
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
+                    Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");
                     PlayWingSound(CLOSE_SOUND_PATH);
                     break;
                 default:
                     break;
+            }
+            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+            {
+                Log.Debug(TAG, "DisplayManagerHelper.SwivelSwiveled");
+                // We don't want to impose this behavior unless we are using the SoftWing IME
+                if (!IsUsingSwKeyboard())
+                {
+                    return;
+                }
+                // Lock the phone's orientation to prevent unexpected behavior
+                LockOrientation();
+                UseLgKeyboard();
+                // Give the LG keyboard time to perform the screen transition
+                new Android.OS.Handler().PostDelayed(delegate
+                {
+                    UseSwKeyboard();
+                }, LG_KEYBOARD_TIMEOUT_MS);
             }
         }
 

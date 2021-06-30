@@ -12,6 +12,7 @@ namespace SoftWing.System
         Invalid,
         DisplayUpdate,
         ControlUpdate,
+        ShowIme,
     }
 
     public interface SystemMessage

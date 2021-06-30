@@ -10,10 +10,11 @@ namespace SoftWing
     {
         private const String TAG = "NotificationReceiver";
         public const String ACTION_SHOW = "org.pocketworkstation.pckeyboard.SHOW";
-        public const int SHOW_IME_DELAY_MS = 500;
+        private System.MessageDispatcher dispatcher;
 
         public NotificationReceiver()
         {
+            dispatcher = System.MessageDispatcher.GetInstance();
         }
 
         public override void OnReceive(Context context, Intent intent)
@@ -23,12 +24,7 @@ namespace SoftWing
 
             if (action.Equals(ACTION_SHOW))
             {
-                SwDisplayManager.UseSwKeyboard();
-                // Give the IME time to update
-                new Handler().PostDelayed(delegate
-                {
-                    SwDisplayManager.ShowSwKeyboard();
-                }, SHOW_IME_DELAY_MS);
+                dispatcher.Post(new System.Messages.ShowImeMessage());
             }
         }
     }
