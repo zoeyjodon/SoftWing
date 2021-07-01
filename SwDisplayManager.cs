@@ -28,7 +28,7 @@ namespace SoftWing
         private const int LG_KEYBOARD_TIMEOUT_MS = 500;
         private const int SHOW_IME_DELAY_MS = 500;
 
-        private const int PLAY_SOUND_MAX_DELAY_MS = 500;
+        private const int PLAY_SOUND_MAX_DELAY_MS = 1000;
         private static String STORAGE_DIR = Android.OS.Environment.ExternalStorageDirectory.Path;
         private static String MUSIC_DIR = STORAGE_DIR + "/Music/";
         private static String OPEN_SOUND_PATH = MUSIC_DIR + "SwivelOpen.mp3";
@@ -248,7 +248,10 @@ namespace SoftWing
                     break;
                 }
             }
-            audio_manager.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
+            if (!audio_manager.IsMusicActive)
+            {
+                audio_manager.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
+            }
             media_player.Start();
         }
 
