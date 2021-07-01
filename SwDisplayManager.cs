@@ -16,20 +16,26 @@ namespace SoftWing
     public class SwDisplayManager : Service, System.MessageSubscriber
     {
         private const String TAG = "SwDisplayManager";
+        private DisplayManagerHelper lg_display_manager;
+        private LgSwivelStateCallback swivel_state_cb;
+        private System.MessageDispatcher dispatcher;
+        private static SwDisplayManager instance;
+
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private const int NOTIFICATION_ONGOING_ID = 1001;
+        private static NotificationReceiver notification_receiver = null;
+
+        private const int LG_KEYBOARD_TIMEOUT_MS = 500;
+        private const int SHOW_IME_DELAY_MS = 500;
+
+        private const int PLAY_SOUND_MAX_DELAY_MS = 500;
         private static String STORAGE_DIR = Android.OS.Environment.ExternalStorageDirectory.Path;
         private static String MUSIC_DIR = STORAGE_DIR + "/Music/";
         private static String OPEN_SOUND_PATH = MUSIC_DIR + "SwivelOpen.mp3";
         private static String CLOSE_SOUND_PATH = MUSIC_DIR + "SwivelClose.mp3";
-        private const int NOTIFICATION_ONGOING_ID = 1001;
-        private const int LG_KEYBOARD_TIMEOUT_MS = 500;
-        private const int SHOW_IME_DELAY_MS = 500;
-        private DisplayManagerHelper lg_display_manager;
-        private LgSwivelStateCallback swivel_state_cb;
-        private System.MessageDispatcher dispatcher;
-        private MediaPlayer player;
-        private static SwDisplayManager instance;
-        private static NotificationReceiver notification_receiver = null;
+        private int media_volume = 0;
+        private MediaPlayer media_player;
+        private AudioFocusRequestClass focus_request = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
 
         public static void StartSwDisplayManager()
         {
@@ -211,6 +217,41 @@ namespace SoftWing
             }
         }
 
+        private void StartSound(String audio_path)
+        {
+            var audio_manager = (AudioManager)GetSystemService(AudioService);
+            if ((media_player != null) && (media_player.IsPlaying))
+            {
+                media_player.Stop();
+                media_player.Release();
+            }
+            else
+            {
+                media_volume = audio_manager.GetStreamVolume(Android.Media.Stream.Music);
+                audio_manager.RequestAudioFocus(focus_request);
+            }
+            int systemVolume = audio_manager.GetStreamVolume(Android.Media.Stream.System);
+            // Make sure we return all settings to normal after we're done
+            media_player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
+            media_player.Completion += delegate
+            {
+                audio_manager.SetStreamVolume(Android.Media.Stream.Music, media_volume, 0);
+                audio_manager.AbandonAudioFocusRequest(focus_request);
+            };
+            // Give the system time to pause any running audio
+            var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
+            var end_time = start_time + PLAY_SOUND_MAX_DELAY_MS;
+            while (audio_manager.IsMusicActive)
+            {
+                if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
+                {
+                    break;
+                }
+            }
+            audio_manager.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
+            media_player.Start();
+        }
+
         public void PlayWingSound(String audio_path)
         {
             Log.Debug(TAG, "PlayWingSound");
@@ -220,27 +261,14 @@ namespace SoftWing
             }
             try
             {
-                // Get the volume level for system sounds
-                AudioManager am = (AudioManager)GetSystemService(AudioService);
-                int mediaVolume = am.GetStreamVolume(Android.Media.Stream.Music);
-                int systemVolume = am.GetStreamVolume(Android.Media.Stream.System);
-                var focusRequest = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
-                // Make sure we are only playing the swivel sound
-                am.RequestAudioFocus(focusRequest);
-                // Set up the system sound level
-                am.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
-                // Make sure we return all settings to normal after we're done
-                player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
-                player.Completion += delegate
-                {
-                    am.SetStreamVolume(Android.Media.Stream.Music, mediaVolume, 0);
-                    am.AbandonAudioFocusRequest(focusRequest);
-                };
-                player.Start();
+                StartSound(audio_path);
             }
             catch (Exception ex)
             {
                 Log.Debug(TAG, "Failed to play audio");
+                var audio_manager = (AudioManager)GetSystemService(AudioService);
+                audio_manager.SetStreamVolume(Android.Media.Stream.Music, media_volume, 0);
+                audio_manager.AbandonAudioFocusRequest(focus_request);
             }
         }
 
