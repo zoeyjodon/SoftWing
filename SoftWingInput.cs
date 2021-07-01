@@ -22,6 +22,7 @@ namespace SoftWing
         private MessageDispatcher dispatcher;
 
         public static IBinder InputSessionToken;
+        public static bool ImeIsOpen = false;
 
         public class SwInputMethodImpl : InputMethodImpl
         {
@@ -52,10 +53,16 @@ namespace SoftWing
 
             var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
             SetInputListeners((ViewGroup)keyboardView);
-
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
+            ImeIsOpen = true;
 
             return keyboardView;
+        }
+
+        public override void OnFinishInputView(bool finishingInput)
+        {
+            base.OnFinishInputView(finishingInput);
+            ImeIsOpen = false;
         }
 
         public override bool OnEvaluateFullscreenMode()

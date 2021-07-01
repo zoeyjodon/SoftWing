@@ -303,8 +303,8 @@ namespace SoftWing
             if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
                 Log.Debug(TAG, "DisplayManagerHelper.SwivelSwiveled");
-                // We don't want to impose this behavior unless we are using the SoftWing IME
-                if (!IsUsingSwKeyboard())
+                // We don't want to impose this behavior unless we are displaying the SoftWing IME
+                if (!IsUsingSwKeyboard() || !SoftWingInput.ImeIsOpen)
                 {
                     return;
                 }
