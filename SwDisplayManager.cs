@@ -84,7 +84,7 @@ namespace SoftWing
             channel.Description = description;
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
-            NotificationManager notificationManager = (NotificationManager)GetSystemService(Context.NotificationService);
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.CreateNotificationChannel(channel);
         }
 
@@ -165,7 +165,7 @@ namespace SoftWing
         {
             Log.Debug(TAG, "ShowSwKeyboard");
             InputMethodManager input_manager = (InputMethodManager)
-                Application.Context.GetSystemService(Context.InputMethodService);
+                Application.Context.GetSystemService(InputMethodService);
             if (input_manager != null)
             {
                 input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
@@ -220,7 +220,22 @@ namespace SoftWing
             }
             try
             {
+                // Get the volume level for system sounds
+                AudioManager am = (AudioManager)GetSystemService(AudioService);
+                int mediaVolume = am.GetStreamVolume(Android.Media.Stream.Music);
+                int systemVolume = am.GetStreamVolume(Android.Media.Stream.System);
+                var focusRequest = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
+                // Make sure we are only playing the swivel sound
+                am.RequestAudioFocus(focusRequest);
+                // Set up the system sound level
+                am.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
+                // Make sure we return all settings to normal after we're done
                 player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
+                player.Completion += delegate
+                {
+                    am.SetStreamVolume(Android.Media.Stream.Music, mediaVolume, 0);
+                    am.AbandonAudioFocusRequest(focusRequest);
+                };
                 player.Start();
             }
             catch (Exception ex)
