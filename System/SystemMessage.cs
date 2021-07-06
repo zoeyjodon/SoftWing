@@ -10,6 +10,7 @@ namespace SoftWing.System
     public enum MessageType : byte
     {
         Invalid,
+        AudioUpdate,
         DisplayUpdate,
         ControlUpdate,
         ShowIme,

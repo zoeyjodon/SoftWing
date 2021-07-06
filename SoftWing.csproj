@@ -123,6 +123,7 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="System\Messages\ControlUpdateMessage.cs" />
+    <Compile Include="System\Messages\AudioUpdateMessage.cs" />
     <Compile Include="System\Messages\ShowImeMessage.cs" />
     <Compile Include="System\Messages\DisplayUpdateMessage.cs" />
     <Compile Include="System\SwSettings.cs" />

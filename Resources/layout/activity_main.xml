@@ -3,29 +3,50 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mainLayout"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <EditText
-        android:id="@+id/testInput"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:text=""
-        android:editable="true"
-        android:clickable="true"
-        android:layout_marginBottom="50px"
-        android:textIsSelectable="true"/>
-    <Button
-        android:id="@+id/resetToDefaultButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:textAlignment="center"
-        android:clickable="true"
-        android:background="@color/material_grey_300"
-        android:layout_marginBottom="50px"
-        android:text="Reset Configuration To Default"/>
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:id="@+id/mainLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <EditText
+                android:id="@+id/testInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:text=""
+                android:editable="true"
+                android:clickable="true"
+                android:layout_marginBottom="50px"
+                android:textIsSelectable="true"/>
+            <Button
+                android:id="@+id/selectAudioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:textAlignment="center"
+                android:clickable="true"
+                android:background="@color/material_grey_300"
+                android:layout_marginBottom="50px"
+                android:text="Select Audio"/>
+            <Button
+                android:id="@+id/resetToDefaultButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:textAlignment="center"
+                android:clickable="true"
+                android:background="@color/material_grey_300"
+                android:layout_marginBottom="50px"
+                android:text="Reset Configuration To Default"/>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

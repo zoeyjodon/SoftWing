@@ -13,6 +13,8 @@ using AndroidX.Core.App;
 using Android;
 using Android.Support.Design.Widget;
 using Android.Content;
+using System.IO;
+using SoftWing.System.Messages;
 
 namespace SoftWing
 {
@@ -21,6 +23,7 @@ namespace SoftWing
     {
         private const String TAG = "MainActivity";
         private const int REQUEST_EXTERNAL_STORAGE = 1;
+        private const int REQUEST_FILE_CALLBACK = 300;
         private static String[] PERMISSIONS_LIST = {
             Manifest.Permission.ReadExternalStorage,
             Manifest.Permission.WriteExternalStorage,
@@ -32,6 +35,7 @@ namespace SoftWing
         };
         private Dictionary<int, SwSettings.ControlId> spinnerToControlMap = new Dictionary<int, SwSettings.ControlId>();
         private int ignore_keyset_count = 0;
+        private MessageDispatcher dispatcher;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -41,8 +45,10 @@ namespace SoftWing
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
+            dispatcher = MessageDispatcher.GetInstance(this);
             CreateControlConfiguration();
             ConfigureResetButton();
+            ConfigureAudioSelectButton();
             ForceInputOpen();
         }
 
@@ -101,6 +107,15 @@ namespace SoftWing
             {
                 SwSettings.SetDefaultKeycodes();
                 RefreshUISpinners();
+            };
+        }
+
+        private void ConfigureAudioSelectButton()
+        {
+            Button reset_button = FindViewById<Button>(Resource.Id.selectAudioButton);
+            reset_button.Click += delegate
+            {
+                SelectAudioFile();
             };
         }
 
@@ -215,11 +230,36 @@ namespace SoftWing
             spinner.SetSelection(spinner_position);
         }
 
+        private void SelectAudioFile()
+        {
+            Intent intent = new Intent(Intent.ActionOpenDocument);
+            intent.AddCategory(Intent.CategoryOpenable);
+            intent.SetType("audio/*");
+            StartActivityForResult(intent, REQUEST_FILE_CALLBACK);
+        }
+
         private void ForceInputOpen()
         {
             var test_input = FindViewById<EditText>(Resource.Id.testInput);
             test_input.RequestFocus();
             Window.SetSoftInputMode(SoftInput.StateAlwaysVisible);
+        }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
+            base.OnActivityResult(requestCode, resultCode, data);
+            if (requestCode != REQUEST_FILE_CALLBACK)
+            {
+                Log.Debug(TAG, "Ignoring Activity Result");
+                return;
+            }
+
+            if (!File.Exists(data.Data.ToString()))
+            {
+                Log.Debug(TAG, data.Data.ToString() + " File Not Found!");
+            }
+            dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingOpen));
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
