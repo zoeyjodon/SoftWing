@@ -1,4 +1,5 @@
-﻿using Android.Util;
+﻿using Android.Net;
+using Android.Util;
 using Android.Views;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,10 @@ namespace SoftWing.System
         private static string TAG = "KeymapStorage";
         private static string KEYMAP_FILENAME = "keymap.txt";
         private static string KEYMAP_PATH = Path.Combine(FileSystem.AppDataDirectory, KEYMAP_FILENAME);
+        private static string OPEN_SOUND_FILENAME = "open_sound.txt";
+        private static string CLOSE_SOUND_FILENAME = "close_sound.txt";
+        private static string OPEN_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, OPEN_SOUND_FILENAME);
+        private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private static bool local_keymap_updated = false;
         private const Keycode Default_L_Button = Keycode.ButtonL1;
@@ -179,6 +184,49 @@ namespace SoftWing.System
             CONTROL_TO_KEY_MAP[ControlId.D_Pad_Right] = Default_D_Pad_Right;
             CONTROL_TO_KEY_MAP[ControlId.D_Pad_Center] = Default_D_Pad_Center;
             UpdateStoredKeymap();
+        }
+
+        public static string GetOpenSoundPath()
+        {
+            return GetSoundPath(OPEN_SOUND_RECORD_PATH);
+        }
+
+        public static string GetCloseSoundPath()
+        {
+            return GetSoundPath(CLOSE_SOUND_RECORD_PATH);
+        }
+
+        private static string GetSoundPath(string file_path)
+        {
+            Log.Debug(TAG, "GetSoundPath");
+            if (!File.Exists(file_path))
+            {
+                Log.Debug(TAG, "Sound record not found");
+                return "";
+            }
+            var stream = File.OpenRead(file_path);
+            using (var reader = new StreamReader(stream))
+            {
+                return reader.ReadLine();
+            }
+        }
+
+        public static void SetOpenSoundPath(Uri path)
+        {
+            Log.Debug(TAG, "SetOpenSoundPath");
+            using (var writer = File.CreateText(OPEN_SOUND_RECORD_PATH))
+            {
+                writer.WriteLine(path.ToString());
+            }
+        }
+
+        public static void SetCloseSoundPath(Uri path)
+        {
+            Log.Debug(TAG, "SetCloseSoundPath");
+            using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
+            {
+                writer.WriteLine(path.ToString());
+            }
         }
 
         public static void SetControlKeycode(ControlId control, Keycode key)

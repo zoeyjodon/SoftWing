@@ -262,9 +262,11 @@ namespace SoftWing
             switch (requestCode)
             {
                 case REQUEST_OPEN_FILE_CALLBACK:
+                    SwSettings.SetOpenSoundPath(data.Data);
                     dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingOpen));
                     break;
                 case REQUEST_CLOSE_FILE_CALLBACK:
+                    SwSettings.SetCloseSoundPath(data.Data);
                     dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingClose));
                     break;
                 default:

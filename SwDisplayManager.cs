@@ -9,6 +9,7 @@ using System;
 using Android.Media;
 using SoftWing.System.Messages;
 using System.IO;
+using SoftWing.System;
 
 namespace SoftWing
 {
@@ -29,10 +30,8 @@ namespace SoftWing
         private const int SHOW_IME_DELAY_MS = 500;
 
         private const int PLAY_SOUND_MAX_DELAY_MS = 1000;
-        private static String STORAGE_DIR = Android.OS.Environment.ExternalStorageDirectory.Path;
-        private static String MUSIC_DIR = STORAGE_DIR + "/Music/";
-        private static String OPEN_SOUND_PATH = MUSIC_DIR + "SwivelOpen.mp3";
-        private static String CLOSE_SOUND_PATH = MUSIC_DIR + "SwivelClose.mp3";
+        private static String OPEN_SOUND_PATH = SwSettings.GetOpenSoundPath();
+        private static String CLOSE_SOUND_PATH = SwSettings.GetCloseSoundPath();
         private int media_volume = 0;
         private MediaPlayer media_player;
         private AudioFocusRequestClass focus_request = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
