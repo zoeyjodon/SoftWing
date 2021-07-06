@@ -86,57 +86,57 @@ namespace SoftWing
                 {
                     case (Resource.Id.left_joyStick):
                         {
-                            var up = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Up);
-                            var down = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Down);
-                            var left = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Left);
-                            var right = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Analog_Right);
+                            var up = SwSettings.GetControlKeycode(SwSettings.ControlId.L_Analog_Up);
+                            var down = SwSettings.GetControlKeycode(SwSettings.ControlId.L_Analog_Down);
+                            var left = SwSettings.GetControlKeycode(SwSettings.ControlId.L_Analog_Left);
+                            var right = SwSettings.GetControlKeycode(SwSettings.ControlId.L_Analog_Right);
                             SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
                         }
                         break;
                     case (Resource.Id.right_joyStick):
                         {
-                            var up = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Up);
-                            var down = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Down);
-                            var left = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Left);
-                            var right = KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Analog_Right);
+                            var up = SwSettings.GetControlKeycode(SwSettings.ControlId.R_Analog_Up);
+                            var down = SwSettings.GetControlKeycode(SwSettings.ControlId.R_Analog_Down);
+                            var left = SwSettings.GetControlKeycode(SwSettings.ControlId.R_Analog_Left);
+                            var right = SwSettings.GetControlKeycode(SwSettings.ControlId.R_Analog_Right);
                             SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
                         }
                         break;
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Up)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.D_Pad_Up)));
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Down)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.D_Pad_Down)));
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Left)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.D_Pad_Left)));
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Right)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.D_Pad_Right)));
                         break;
                     case (Resource.Id.d_pad_center):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.D_Pad_Center)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.D_Pad_Center)));
                         break;
                     case (Resource.Id.a_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.A_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.A_Button)));
                         break;
                     case (Resource.Id.b_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.B_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.B_Button)));
                         break;
                     case (Resource.Id.y_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.Y_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.Y_Button)));
                         break;
                     case (Resource.Id.x_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.X_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.X_Button)));
                         break;
                     case (Resource.Id.l_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.L_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.L_Button)));
                         break;
                     case (Resource.Id.r_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.R_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.R_Button)));
                         break;
                     case (Resource.Id.start_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, KeymapStorage.GetControlKeycode(KeymapStorage.ControlId.Start_Button)));
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.GetControlKeycode(SwSettings.ControlId.Start_Button)));
                         break;
                     default:
                         break;

@@ -6,7 +6,7 @@ using Xamarin.Essentials;
 
 namespace SoftWing.System
 {
-    public static class KeymapStorage
+    public static class SwSettings
     {
         private static string TAG = "KeymapStorage";
         private static string KEYMAP_FILENAME = "keymap.txt";

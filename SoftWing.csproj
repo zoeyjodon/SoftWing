@@ -125,7 +125,7 @@
     <Compile Include="System\Messages\ControlUpdateMessage.cs" />
     <Compile Include="System\Messages\ShowImeMessage.cs" />
     <Compile Include="System\Messages\DisplayUpdateMessage.cs" />
-    <Compile Include="System\KeymapStorage.cs" />
+    <Compile Include="System\SwSettings.cs" />
     <Compile Include="System\SystemMessage.cs" />
   </ItemGroup>
   <ItemGroup>

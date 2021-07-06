@@ -30,7 +30,7 @@ namespace SoftWing
             Manifest.Permission.WriteSettings,
             Manifest.Permission.ReceiveBootCompleted
         };
-        private Dictionary<int, KeymapStorage.ControlId> spinnerToControlMap = new Dictionary<int, KeymapStorage.ControlId>();
+        private Dictionary<int, SwSettings.ControlId> spinnerToControlMap = new Dictionary<int, SwSettings.ControlId>();
         private int ignore_keyset_count = 0;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -99,7 +99,7 @@ namespace SoftWing
             Button reset_button = FindViewById<Button>(Resource.Id.resetToDefaultButton);
             reset_button.Click += delegate
             {
-                KeymapStorage.SetDefaultKeycodes();
+                SwSettings.SetDefaultKeycodes();
                 RefreshUISpinners();
             };
         }
@@ -116,10 +116,10 @@ namespace SoftWing
             Spinner spinner = (Spinner)sender;
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            var key = KeymapStorage.STRING_TO_KEYCODE_MAP[key_string];
+            var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
             var control = spinnerToControlMap[spinner.Id];
 
-            KeymapStorage.SetControlKeycode(control, key);
+            SwSettings.SetControlKeycode(control, key);
         }
 
         private void CreateControlConfiguration()
@@ -127,11 +127,11 @@ namespace SoftWing
             Log.Debug(TAG, "CreateControlConfiguration");
             LinearLayout mainLayout = FindViewById<LinearLayout>(Resource.Id.mainLayout);
 
-            foreach (var control in KeymapStorage.CONTROL_TO_STRING_MAP.Keys)
+            foreach (var control in SwSettings.CONTROL_TO_STRING_MAP.Keys)
                 mainLayout.AddView(CreateControlView(control));
         }
 
-        private View CreateControlView(KeymapStorage.ControlId control)
+        private View CreateControlView(SwSettings.ControlId control)
         {
             var result = new LinearLayout(this);
             result.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent);
@@ -146,31 +146,31 @@ namespace SoftWing
             return result;
         }
 
-        private View CreateControlLabel(KeymapStorage.ControlId control)
+        private View CreateControlLabel(SwSettings.ControlId control)
         {
             var label = new TextView(this);
             label.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
-            label.Text = KeymapStorage.CONTROL_TO_STRING_MAP[control];
+            label.Text = SwSettings.CONTROL_TO_STRING_MAP[control];
             return label;
         }
 
-        private View CreateControlSpinner(KeymapStorage.ControlId control)
+        private View CreateControlSpinner(SwSettings.ControlId control)
         {
             var spinner = new Spinner(this);
             spinner.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent)
             {
                 Gravity = GravityFlags.Right
             };
-            spinner.Prompt = "Set " + KeymapStorage.CONTROL_TO_STRING_MAP[control] + " Keycode";
+            spinner.Prompt = "Set " + SwSettings.CONTROL_TO_STRING_MAP[control] + " Keycode";
             spinner.Id = (int)control;
 
-            var set_key_code = KeymapStorage.GetControlKeycode(control);
+            var set_key_code = SwSettings.GetControlKeycode(control);
             var set_key_string = "";
             List<string> inputNames = new List<string>();
-            foreach (var key_string in KeymapStorage.STRING_TO_KEYCODE_MAP.Keys)
+            foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
             {
                 inputNames.Add(key_string);
-                if (set_key_code == KeymapStorage.STRING_TO_KEYCODE_MAP[key_string])
+                if (set_key_code == SwSettings.STRING_TO_KEYCODE_MAP[key_string])
                 {
                     set_key_string = key_string;
                 }
@@ -200,11 +200,11 @@ namespace SoftWing
         void RefreshUISpinner(Spinner spinner)
         {
             var control = spinnerToControlMap[spinner.Id];
-            var set_key_code = KeymapStorage.GetControlKeycode(control);
+            var set_key_code = SwSettings.GetControlKeycode(control);
             var set_key_string = "";
-            foreach (var key_string in KeymapStorage.STRING_TO_KEYCODE_MAP.Keys)
+            foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
             {
-                if (set_key_code == KeymapStorage.STRING_TO_KEYCODE_MAP[key_string])
+                if (set_key_code == SwSettings.STRING_TO_KEYCODE_MAP[key_string])
                 {
                     set_key_string = key_string;
                 }
