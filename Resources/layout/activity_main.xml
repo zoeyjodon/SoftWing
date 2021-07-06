@@ -25,7 +25,7 @@
                 android:layout_marginBottom="50px"
                 android:textIsSelectable="true"/>
             <Button
-                android:id="@+id/selectAudioButton"
+                android:id="@+id/selectOpenAudioButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dp"
@@ -34,7 +34,18 @@
                 android:clickable="true"
                 android:background="@color/material_grey_300"
                 android:layout_marginBottom="50px"
-                android:text="Select Audio"/>
+                android:text="Select Open Audio"/>
+            <Button
+                android:id="@+id/selectCloseAudioButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="5dp"
+                android:textAlignment="center"
+                android:clickable="true"
+                android:background="@color/material_grey_300"
+                android:layout_marginBottom="50px"
+                android:text="Select Close Audio"/>
             <Button
                 android:id="@+id/resetToDefaultButton"
                 android:layout_width="match_parent"

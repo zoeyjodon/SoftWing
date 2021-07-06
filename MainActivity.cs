@@ -22,8 +22,8 @@ namespace SoftWing
     public class MainActivity : AppCompatActivity
     {
         private const String TAG = "MainActivity";
-        private const int REQUEST_EXTERNAL_STORAGE = 1;
-        private const int REQUEST_FILE_CALLBACK = 300;
+        private const int REQUEST_OPEN_FILE_CALLBACK = 300;
+        private const int REQUEST_CLOSE_FILE_CALLBACK = 301;
         private static String[] PERMISSIONS_LIST = {
             Manifest.Permission.ReadExternalStorage,
             Manifest.Permission.WriteExternalStorage,
@@ -48,7 +48,7 @@ namespace SoftWing
             dispatcher = MessageDispatcher.GetInstance(this);
             CreateControlConfiguration();
             ConfigureResetButton();
-            ConfigureAudioSelectButton();
+            ConfigureAudioSelectButtons();
             ForceInputOpen();
         }
 
@@ -110,12 +110,18 @@ namespace SoftWing
             };
         }
 
-        private void ConfigureAudioSelectButton()
+        private void ConfigureAudioSelectButtons()
         {
-            Button reset_button = FindViewById<Button>(Resource.Id.selectAudioButton);
-            reset_button.Click += delegate
+            Button open_button = FindViewById<Button>(Resource.Id.selectOpenAudioButton);
+            open_button.Click += delegate
             {
-                SelectAudioFile();
+                SelectAudioFile(REQUEST_OPEN_FILE_CALLBACK);
+            };
+
+            Button close_button = FindViewById<Button>(Resource.Id.selectCloseAudioButton);
+            close_button.Click += delegate
+            {
+                SelectAudioFile(REQUEST_CLOSE_FILE_CALLBACK);
             };
         }
 
@@ -230,12 +236,12 @@ namespace SoftWing
             spinner.SetSelection(spinner_position);
         }
 
-        private void SelectAudioFile()
+        private void SelectAudioFile(int requestCode)
         {
             Intent intent = new Intent(Intent.ActionOpenDocument);
             intent.AddCategory(Intent.CategoryOpenable);
             intent.SetType("audio/*");
-            StartActivityForResult(intent, REQUEST_FILE_CALLBACK);
+            StartActivityForResult(intent, requestCode);
         }
 
         private void ForceInputOpen()
@@ -249,17 +255,22 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
             base.OnActivityResult(requestCode, resultCode, data);
-            if (requestCode != REQUEST_FILE_CALLBACK)
-            {
-                Log.Debug(TAG, "Ignoring Activity Result");
-                return;
-            }
-
             if (!File.Exists(data.Data.ToString()))
             {
                 Log.Debug(TAG, data.Data.ToString() + " File Not Found!");
             }
-            dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingOpen));
+            switch (requestCode)
+            {
+                case REQUEST_OPEN_FILE_CALLBACK:
+                    dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingOpen));
+                    break;
+                case REQUEST_CLOSE_FILE_CALLBACK:
+                    dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingClose));
+                    break;
+                default:
+                    Log.Debug(TAG, "Ignoring Activity Result");
+                    break;
+            }
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
