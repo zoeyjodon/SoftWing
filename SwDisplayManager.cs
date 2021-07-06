@@ -112,7 +112,7 @@ namespace SoftWing
             String body = "Select this to open the controller.";
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                    .SetSmallIcon(Resource.Mipmap.ic_notification)
+                    .SetSmallIcon(Resource.Mipmap.ic_launcher_foreground)
                     .SetColor(Resource.Color.accent_material_dark)
                     .SetAutoCancel(false)
                     .SetTicker(text)
