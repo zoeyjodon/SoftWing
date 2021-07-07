@@ -207,7 +207,7 @@ namespace SoftWing.System
             var stream = File.OpenRead(file_path);
             using (var reader = new StreamReader(stream))
             {
-                return reader.ReadLine();
+                return reader.ReadLine().Replace("\n", "").Replace("\r", "");
             }
         }
 

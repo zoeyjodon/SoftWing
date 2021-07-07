@@ -264,10 +264,20 @@ namespace SoftWing
                 case REQUEST_OPEN_FILE_CALLBACK:
                     SwSettings.SetOpenSoundPath(data.Data);
                     dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingOpen));
+                    {
+                        // Make sure we can continue using the file after a reset
+                        var takeFlags = ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission;
+                        ContentResolver.TakePersistableUriPermission(data.Data, takeFlags);
+                    }
                     break;
                 case REQUEST_CLOSE_FILE_CALLBACK:
                     SwSettings.SetCloseSoundPath(data.Data);
                     dispatcher.Post(new AudioUpdateMessage(data.Data, AudioUpdateMessage.AudioType.SwingClose));
+                    {
+                        // Make sure we can continue using the file after a reset
+                        var takeFlags = ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission;
+                        ContentResolver.TakePersistableUriPermission(data.Data, takeFlags);
+                    }
                     break;
                 default:
                     Log.Debug(TAG, "Ignoring Activity Result");

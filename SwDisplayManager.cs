@@ -10,6 +10,7 @@ using Android.Media;
 using SoftWing.System.Messages;
 using System.IO;
 using SoftWing.System;
+using System.Threading.Tasks;
 
 namespace SoftWing
 {
@@ -30,8 +31,8 @@ namespace SoftWing
         private const int SHOW_IME_DELAY_MS = 500;
 
         private const int PLAY_SOUND_MAX_DELAY_MS = 1000;
-        private static String OPEN_SOUND_PATH = SwSettings.GetOpenSoundPath();
-        private static String CLOSE_SOUND_PATH = SwSettings.GetCloseSoundPath();
+        private static String OPEN_SOUND_PATH;
+        private static String CLOSE_SOUND_PATH;
         private int media_volume = 0;
         private MediaPlayer media_player;
         private AudioFocusRequestClass focus_request = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
@@ -74,6 +75,8 @@ namespace SoftWing
 
             swivel_state_cb = new LgSwivelStateCallback();
             lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
+            OPEN_SOUND_PATH = SwSettings.GetOpenSoundPath();
+            CLOSE_SOUND_PATH = SwSettings.GetCloseSoundPath();
         }
 
         ~SwDisplayManager()
@@ -176,19 +179,26 @@ namespace SoftWing
             {
                 input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
             }
-            // Alert the system to the initial swivel state
-            switch (lg_display_manager.SwivelState)
+            // Alert the system to the initial swivel state after the IME has opened
+            DisplayUpdateMessage msg = new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd);
+            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
-                case DisplayManagerHelper.SwivelNormal:
-                    instance.dispatcher.Post(new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd));
-                    break;
-                case DisplayManagerHelper.SwivelSwiveled:
-                    instance.dispatcher.Post(new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd));
-                    break;
-                default:
-                    break;
+                msg = new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd);
             }
-
+            Task.Factory.StartNew(() =>
+            {
+                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
+                var end_time = start_time + SHOW_IME_DELAY_MS;
+                while (!SoftWingInput.ImeIsOpen)
+                {
+                    // Make sure we aren't waiting forever
+                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
+                    {
+                        return;
+                    }
+                }
+                instance.dispatcher.Post(msg);
+            });
         }
 
         public static void UseLgKeyboard()
