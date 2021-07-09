@@ -36,6 +36,7 @@ namespace SoftWing
         private Dictionary<int, SwSettings.ControlId> spinnerToControlMap = new Dictionary<int, SwSettings.ControlId>();
         private int ignore_keyset_count = 0;
         private MessageDispatcher dispatcher;
+        private DonationHandler donation;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -46,6 +47,7 @@ namespace SoftWing
             SetContentView(Resource.Layout.activity_main);
 
             dispatcher = MessageDispatcher.GetInstance(this);
+            donation = new DonationHandler();
             CreateControlConfiguration();
             ConfigureResetButton();
             ConfigureAudioSelectButtons();
@@ -60,6 +62,7 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionScreenOn));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
+            donation.Start();
         }
 
         private void RequestAllPermissions()
