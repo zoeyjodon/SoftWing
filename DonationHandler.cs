@@ -15,6 +15,7 @@ namespace SoftWing
         private MessageDispatcher dispatcher;
         private BillingClient billingClient;
         private IList<SkuDetails> skuDetails = null;
+        private List<String> skuList = new List<String>() { "donate_1", "donate_5", "donate_10", "donate_20", "donate_50", "donate_100" };
 
         public DonationHandler()
         {
@@ -23,18 +24,11 @@ namespace SoftWing
                 .SetListener(this)
                 .EnablePendingPurchases()
                 .Build();
-
         }
 
         public void Start()
         {
             billingClient.StartConnection(this);
-
-            var skuList = new List<String>();
-            skuList.Add("Feed the Engineer");
-            SkuDetailsParams.Builder details_builder = SkuDetailsParams.NewBuilder();
-            details_builder.SetSkusList(skuList).SetType(BillingClient.SkuType.Inapp);
-            billingClient.QuerySkuDetails(details_builder.Build(), this);
         }
 
         public void OnBillingServiceDisconnected()
@@ -49,6 +43,9 @@ namespace SoftWing
             {
                 Log.Debug(TAG, "Billing setup failed with code " + result.ResponseCode.ToString());
             }
+            SkuDetailsParams.Builder details_builder = SkuDetailsParams.NewBuilder();
+            details_builder.SetSkusList(skuList).SetType(BillingClient.SkuType.Inapp);
+            billingClient.QuerySkuDetails(details_builder.Build(), this);
         }
 
         public void LaunchBilling(SkuDetails sku, Activity parent)
@@ -99,7 +96,10 @@ namespace SoftWing
                 return;
             }
             skuDetails = sku_list;
-            Log.Debug(TAG, skuDetails.ToString());
+            foreach (var item in skuDetails)
+            {
+                Log.Debug(TAG, "SKU ITEM = " + item.Title);
+            }
         }
     }
 }
