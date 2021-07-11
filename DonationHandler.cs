@@ -14,8 +14,8 @@ namespace SoftWing
         private const String TAG = "DonationHandler";
         private MessageDispatcher dispatcher;
         private BillingClient billingClient;
-        private IList<SkuDetails> skuDetails = null;
         private List<String> skuList = new List<String>() { "donate_1", "donate_5", "donate_10", "donate_20", "donate_50", "donate_100" };
+        public IList<SkuDetails> skuDetails = null;
 
         public DonationHandler()
         {

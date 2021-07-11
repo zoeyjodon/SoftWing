@@ -18,26 +18,26 @@ namespace SoftWing.System
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private static bool local_keymap_updated = false;
-        private const Keycode Default_L_Button = Keycode.ButtonL1;
-        private const Keycode Default_R_Button = Keycode.ButtonR1;
-        private const Keycode Default_L_Analog_Up = Keycode.W;
-        private const Keycode Default_L_Analog_Down = Keycode.S;
-        private const Keycode Default_L_Analog_Left = Keycode.A;
-        private const Keycode Default_L_Analog_Right = Keycode.D;
-        private const Keycode Default_R_Analog_Up = Keycode.Button1;
-        private const Keycode Default_R_Analog_Down = Keycode.Button2;
-        private const Keycode Default_R_Analog_Left = Keycode.Button3;
-        private const Keycode Default_R_Analog_Right = Keycode.Button4;
-        private const Keycode Default_X_Button = Keycode.ButtonX;
-        private const Keycode Default_Y_Button = Keycode.ButtonY;
-        private const Keycode Default_A_Button = Keycode.ButtonA;
-        private const Keycode Default_B_Button = Keycode.ButtonB;
-        private const Keycode Default_Start_Button = Keycode.ButtonStart;
-        private const Keycode Default_D_Pad_Up = Keycode.DpadUp;
-        private const Keycode Default_D_Pad_Down = Keycode.DpadDown;
-        private const Keycode Default_D_Pad_Left = Keycode.DpadLeft;
-        private const Keycode Default_D_Pad_Right = Keycode.DpadRight;
-        private const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
+        public const Keycode Default_L_Button = Keycode.ButtonL1;
+        public const Keycode Default_R_Button = Keycode.ButtonR1;
+        public const Keycode Default_L_Analog_Up = Keycode.W;
+        public const Keycode Default_L_Analog_Down = Keycode.S;
+        public const Keycode Default_L_Analog_Left = Keycode.A;
+        public const Keycode Default_L_Analog_Right = Keycode.D;
+        public const Keycode Default_R_Analog_Up = Keycode.Button1;
+        public const Keycode Default_R_Analog_Down = Keycode.Button2;
+        public const Keycode Default_R_Analog_Left = Keycode.Button3;
+        public const Keycode Default_R_Analog_Right = Keycode.Button4;
+        public const Keycode Default_X_Button = Keycode.ButtonX;
+        public const Keycode Default_Y_Button = Keycode.ButtonY;
+        public const Keycode Default_A_Button = Keycode.ButtonA;
+        public const Keycode Default_B_Button = Keycode.ButtonB;
+        public const Keycode Default_Start_Button = Keycode.ButtonStart;
+        public const Keycode Default_D_Pad_Up = Keycode.DpadUp;
+        public const Keycode Default_D_Pad_Down = Keycode.DpadDown;
+        public const Keycode Default_D_Pad_Left = Keycode.DpadLeft;
+        public const Keycode Default_D_Pad_Right = Keycode.DpadRight;
+        public const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
         public enum ControlId : int
         {
             L_Button,
@@ -160,6 +160,53 @@ namespace SoftWing.System
             { ControlId.D_Pad_Right     , Default_D_Pad_Right    },
             { ControlId.D_Pad_Center    , Default_D_Pad_Center   }
         };
+
+        public static ControlId DefaultKeycodeToControlId(Keycode key)
+        {
+            switch (key)
+            {
+                case Default_L_Button:
+                    return ControlId.L_Button;
+                case Default_R_Button:
+                    return ControlId.R_Button;
+                case Default_L_Analog_Up:
+                    return ControlId.L_Analog_Up;
+                case Default_L_Analog_Down:
+                    return ControlId.L_Analog_Down;
+                case Default_L_Analog_Left:
+                    return ControlId.L_Analog_Left;
+                case Default_L_Analog_Right:
+                    return ControlId.L_Analog_Right;
+                case Default_R_Analog_Up:
+                    return ControlId.R_Analog_Up;
+                case Default_R_Analog_Down:
+                    return ControlId.R_Analog_Down;
+                case Default_R_Analog_Left:
+                    return ControlId.R_Analog_Left;
+                case Default_R_Analog_Right:
+                    return ControlId.R_Analog_Right;
+                case Default_X_Button:
+                    return ControlId.X_Button;
+                case Default_Y_Button:
+                    return ControlId.Y_Button;
+                case Default_A_Button:
+                    return ControlId.A_Button;
+                case Default_B_Button:
+                    return ControlId.B_Button;
+                case Default_D_Pad_Up:
+                    return ControlId.D_Pad_Up;
+                case Default_D_Pad_Down:
+                    return ControlId.D_Pad_Down;
+                case Default_D_Pad_Left:
+                    return ControlId.D_Pad_Left;
+                case Default_D_Pad_Right:
+                    return ControlId.D_Pad_Right;
+                case Default_D_Pad_Center:
+                    return ControlId.D_Pad_Center;
+                default: // Start Button
+                    return ControlId.Start_Button;
+            }
+        }
 
         public static void SetDefaultKeycodes()
         {

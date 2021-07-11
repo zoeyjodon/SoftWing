@@ -50,6 +50,7 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
+            ConfigureDonationButton();
         }
 
         private void RequestAllPermissions()
@@ -92,15 +93,28 @@ namespace SoftWing
 
         private void ConfigureNavigationButtons()
         {
-            Button controller_button = FindViewById<Button>(Resource.Id.controllerSettingsButton);
+            Log.Debug(TAG, "ConfigureNavigationButtons");
+            var controller_button = FindViewById<ImageButton>(Resource.Id.controllerSettingsButton);
             controller_button.Click += delegate
             {
                 StartActivity(typeof(ControllerSettingsActivity));
             };
-            Button sound_button = FindViewById<Button>(Resource.Id.soundSettingsButton);
+            var sound_button = FindViewById<ImageButton>(Resource.Id.soundSettingsButton);
             sound_button.Click += delegate
             {
                 StartActivity(typeof(SoundSettingsActivity));
+            };
+        }
+
+        private void ConfigureDonationButton()
+        {
+            Log.Debug(TAG, "ConfigureDonationButton");
+            var donate_button = FindViewById<ImageButton>(Resource.Id.donateButton);
+            donate_button.Click += delegate
+            {
+                var item = donation.skuDetails[0];
+                Log.Debug(TAG, "item = " + item.Title);
+                donation.LaunchBilling(item, this);
             };
         }
 

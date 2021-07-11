@@ -1,21 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<GridLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/controllerSettings">
-    <Button
+    android:id="@+id/controllerSettings"
+    android:columnCount="5"
+    android:rowCount="6">
+    <ImageButton
         android:id="@+id/resetToDefaultButton"
+        android:src="@drawable/reset_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:textAlignment="center"
+        android:layout_height="150px"
         android:clickable="true"
         android:background="@color/material_grey_300"
-        android:layout_marginBottom="50px"
-        android:text="Reset Configuration To Default"/>
-</LinearLayout>
+        android:layout_column="1"
+        android:layout_columnSpan="3"
+        android:layout_row="1"/>
+    <TextView
+        android:id="@+id/inputName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test"
+        android:layout_column="1"
+        android:layout_row="3"/>
+    <Spinner
+        android:id="@+id/inputKeycode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:layout_column="3"
+        android:layout_row="3"/>
+    <include
+        layout="@layout/input"
+        android:id="@+id/imeKeyView"
+        android:layout_width="match_parent"
+        android:layout_height="1240px"
+        android:layout_column="0"
+        android:layout_columnSpan="5"
+        android:layout_row="5"/>
+
+
+</GridLayout>

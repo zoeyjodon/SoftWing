@@ -8,15 +8,18 @@ using Android.Widget;
 using Android.Views;
 using System.Collections.Generic;
 using Android.Content.PM;
+using Com.Jackandphantom.Joystickview;
+using SoftWing.System.Messages;
 
 namespace SoftWing
 {
     [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait)]
-    public class ControllerSettingsActivity : AppCompatActivity
+    public class ControllerSettingsActivity : AppCompatActivity, MessageSubscriber
     {
         private const String TAG = "ControllerSettingsActivity";
-        private Dictionary<int, SwSettings.ControlId> spinnerToControlMap = new Dictionary<int, SwSettings.ControlId>();
         private int ignore_keyset_count = 0;
+        private MessageDispatcher dispatcher;
+        private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -26,8 +29,13 @@ namespace SoftWing
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.controller_settings);
 
-            CreateControlConfiguration();
+            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher.Subscribe(MessageType.ControlUpdate, this);
+            var inputKeyView = FindViewById<ViewGroup>(Resource.Id.imeKeyView);
+            SetInputListeners(inputKeyView);
             ConfigureResetButton();
+            ConfigureControlLabel(selected_control);
+            ConfigureControlSpinner(selected_control);
         }
 
         protected override void OnStart()
@@ -37,73 +45,120 @@ namespace SoftWing
 
         private void ConfigureResetButton()
         {
-            Button reset_button = FindViewById<Button>(Resource.Id.resetToDefaultButton);
+            var reset_button = FindViewById<ImageButton>(Resource.Id.resetToDefaultButton);
             reset_button.Click += delegate
             {
                 SwSettings.SetDefaultKeycodes();
-                RefreshUISpinners();
+                RefreshUISpinner();
+                var toast = Toast.MakeText(this, "The controller has been reset to default", ToastLength.Short);
+                toast.Show();
             };
+        }
+
+        private void SetJoystickListener(JoyStickView joystick, Android.Views.Keycode up, Android.Views.Keycode down, Android.Views.Keycode left, Android.Views.Keycode right)
+        {
+            var listener = new SwJoystickListener(up, down, left, right);
+            joystick.SetOnMoveListener(listener);
+        }
+
+        private void SetInputListeners(ViewGroup keyboard_view_group)
+        {
+            Log.Debug(TAG, "SetInputListeners");
+            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
+            {
+                View nextChild = keyboard_view_group.GetChildAt(index);
+                switch (nextChild.Id)
+                {
+                    case (Resource.Id.left_joyStick):
+                        {
+                            var up = SwSettings.Default_L_Analog_Up;
+                            var down = SwSettings.Default_L_Analog_Down;
+                            var left = SwSettings.Default_L_Analog_Left;
+                            var right = SwSettings.Default_L_Analog_Right;
+                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                        }
+                        break;
+                    case (Resource.Id.right_joyStick):
+                        {
+                            var up = SwSettings.Default_R_Analog_Up;
+                            var down = SwSettings.Default_R_Analog_Down;
+                            var left = SwSettings.Default_R_Analog_Left;
+                            var right = SwSettings.Default_R_Analog_Right;
+                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                        }
+                        break;
+                    case (Resource.Id.d_pad_up):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Up));
+                        break;
+                    case (Resource.Id.d_pad_down):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Down));
+                        break;
+                    case (Resource.Id.d_pad_left):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Left));
+                        break;
+                    case (Resource.Id.d_pad_right):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Right));
+                        break;
+                    case (Resource.Id.d_pad_center):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Center));
+                        break;
+                    case (Resource.Id.a_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_A_Button));
+                        break;
+                    case (Resource.Id.b_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_B_Button));
+                        break;
+                    case (Resource.Id.y_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_Y_Button));
+                        break;
+                    case (Resource.Id.x_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_X_Button));
+                        break;
+                    case (Resource.Id.l_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_L_Button));
+                        break;
+                    case (Resource.Id.r_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_R_Button));
+                        break;
+                    case (Resource.Id.start_button):
+                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_Start_Button));
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         private void SpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
+            Log.Debug(TAG, "SpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
             if (ignore_keyset_count != 0)
             {
                 ignore_keyset_count--;
                 return;
             }
-            Log.Debug(TAG, "SpinnerItemSelected");
+            Log.Debug(TAG, "SpinnerItemSelected++");
             Spinner spinner = (Spinner)sender;
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
             var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
-            var control = spinnerToControlMap[spinner.Id];
 
-            SwSettings.SetControlKeycode(control, key);
+            SwSettings.SetControlKeycode(selected_control, key);
         }
 
-        private void CreateControlConfiguration()
+        private void ConfigureControlLabel(SwSettings.ControlId control)
         {
-            Log.Debug(TAG, "CreateControlConfiguration");
-            LinearLayout mainLayout = FindViewById<LinearLayout>(Resource.Id.controllerSettings);
-
-            foreach (var control in SwSettings.CONTROL_TO_STRING_MAP.Keys)
-                mainLayout.AddView(CreateControlView(control));
-        }
-
-        private View CreateControlView(SwSettings.ControlId control)
-        {
-            var result = new LinearLayout(this);
-            result.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent);
-            result.Orientation = Orientation.Horizontal;
-
-            result.AddView(CreateControlLabel(control));
-
-            var control_spinner = CreateControlSpinner(control);
-            result.AddView(control_spinner);
-            spinnerToControlMap.Add(control_spinner.Id, control);
-
-            return result;
-        }
-
-        private View CreateControlLabel(SwSettings.ControlId control)
-        {
-            var label = new TextView(this);
-            label.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent);
+            Log.Debug(TAG, "ConfigureControlLabel");
+            var label = FindViewById<TextView>(Resource.Id.inputName);
             label.Text = SwSettings.CONTROL_TO_STRING_MAP[control];
-            return label;
         }
 
-        private View CreateControlSpinner(SwSettings.ControlId control)
+        private void ConfigureControlSpinner(SwSettings.ControlId control)
         {
-            var spinner = new Spinner(this);
-            spinner.LayoutParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent)
-            {
-                Gravity = GravityFlags.Right
-            };
+            Log.Debug(TAG, "ConfigureControlSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.inputKeycode);
             spinner.Prompt = "Set " + SwSettings.CONTROL_TO_STRING_MAP[control] + " Keycode";
-            spinner.Id = (int)control;
 
             var set_key_code = SwSettings.GetControlKeycode(control);
             var set_key_string = "";
@@ -126,22 +181,13 @@ namespace SoftWing
             int spinner_position = adapter.GetPosition(set_key_string);
             spinner.SetSelection(spinner_position);
 
-            return spinner;
+            spinner.Invalidate();
         }
 
-        void RefreshUISpinners()
+        void RefreshUISpinner()
         {
-            foreach (var spinner_id in spinnerToControlMap.Keys)
-            {
-                Spinner spinner = FindViewById<Spinner>(spinner_id);
-                RefreshUISpinner(spinner);
-            }
-        }
-
-        void RefreshUISpinner(Spinner spinner)
-        {
-            var control = spinnerToControlMap[spinner.Id];
-            var set_key_code = SwSettings.GetControlKeycode(control);
+            var spinner = FindViewById<Spinner>(Resource.Id.inputKeycode);
+            var set_key_code = SwSettings.GetControlKeycode(selected_control);
             var set_key_string = "";
             foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
             {
@@ -154,6 +200,62 @@ namespace SoftWing
             var adapter = (ArrayAdapter<string>)spinner.Adapter;
             int spinner_position = adapter.GetPosition(set_key_string);
             spinner.SetSelection(spinner_position);
+        }
+
+        private bool IsAnalogControl(SwSettings.ControlId id)
+        {
+            switch (id)
+            {
+                case SwSettings.ControlId.L_Analog_Up:
+                case SwSettings.ControlId.L_Analog_Down:
+                case SwSettings.ControlId.L_Analog_Left:
+                case SwSettings.ControlId.L_Analog_Right:
+                case SwSettings.ControlId.R_Analog_Up:
+                case SwSettings.ControlId.R_Analog_Down:
+                case SwSettings.ControlId.R_Analog_Left:
+                case SwSettings.ControlId.R_Analog_Right:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public void Accept(SystemMessage message)
+        {
+            if (message.getMessageType() != MessageType.ControlUpdate)
+            {
+                return;
+            }
+            var control_message = (ControlUpdateMessage)message;
+            var key_code = control_message.Key;
+            switch (control_message.Update)
+            {
+                case ControlUpdateMessage.UpdateType.Pressed:
+                    Log.Debug(TAG, "Accept(UpdateType.Pressed)");
+                    {
+                        selected_control = SwSettings.DefaultKeycodeToControlId(key_code);
+                        if (IsAnalogControl(selected_control))
+                        {
+                            ConfigureControlLabel(selected_control);
+                            ConfigureControlSpinner(selected_control);
+                        }
+                    }
+                    break;
+                case ControlUpdateMessage.UpdateType.Released:
+                    Log.Debug(TAG, "Accept(UpdateType.Released)");
+                    {
+                        selected_control = SwSettings.DefaultKeycodeToControlId(key_code);
+                        if (!IsAnalogControl(selected_control))
+                        {
+                            ConfigureControlLabel(selected_control);
+                            ConfigureControlSpinner(selected_control);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
         }
     }
 }

@@ -40,13 +40,13 @@ namespace SoftWing
 
         private void ConfigureAudioSelectButtons()
         {
-            Button open_button = FindViewById<Button>(Resource.Id.selectOpenAudioButton);
+            var open_button = FindViewById<ImageButton>(Resource.Id.selectOpenAudioButton);
             open_button.Click += delegate
             {
                 SelectAudioFile(REQUEST_OPEN_FILE_CALLBACK);
             };
 
-            Button close_button = FindViewById<Button>(Resource.Id.selectCloseAudioButton);
+            var close_button = FindViewById<ImageButton>(Resource.Id.selectCloseAudioButton);
             close_button.Click += delegate
             {
                 SelectAudioFile(REQUEST_CLOSE_FILE_CALLBACK);

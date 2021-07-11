@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<GridLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/soundSettings">
+    android:id="@+id/soundSettings"
+    android:columnCount="5"
+    android:rowCount="5">
     <Switch
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/soundEnableSwitch" />
-    <Button
+        android:id="@+id/soundEnableSwitch"
+        android:layout_column="1"
+        android:layout_columnSpan="3"
+        android:layout_row="1" />
+    <ImageButton
         android:id="@+id/selectOpenAudioButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:textAlignment="center"
+        android:layout_width="500px"
+        android:layout_height="500px"
         android:clickable="true"
         android:background="@color/material_grey_300"
-        android:layout_marginBottom="50px"
-        android:text="Select Open Audio"/>
-    <Button
+        android:src="@drawable/open_sound_button"
+        android:layout_column="1"
+        android:layout_row="3"/>
+    <ImageButton
         android:id="@+id/selectCloseAudioButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:textAlignment="center"
+        android:layout_width="500px"
+        android:layout_height="500px"
         android:clickable="true"
         android:background="@color/material_grey_300"
-        android:layout_marginBottom="50px"
-        android:text="Select Close Audio"/>
-</LinearLayout>
+        android:src="@drawable/close_sound_button"
+        android:layout_column="3"
+        android:layout_row="3"/>
+</GridLayout>
