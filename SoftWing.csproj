@@ -112,6 +112,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DonationHandler.cs" />
+    <Compile Include="ControllerSettingsActivity.cs" />
+    <Compile Include="SoundSettingsActivity.cs" />
     <Compile Include="SwBootReceiver.cs" />
     <Compile Include="SwJoystickListener.cs" />
     <Compile Include="SwButtonListener.cs" />
@@ -201,6 +203,18 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\mipmap-anydpi-v26\" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\controller_settings.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\sound_settings.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
