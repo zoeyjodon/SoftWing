@@ -112,7 +112,7 @@ namespace SoftWing
             GridLayout.LayoutParams layout_params = new GridLayout.LayoutParams();
             layout_params.Width = 0;
             layout_params.Height = 0;
-            layout_params.ColumnSpec = GridLayout.InvokeSpec(0, 1);
+            layout_params.ColumnSpec = GridLayout.InvokeSpec(0, 3);
             layout_params.RowSpec = GridLayout.InvokeSpec(0, 1);
             spinner.LayoutParameters = layout_params;
 
@@ -122,7 +122,8 @@ namespace SoftWing
             {
                 if (!itemTitles.Contains(item.Title))
                 {
-                    itemTitles.Add(item.Title);
+                    // Remove the app specific stuff
+                    itemTitles.Add(item.Title.Split(" (com.")[0]);
                 }
             }
             var adapter = new ArrayAdapter<string>(parent_activity, Android.Resource.Layout.SimpleSpinnerItem, itemTitles);
@@ -148,7 +149,7 @@ namespace SoftWing
 
             foreach (var item in skuDetails)
             {
-                if (item.Title == selected_title)
+                if (item.Title.Contains(selected_title))
                 {
                     LaunchBilling(item, parent_activity);
                     parent.SetSelection(0);
