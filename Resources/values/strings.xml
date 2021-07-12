@@ -3,4 +3,10 @@
   <string name="action_settings">Settings</string>
   <string name="permissions_rationale">SoftWing needs storage permissions to run custom sounds.</string>
   <string name="ok">OK</string>
+  <string name="warningLinkText">
+    <a href="https://forum.xda-developers.com/t/android-permissions-security-explained.2312066/">Tap here for more information on these special permissions</a>
+  </string>
+  <string name="adbTutorialText">
+    <a href="https://www.xda-developers.com/install-adb-windows-macos-linux/">Tap here to open adb setup instructions</a>
+  </string>
 </resources>

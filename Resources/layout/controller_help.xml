@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/std_grid_padding"
+    android:paddingRight="@dimen/std_grid_padding"
+    android:paddingTop="@dimen/std_grid_padding"
+    android:id="@+id/controllerHelp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Select Your Desired Setup"
+        android:paddingBottom="@dimen/std_grid_padding"
+        android:textSize="@dimen/std_text_size"/>
+    <ImageButton
+        android:id="@+id/simpleSetupButton"
+        style="@style/ImageButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="150px"
+        android:src="@drawable/simple_setup_button"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/std_grid_padding"/>
+    <ImageButton
+        android:id="@+id/advancedSetupButton"
+        style="@style/ImageButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="150px"
+        android:src="@drawable/advanced_setup_button"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include
+                android:id="@+id/standardHelpView"
+                android:paddingTop="@dimen/std_grid_padding"
+                layout="@layout/controller_help_standard"
+                android:visibility="invisible"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <include
+                android:id="@+id/advancedHelpView"
+                android:paddingTop="@dimen/std_grid_padding"
+                layout="@layout/controller_help_advanced"
+                android:visibility="invisible"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

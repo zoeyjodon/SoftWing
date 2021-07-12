@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/std_grid_padding"
+    android:paddingRight="@dimen/std_grid_padding"
+    android:paddingTop="@dimen/std_grid_padding"
+    android:id="@+id/controllerHelp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Setup"
+        android:textSize="@dimen/std_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1.) Make sure 'Show Icon For Switching Keyboards' is enabled in your device settings.\n(Note: disabling 'Show icon for hiding keyboard' is also helpful to avoid accidentially closing the controller)"
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2.) Enable both the 'LG Keyboard' and the 'SoftWingInput' under 'Manage Keyboards'."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="3.) Set your default keyboard to 'SoftWingInput'."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:paddingTop="@dimen/std_grid_padding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Use"
+        android:textSize="@dimen/std_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1.) Start by ensuring no apps are open on the second screen."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2.) Open the game you want to play on the cover display."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="3.) Once the desired game has loaded, open the notification tray and tap the SoftWing notification"
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="4.) If your wing is not already swiveled open, you may swivel it now. If the process was successful, you should see the LG keyboard open on the second display. Otherwise, return to step 3 of the Setup process."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="5.) Tap the keyboard switching icon in the bottom right corner of the LG keyboard."
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="6.) Select the Soft Wing Input from the menu.\nIf the controller does not appear, return to step 3 of the Use process"
+        android:textSize="@dimen/body_text_size"/>
+</LinearLayout>

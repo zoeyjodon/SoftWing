@@ -33,6 +33,7 @@ namespace SoftWing
             dispatcher.Subscribe(MessageType.ControlUpdate, this);
             var inputKeyView = FindViewById<ViewGroup>(Resource.Id.imeKeyView);
             SetInputListeners(inputKeyView);
+            ConfigureHelpButton();
             ConfigureResetButton();
             ConfigureControlLabel(selected_control);
             ConfigureControlSpinner(selected_control);
@@ -41,6 +42,15 @@ namespace SoftWing
         protected override void OnStart()
         {
             base.OnStart();
+        }
+
+        private void ConfigureHelpButton()
+        {
+            var help_button = FindViewById<ImageButton>(Resource.Id.controllerHelpButton);
+            help_button.Click += delegate
+            {
+                StartActivity(typeof(ControllerHelpActivity));
+            };
         }
 
         private void ConfigureResetButton()

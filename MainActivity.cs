@@ -72,7 +72,11 @@ namespace SoftWing
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
             var alert = dialog.Create();
             alert.SetTitle("Enable Required Keyboards");
-            alert.SetMessage("In order for the controller to work, both the SoftWingInput and the LG Keyboard must be enabled in your settings.");
+            var message = "In order for the controller to work, the following must be enabled in your settings:\n";
+            message += "\t- LG Keyboard\n";
+            message += "\t- SoftWingInput\n";
+            message += "\t- Show icon for switching keyboards";
+            alert.SetMessage(message);
             alert.SetButton("OK", (c, ev) =>
             {
                 var enableIntent = new Intent(Settings.ActionInputMethodSettings);

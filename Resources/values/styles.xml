@@ -49,7 +49,9 @@
     <item name="android:layout_width">500px</item>
     <item name="android:layout_height">500px</item>
   </style>
+
   <dimen name="std_text_size">24dp</dimen>
+  <dimen name="body_text_size">18dp</dimen>
   <dimen name="std_grid_padding">10dp</dimen>
   <integer name="main_grid_rows">6</integer>
   <integer name="main_grid_cols">5</integer>
