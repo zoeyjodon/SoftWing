@@ -7,33 +7,49 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/controllerSettings"
-    android:columnCount="5"
+    android:columnCount="3"
     android:rowCount="6">
+    <ImageButton
+        android:id="@+id/controllerHelpButton"
+        android:src="@drawable/help_button"
+        style="@style/ImageButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="150px"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_row="0"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/std_grid_padding"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_row="1"/>
     <ImageButton
         android:id="@+id/resetToDefaultButton"
         android:src="@drawable/reset_button"
         style="@style/ImageButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="150px"
-        android:layout_column="1"
+        android:layout_column="0"
         android:layout_columnSpan="3"
-        android:layout_row="1"/>
+        android:layout_row="2"/>
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_row="3"
         android:paddingTop="@dimen/std_grid_padding"
         android:paddingRight="@dimen/std_grid_padding"
         android:paddingLeft="@dimen/std_grid_padding"
-        android:layout_column="1"
-        android:layout_columnSpan="3"
-        android:layout_row="3"
-        android:columnCount="3"
-        android:rowCount="1">
+        android:rowCount="1"
+        android:columnCount="3">
         <TextView
             android:id="@+id/inputName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Test"
+            android:gravity="bottom"
             android:textSize="@dimen/std_text_size"
             android:layout_column="0"
             android:layout_row="0"/>
@@ -41,16 +57,18 @@
             android:id="@+id/inputKeycode"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
+            android:gravity="bottom"
             style="@style/ImageButtonStyle"
             android:layout_column="2"
             android:layout_row="0"/>
     </GridLayout>
     <include
+        android:gravity="bottom"
         layout="@layout/input"
         android:id="@+id/imeKeyView"
         android:layout_width="match_parent"
         android:layout_height="1240px"
+        android:layout_row="5"
         android:layout_column="0"
-        android:layout_columnSpan="5"
-        android:layout_row="5"/>
+        android:layout_columnSpan="3"/>
 </GridLayout>
