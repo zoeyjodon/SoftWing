@@ -7,30 +7,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/soundSettings"
+    android:paddingLeft="@dimen/std_grid_padding"
+    android:paddingRight="@dimen/std_grid_padding"
+    android:paddingTop="@dimen/std_grid_padding"
     android:columnCount="5"
     android:rowCount="5">
     <Switch
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/soundEnableSwitch"
+        android:paddingBottom="@dimen/std_grid_padding"
         android:layout_column="1"
         android:layout_columnSpan="3"
         android:layout_row="1" />
     <ImageButton
         android:id="@+id/selectOpenAudioButton"
-        android:layout_width="500px"
-        android:layout_height="500px"
-        android:clickable="true"
-        android:background="@color/material_grey_300"
+        style="@style/TileButtonStyle"
         android:src="@drawable/open_sound_button"
         android:layout_column="1"
         android:layout_row="3"/>
     <ImageButton
         android:id="@+id/selectCloseAudioButton"
-        android:layout_width="500px"
-        android:layout_height="500px"
-        android:clickable="true"
-        android:background="@color/material_grey_300"
+        style="@style/TileButtonStyle"
         android:src="@drawable/close_sound_button"
         android:layout_column="3"
         android:layout_row="3"/>

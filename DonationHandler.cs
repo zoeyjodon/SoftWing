@@ -120,7 +120,10 @@ namespace SoftWing
             itemTitles.Add("Give the engineer nothing ($0)");
             foreach (var item in skuDetails)
             {
-                itemTitles.Add(item.Title);
+                if (!itemTitles.Contains(item.Title))
+                {
+                    itemTitles.Add(item.Title);
+                }
             }
             var adapter = new ArrayAdapter<string>(parent_activity, Android.Resource.Layout.SimpleSpinnerItem, itemTitles);
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);

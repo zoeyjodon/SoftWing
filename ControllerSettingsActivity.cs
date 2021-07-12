@@ -170,7 +170,7 @@ namespace SoftWing
                     set_key_string = key_string;
                 }
             }
-            var adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleSpinnerItem, inputNames);
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 

@@ -27,7 +27,32 @@
     <item name="android:datePickerDialogTheme">@style/AppCompatDialogStyle</item>
   </style>
 
+  <style name="VerticalSpacerStyle">
+    <item name="android:layout_width">20dp</item>
+    <item name="android:layout_height">match_parent</item>
+  </style>
+  <style name="HorizontalSpacerStyle">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">20dp</item>
+  </style>
+
   <style name="AppCompatDialogStyle" parent="Theme.AppCompat.Light.Dialog">
     <item name="colorAccent">#FF4081</item>
   </style>
+
+  <style name="ImageButtonStyle">
+    <item name="android:background">@color/material_grey_300</item>
+    <item name="android:clickable">true</item>
+    <item name="android:textAlignment">center</item>
+  </style>
+  <style name="TileButtonStyle" parent="ImageButtonStyle">
+    <item name="android:layout_width">500px</item>
+    <item name="android:layout_height">500px</item>
+  </style>
+  <dimen name="std_text_size">24dp</dimen>
+  <dimen name="std_grid_padding">10dp</dimen>
+  <integer name="main_grid_rows">6</integer>
+  <integer name="main_grid_cols">5</integer>
+  <integer name="main_grid_max_col">4</integer>
+  <integer name="main_grid_max_row">5</integer>
 </resources>
