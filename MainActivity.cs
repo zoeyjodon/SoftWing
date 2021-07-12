@@ -58,6 +58,22 @@ namespace SoftWing
             EnsureControllerEnabled();
         }
 
+        private void OfferControllerHelp()
+        {
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Would You Like Some Help?");
+            var message = "First time using the controller? How about some instructions?";
+            alert.SetMessage(message);
+            alert.SetButton("OK", (c, ev) =>
+            {
+                StartActivity(typeof(ControllerHelpActivity));
+                alert.Cancel();
+            });
+            alert.SetButton2("SKIP", (c, ev) => { });
+            alert.Show();
+        }
+
         private void EnsureControllerEnabled()
         {
             Log.Debug(TAG, "EnsureControllerEnabled()");
@@ -83,8 +99,11 @@ namespace SoftWing
                 enableIntent.SetFlags(ActivityFlags.NewTask);
                 StartActivity(enableIntent);
                 alert.Cancel();
+                OfferControllerHelp();
             });
-            alert.SetButton2("SKIP", (c, ev) => { });
+            alert.SetButton2("SKIP", (c, ev) => {
+                OfferControllerHelp();
+            });
             alert.Show();
         }
 
