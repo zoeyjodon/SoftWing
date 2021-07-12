@@ -6,6 +6,7 @@ using System;
 using Android.Util;
 using Android.Widget;
 using Android.Views;
+using Android.Provider;
 using Android.Content.PM;
 using AndroidX.Core.App;
 using Android;
@@ -54,6 +55,33 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
+            EnsureControllerEnabled();
+        }
+
+        private void EnsureControllerEnabled()
+        {
+            Log.Debug(TAG, "EnsureControllerEnabled()");
+
+            var enabled_imes = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.EnabledInputMethods);
+            Log.Debug(TAG, enabled_imes);
+            if (enabled_imes.Contains("SoftWingInput") && enabled_imes.Contains("LgeImeImpl"))
+            {
+                return;
+            }
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Enable Required Keyboards");
+            alert.SetMessage("In order for the controller to work, both the SoftWingInput and the LG Keyboard must be enabled in your settings.");
+            alert.SetButton("OK", (c, ev) =>
+            {
+                var enableIntent = new Intent(Settings.ActionInputMethodSettings);
+                enableIntent.SetFlags(ActivityFlags.NewTask);
+                StartActivity(enableIntent);
+                alert.Cancel();
+            });
+            alert.SetButton2("SKIP", (c, ev) => { });
+            alert.Show();
         }
 
         private void RequestAllPermissions()
