@@ -29,6 +29,7 @@ namespace SoftWing
 
         private const int LG_KEYBOARD_TIMEOUT_MS = 500;
         private const int SHOW_IME_DELAY_MS = 500;
+        private const int IME_STARTUP_WAIT_MS = 3000;
 
         private const int PLAY_SOUND_MAX_DELAY_MS = 1000;
         private static String OPEN_SOUND_PATH;
@@ -187,8 +188,9 @@ namespace SoftWing
             }
             Task.Factory.StartNew(() =>
             {
+                Log.Debug(TAG, "Waiting for IME to open...");
                 var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-                var end_time = start_time + SHOW_IME_DELAY_MS;
+                var end_time = start_time + IME_STARTUP_WAIT_MS;
                 while (!SoftWingInput.ImeIsOpen)
                 {
                     // Make sure we aren't waiting forever
@@ -197,6 +199,7 @@ namespace SoftWing
                         return;
                     }
                 }
+                Log.Debug(TAG, "Launching switching task");
                 instance.dispatcher.Post(msg);
             });
         }
