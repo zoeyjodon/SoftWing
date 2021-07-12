@@ -5,6 +5,7 @@ using Android.Runtime;
 using SoftWing.System;
 using System;
 using Android.Util;
+using Android.Provider;
 using Android.Widget;
 using Android.Content.PM;
 using Android.Content;
@@ -19,6 +20,7 @@ namespace SoftWing
         private const String TAG = "SoundSettingsActivity";
         private const int REQUEST_OPEN_FILE_CALLBACK = 300;
         private const int REQUEST_CLOSE_FILE_CALLBACK = 301;
+        private bool soundDisablePromptComplete = false;
         private MessageDispatcher dispatcher;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -38,6 +40,34 @@ namespace SoftWing
             base.OnStart();
         }
 
+        private bool DisablePromptRequired()
+        {
+            return (SwSettings.GetOpenSoundPath() == "") && (SwSettings.GetCloseSoundPath() == "");
+        }
+
+        private void EnsureSoundDisabled()
+        {
+            Log.Debug(TAG, "EnsureSoundDisabled()");
+            // Only need to prompt if open and close sounds are not set yet
+            if (!DisablePromptRequired())
+            {
+                return;
+            }
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Disable Swivel Up/Down Sounds");
+            alert.SetMessage("In order for custom swivel sounds to work, you must navigate to System sounds and disable Swivel Up/Down sounds in your settings.");
+            alert.SetButton("OK", (c, ev) =>
+            {
+                var enableIntent = new Intent(Settings.ActionSoundSettings);
+                enableIntent.SetFlags(ActivityFlags.NewTask);
+                StartActivity(enableIntent);
+                alert.Cancel();
+            });
+            alert.SetButton2("Cancel", (c, ev) => { });
+            alert.Show();
+        }
+
         private void ConfigureAudioSelectButtons()
         {
             var open_button = FindViewById<ImageButton>(Resource.Id.selectOpenAudioButton);
@@ -55,6 +85,12 @@ namespace SoftWing
 
         private void SelectAudioFile(int requestCode)
         {
+            if (!soundDisablePromptComplete)
+            {
+                soundDisablePromptComplete = true;
+                EnsureSoundDisabled();
+                return;
+            }
             Intent intent = new Intent(Intent.ActionOpenDocument);
             intent.AddCategory(Intent.CategoryOpenable);
             intent.SetType("audio/*");

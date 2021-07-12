@@ -10,26 +10,18 @@
     android:paddingLeft="@dimen/std_grid_padding"
     android:paddingRight="@dimen/std_grid_padding"
     android:paddingTop="@dimen/std_grid_padding"
-    android:columnCount="5"
-    android:rowCount="5">
-    <Switch
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/soundEnableSwitch"
-        android:paddingBottom="@dimen/std_grid_padding"
-        android:layout_column="1"
-        android:layout_columnSpan="3"
-        android:layout_row="1" />
+    android:columnCount="3"
+    android:rowCount="1">
     <ImageButton
         android:id="@+id/selectOpenAudioButton"
         style="@style/TileButtonStyle"
         android:src="@drawable/open_sound_button"
-        android:layout_column="1"
-        android:layout_row="3"/>
+        android:layout_column="0"
+        android:layout_row="0"/>
     <ImageButton
         android:id="@+id/selectCloseAudioButton"
         style="@style/TileButtonStyle"
         android:src="@drawable/close_sound_button"
-        android:layout_column="3"
-        android:layout_row="3"/>
+        android:layout_column="2"
+        android:layout_row="0"/>
 </GridLayout>
