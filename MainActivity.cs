@@ -11,11 +11,12 @@ using AndroidX.Core.App;
 using Android;
 using Android.Support.Design.Widget;
 using Android.Content;
+using SoftWing.System;
 
 namespace SoftWing
 {
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : AppCompatActivity, MessageSubscriber
     {
         private const String TAG = "MainActivity";
         private static String[] PERMISSIONS_LIST = {
@@ -28,6 +29,7 @@ namespace SoftWing
             Manifest.Permission.ReceiveBootCompleted
         };
         private DonationHandler donation;
+        private MessageDispatcher dispatcher;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,7 +39,9 @@ namespace SoftWing
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
-            donation = new DonationHandler();
+            donation = new DonationHandler(this);
+            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher.Subscribe(MessageType.DonationUpdate, this);
             ConfigureNavigationButtons();
         }
 
@@ -50,7 +54,6 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
-            ConfigureDonationButton();
         }
 
         private void RequestAllPermissions()
@@ -109,12 +112,14 @@ namespace SoftWing
         private void ConfigureDonationButton()
         {
             Log.Debug(TAG, "ConfigureDonationButton");
+            var main_view = FindViewById<ViewGroup>(Resource.Id.mainLayout);
+            var spinner = donation.CreateDonationSpinner();
+            main_view.AddView(spinner);
+
             var donate_button = FindViewById<ImageButton>(Resource.Id.donateButton);
             donate_button.Click += delegate
             {
-                var item = donation.skuDetails[0];
-                Log.Debug(TAG, "item = " + item.Title);
-                donation.LaunchBilling(item, this);
+                spinner.PerformClick();
             };
         }
 
@@ -124,6 +129,20 @@ namespace SoftWing
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        public void Accept(SystemMessage message)
+        {
+            Log.Debug(TAG, "Accept");
+            if (message.getMessageType() != MessageType.DonationUpdate)
+            {
+                return;
+            }
+            var donation_message = (System.Messages.DonationUpdateMessage)message;
+            if (donation_message.DonationType == System.Messages.DonationUpdateMessage.UpdateType.SetupComplete)
+            {
+                ConfigureDonationButton();
+            }
         }
     }
 }

@@ -1,24 +1,27 @@
 ﻿using Android.App;
 using Android.BillingClient.Api;
-using Android.Content;
 using Android.Util;
-using Java.Interop;
+using Android.Views;
+using Android.Widget;
 using SoftWing.System;
 using System;
 using System.Collections.Generic;
 
 namespace SoftWing
 {
-    class DonationHandler : Java.Lang.Object, IPurchasesUpdatedListener, System.MessageSubscriber, IBillingClientStateListener, ISkuDetailsResponseListener
+    class DonationHandler : Java.Lang.Object, IPurchasesUpdatedListener, MessageSubscriber, IBillingClientStateListener, ISkuDetailsResponseListener, Spinner.IOnItemSelectedListener
     {
         private const String TAG = "DonationHandler";
         private MessageDispatcher dispatcher;
         private BillingClient billingClient;
         private List<String> skuList = new List<String>() { "donate_1", "donate_5", "donate_10", "donate_20", "donate_50", "donate_100" };
-        public IList<SkuDetails> skuDetails = null;
+        public List<SkuDetails> skuDetails = new List<SkuDetails>();
+        private int ignore_keyset_count = 0;
+        private Activity parent_activity;
 
-        public DonationHandler()
+        public DonationHandler(Activity parent)
         {
+            parent_activity = parent;
             dispatcher = MessageDispatcher.GetInstance();
             billingClient = BillingClient.NewBuilder(Application.Context)
                 .SetListener(this)
@@ -48,17 +51,13 @@ namespace SoftWing
             billingClient.QuerySkuDetails(details_builder.Build(), this);
         }
 
-        public void LaunchBilling(SkuDetails sku, Activity parent)
+        private void LaunchBilling(SkuDetails sku, Activity parent)
         {
             Log.Debug(TAG, "LaunchBilling()");
             BillingFlowParams billingFlowParams = BillingFlowParams.NewBuilder()
                 .SetSkuDetails(sku)
                 .Build();
-            var responseCode = billingClient.LaunchBillingFlow(parent, billingFlowParams).ResponseCode;
-            if (responseCode == BillingResponseCode.Ok)
-            {
-                // Thank the foolish mortal
-            }
+            billingClient.LaunchBillingFlow(parent, billingFlowParams);
         }
 
         public void OnPurchasesUpdated(BillingResult result, IList<Purchase> purchases)
@@ -66,20 +65,24 @@ namespace SoftWing
             Log.Debug(TAG, "OnPurchasesUpdated()");
             if (result.ResponseCode == BillingResponseCode.Ok && purchases != null)
             {
-                foreach (Purchase purchase in purchases)
+                string message = "Thank you! Your donation will have the following effect:\n";
+                string sku = purchases[0].Skus[0];
+                foreach (var item in skuDetails)
                 {
-                    //handlePurchase(purchase);
+                    if (item.Sku == sku)
+                    {
+                        message += item.Description;
+                        break;
+                    }
                 }
+                var toast = Toast.MakeText(parent_activity, message, ToastLength.Long);
+                toast.Show();
             }
-            else if (result.ResponseCode == BillingResponseCode.UserCancelled)
+            else if (result.ResponseCode != BillingResponseCode.UserCancelled)
             {
-                // Handle an error caused by a user cancelling the purchase flow.
+                var toast = Toast.MakeText(parent_activity, "Something went wrong, try again maybe?", ToastLength.Long);
+                toast.Show();
             }
-            else
-            {
-                // Handle any other error codes.
-            }
-
         }
 
         public void Accept(SystemMessage message)
@@ -95,11 +98,65 @@ namespace SoftWing
                 Log.Debug(TAG, "SKU Detail setup failed with code " + result.ResponseCode.ToString());
                 return;
             }
-            skuDetails = sku_list;
+            skuDetails.AddRange(sku_list);
+            skuDetails.Sort((p, q) => p.PriceAmountMicros.CompareTo(q.PriceAmountMicros));
+            dispatcher.Post(new System.Messages.DonationUpdateMessage(System.Messages.DonationUpdateMessage.UpdateType.SetupComplete));
+        }
+
+        public Spinner CreateDonationSpinner()
+        {
+            Log.Debug(TAG, "CreateDonationSpinner");
+            var spinner = new Spinner(parent_activity);
+            spinner.Prompt = "Select a Donation Tier";
+            spinner.Clickable = true;
+            GridLayout.LayoutParams layout_params = new GridLayout.LayoutParams();
+            layout_params.Width = 0;
+            layout_params.Height = 0;
+            layout_params.ColumnSpec = GridLayout.InvokeSpec(0, 1);
+            layout_params.RowSpec = GridLayout.InvokeSpec(0, 1);
+            spinner.LayoutParameters = layout_params;
+
+            List<string> itemTitles = new List<string>();
+            itemTitles.Add("Give the engineer nothing ($0)");
             foreach (var item in skuDetails)
             {
-                Log.Debug(TAG, "SKU ITEM = " + item.Title);
+                itemTitles.Add(item.Title);
             }
+            var adapter = new ArrayAdapter<string>(parent_activity, Android.Resource.Layout.SimpleSpinnerItem, itemTitles);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+            ignore_keyset_count++;
+
+            spinner.OnItemSelectedListener = this;
+
+            return spinner;
+        }
+
+        public void OnItemSelected(AdapterView parent, View view, int position, long id)
+        {
+            var selected_title = string.Format("{0}", parent.GetItemAtPosition(position));
+            Log.Debug(TAG, "OnItemSelected: " + selected_title);
+            if (ignore_keyset_count > 0)
+            {
+                Log.Debug(TAG, "Ignoring item selection");
+                ignore_keyset_count--;
+                return;
+            }
+
+            foreach (var item in skuDetails)
+            {
+                if (item.Title == selected_title)
+                {
+                    LaunchBilling(item, parent_activity);
+                    parent.SetSelection(0);
+                    return;
+                }
+            }
+        }
+
+        public void OnNothingSelected(AdapterView parent)
+        {
+            Log.Debug(TAG, "OnNothingSelected");
         }
     }
 }

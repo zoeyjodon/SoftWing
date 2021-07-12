@@ -138,7 +138,6 @@ namespace SoftWing
                 ignore_keyset_count--;
                 return;
             }
-            Log.Debug(TAG, "SpinnerItemSelected++");
             Spinner spinner = (Spinner)sender;
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
