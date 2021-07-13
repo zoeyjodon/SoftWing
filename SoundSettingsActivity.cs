@@ -14,7 +14,7 @@ using SoftWing.System.Messages;
 
 namespace SoftWing
 {
-    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleTask)]
     public class SoundSettingsActivity : AppCompatActivity
     {
         private const String TAG = "SoundSettingsActivity";

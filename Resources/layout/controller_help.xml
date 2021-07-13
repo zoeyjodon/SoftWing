@@ -43,14 +43,14 @@
                 android:id="@+id/standardHelpView"
                 android:paddingTop="@dimen/std_grid_padding"
                 layout="@layout/controller_help_standard"
-                android:visibility="invisible"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
             <include
                 android:id="@+id/advancedHelpView"
                 android:paddingTop="@dimen/std_grid_padding"
                 layout="@layout/controller_help_advanced"
-                android:visibility="invisible"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>

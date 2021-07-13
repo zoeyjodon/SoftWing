@@ -36,6 +36,12 @@ namespace SoftWing
         {
             Log.Debug(TAG, "OnCreate()");
             base.OnCreate(savedInstanceState);
+            if (!IsTaskRoot)
+            {
+                // Only allow one instance per session
+                Finish();
+                return;
+            }
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
@@ -101,7 +107,8 @@ namespace SoftWing
                 alert.Cancel();
                 OfferControllerHelp();
             });
-            alert.SetButton2("SKIP", (c, ev) => {
+            alert.SetButton2("SKIP", (c, ev) =>
+            {
                 OfferControllerHelp();
             });
             alert.Show();

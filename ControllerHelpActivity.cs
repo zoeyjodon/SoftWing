@@ -10,7 +10,7 @@ using Android.Text.Method;
 
 namespace SoftWing
 {
-    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleTask)]
     public class ControllerHelpActivity : AppCompatActivity
     {
         private const String TAG = "ControllerHelpActivity";

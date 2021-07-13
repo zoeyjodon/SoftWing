@@ -13,7 +13,7 @@ using SoftWing.System.Messages;
 
 namespace SoftWing
 {
-    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Theme = "@style/AppTheme", ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleTask)]
     public class ControllerSettingsActivity : AppCompatActivity, MessageSubscriber
     {
         private const String TAG = "ControllerSettingsActivity";

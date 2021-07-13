@@ -79,12 +79,26 @@ namespace SoftWing
 
         }
 
+        private string FormatTitle(string title)
+        {
+            return title.Split(" (SoftWing")[0];
+        }
+
+        private void ShowThankYouMessage(SkuDetails item)
+        {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(parent_activity);
+            var alert = dialog.Create();
+            alert.SetTitle("Thank you for purchasing: " + FormatTitle(item.Title));
+            alert.SetMessage(item.Description);
+            alert.SetButton("OK", (c, ev) => { });
+            alert.Show();
+        }
+
         public void OnPurchasesUpdated(BillingResult result, IList<Purchase> purchases)
         {
             Log.Debug(TAG, "OnPurchasesUpdated()");
             if (result.ResponseCode == BillingResponseCode.Ok && purchases != null)
             {
-                string message = "Thank you!\n";
                 foreach (var purchase in purchases)
                 {
                     // It's a donation that grants nothing, so we're safe to consume this right away
@@ -94,13 +108,11 @@ namespace SoftWing
                     {
                         if (item.Sku == sku)
                         {
-                            message += item.Description;
+                            ShowThankYouMessage(item);
                             break;
                         }
                     }
                 }
-                var toast = Toast.MakeText(parent_activity, message, ToastLength.Long);
-                toast.Show();
             }
             else if (result.ResponseCode != BillingResponseCode.UserCancelled)
             {
@@ -144,10 +156,11 @@ namespace SoftWing
             itemTitles.Add("Give The Engineer Nothing ($0)");
             foreach (var item in skuDetails)
             {
-                if (!itemTitles.Contains(item.Title))
+                // Remove the app specific stuff
+                var title = FormatTitle(item.Title);
+                if (!itemTitles.Contains(title))
                 {
-                    // Remove the app specific stuff
-                    itemTitles.Add(item.Title.Split(" (com.")[0]);
+                    itemTitles.Add(title);
                 }
             }
             var adapter = new ArrayAdapter<string>(parent_activity, Android.Resource.Layout.SimpleSpinnerItem, itemTitles);
