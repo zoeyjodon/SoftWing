@@ -117,7 +117,7 @@ namespace SoftWing
             spinner.LayoutParameters = layout_params;
 
             List<string> itemTitles = new List<string>();
-            itemTitles.Add("Give the engineer nothing ($0)");
+            itemTitles.Add("Give The Engineer Nothing ($0)");
             foreach (var item in skuDetails)
             {
                 if (!itemTitles.Contains(item.Title))
