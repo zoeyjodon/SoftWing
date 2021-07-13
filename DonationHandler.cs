@@ -9,7 +9,13 @@ using System.Collections.Generic;
 
 namespace SoftWing
 {
-    class DonationHandler : Java.Lang.Object, IPurchasesUpdatedListener, MessageSubscriber, IBillingClientStateListener, ISkuDetailsResponseListener, Spinner.IOnItemSelectedListener
+    class DonationHandler : Java.Lang.Object,
+                            IPurchasesUpdatedListener,
+                            MessageSubscriber,
+                            IBillingClientStateListener,
+                            ISkuDetailsResponseListener,
+                            Spinner.IOnItemSelectedListener,
+                            IConsumeResponseListener
     {
         private const String TAG = "DonationHandler";
         private MessageDispatcher dispatcher;
@@ -60,19 +66,37 @@ namespace SoftWing
             billingClient.LaunchBillingFlow(parent, billingFlowParams);
         }
 
+        private void ConsumePurchase(Purchase purchase)
+        {
+            if (!purchase.IsAcknowledged)
+            {
+                var cParams =
+                    ConsumeParams.NewBuilder()
+                        .SetPurchaseToken(purchase.PurchaseToken)
+                        .Build();
+                billingClient.Consume(cParams, this);
+            }
+
+        }
+
         public void OnPurchasesUpdated(BillingResult result, IList<Purchase> purchases)
         {
             Log.Debug(TAG, "OnPurchasesUpdated()");
             if (result.ResponseCode == BillingResponseCode.Ok && purchases != null)
             {
-                string message = "Thank you! Your donation will have the following effect:\n";
-                string sku = purchases[0].Skus[0];
-                foreach (var item in skuDetails)
+                string message = "Thank you!\n";
+                foreach (var purchase in purchases)
                 {
-                    if (item.Sku == sku)
+                    // It's a donation that grants nothing, so we're safe to consume this right away
+                    ConsumePurchase(purchase);
+                    string sku = purchase.Skus[0];
+                    foreach (var item in skuDetails)
                     {
-                        message += item.Description;
-                        break;
+                        if (item.Sku == sku)
+                        {
+                            message += item.Description;
+                            break;
+                        }
                     }
                 }
                 var toast = Toast.MakeText(parent_activity, message, ToastLength.Long);
@@ -161,6 +185,11 @@ namespace SoftWing
         public void OnNothingSelected(AdapterView parent)
         {
             Log.Debug(TAG, "OnNothingSelected");
+        }
+
+        public void OnConsumeResponse(BillingResult result, string token)
+        {
+            Log.Debug(TAG, "OnConsumeResponse" + result.ToString());
         }
     }
 }
