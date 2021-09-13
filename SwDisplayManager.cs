@@ -27,7 +27,6 @@ namespace SoftWing
         private const int NOTIFICATION_ONGOING_ID = 1001;
         private static NotificationReceiver notification_receiver = null;
 
-        private const int LG_KEYBOARD_TIMEOUT_MS = 500;
         private const int SHOW_IME_DELAY_MS = 500;
         private const int IME_STARTUP_WAIT_MS = 3000;
 
@@ -347,7 +346,7 @@ namespace SoftWing
                     new Android.OS.Handler().PostDelayed(delegate
                     {
                         UseSwKeyboard();
-                    }, LG_KEYBOARD_TIMEOUT_MS);
+                    }, SwSettings.GetTransitionDelayMs());
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");

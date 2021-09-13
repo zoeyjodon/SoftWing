@@ -18,6 +18,7 @@ namespace SoftWing
     {
         private const String TAG = "ControllerSettingsActivity";
         private int ignore_keyset_count = 0;
+        private int ignore_delayset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
 
@@ -37,6 +38,8 @@ namespace SoftWing
             ConfigureResetButton();
             ConfigureControlLabel(selected_control);
             ConfigureControlSpinner(selected_control);
+            ConfigureControlSpinner(selected_control);
+            ConfigureDelaySpinner();
         }
 
         protected override void OnStart()
@@ -139,9 +142,9 @@ namespace SoftWing
             }
         }
 
-        private void SpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        private void ControlSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "SpinnerItemSelected");
+            Log.Debug(TAG, "ControlSpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
             if (ignore_keyset_count != 0)
             {
@@ -184,10 +187,57 @@ namespace SoftWing
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(SpinnerItemSelected);
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ControlSpinnerItemSelected);
             ignore_keyset_count++;
 
             int spinner_position = adapter.GetPosition(set_key_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void DelaySpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "DelaySpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (ignore_delayset_count != 0)
+            {
+                ignore_delayset_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var delay_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var delay = SwSettings.DELAY_TO_STRING_MAP[delay_string];
+
+            SwSettings.SetTransitionDelayMs(delay);
+        }
+
+        private void ConfigureDelaySpinner()
+        {
+            Log.Debug(TAG, "ConfigureDelaySpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.transitionDelay);
+            spinner.Prompt = "Select transition delay (seconds)";
+
+            var set_delay = SwSettings.GetTransitionDelayMs();
+            var set_delay_string = "";
+            List<string> inputNames = new List<string>();
+            foreach (var delay_str in SwSettings.DELAY_TO_STRING_MAP.Keys)
+            {
+                inputNames.Add(delay_str);
+                if (set_delay == SwSettings.DELAY_TO_STRING_MAP[delay_str])
+                {
+                    set_delay_string = delay_str;
+                }
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DelaySpinnerItemSelected);
+            ignore_delayset_count++;
+
+            int spinner_position = adapter.GetPosition(set_delay_string);
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();

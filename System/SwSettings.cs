@@ -1,6 +1,7 @@
 ﻿using Android.Net;
 using Android.Util;
 using Android.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Xamarin.Essentials;
@@ -16,6 +17,8 @@ namespace SoftWing.System
         private static string CLOSE_SOUND_FILENAME = "close_sound.txt";
         private static string OPEN_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, OPEN_SOUND_FILENAME);
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
+        private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
+        private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private static bool local_keymap_updated = false;
         public const Keycode Default_L_Button = Keycode.ButtonL1;
@@ -38,6 +41,7 @@ namespace SoftWing.System
         public const Keycode Default_D_Pad_Left = Keycode.DpadLeft;
         public const Keycode Default_D_Pad_Right = Keycode.DpadRight;
         public const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
+        public const int Default_Transition_Delay_Ms = 500;
         public enum ControlId : int
         {
             L_Button,
@@ -61,6 +65,16 @@ namespace SoftWing.System
             D_Pad_Right,
             D_Pad_Center
         }
+        public static Dictionary<string, int> DELAY_TO_STRING_MAP = new Dictionary<string, int>
+        {
+            { "0"   , 0 },
+            { "0.5" , 500},
+            { "1"   , 1000},
+            { "1.5" , 1500},
+            { "2"   , 2000},
+            { "2.5" , 2500},
+            { "3"   , 3000}
+        };
         public static Dictionary<ControlId, string> CONTROL_TO_STRING_MAP = new Dictionary<ControlId, string>
         {
             { ControlId.L_Button        , "Left Shoulder Button" },
@@ -258,7 +272,7 @@ namespace SoftWing.System
             }
         }
 
-        public static void SetOpenSoundPath(Uri path)
+        public static void SetOpenSoundPath(Android.Net.Uri path)
         {
             Log.Debug(TAG, "SetOpenSoundPath");
             using (var writer = File.CreateText(OPEN_SOUND_RECORD_PATH))
@@ -267,7 +281,36 @@ namespace SoftWing.System
             }
         }
 
-        public static void SetCloseSoundPath(Uri path)
+        public static int GetTransitionDelayMs()
+        {
+            Log.Debug(TAG, "GetTransitionDelayMs");
+            if (!File.Exists(TRANSITION_DELAY_PATH))
+            {
+                Log.Debug(TAG, "Transition delay record not found");
+                return Default_Transition_Delay_Ms;
+            }
+            var stream = File.OpenRead(TRANSITION_DELAY_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var delayStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                if (Int32.TryParse(delayStr, out int delay))
+                {
+                    return delay;
+                }
+                return Default_Transition_Delay_Ms;
+            }
+        }
+
+        public static void SetTransitionDelayMs(int delay)
+        {
+            Log.Debug(TAG, "SetTransitionDelayMs");
+            using (var writer = File.CreateText(TRANSITION_DELAY_PATH))
+            {
+                writer.WriteLine(delay.ToString());
+            }
+        }
+
+        public static void SetCloseSoundPath(Android.Net.Uri path)
         {
             Log.Debug(TAG, "SetCloseSoundPath");
             using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
