@@ -2,7 +2,7 @@
 using Android.OS;
 using Android.Support.V7.App;
 using Android.Runtime;
-using SoftWing.System;
+using SoftWing.SwSystem;
 using System;
 using Android.Util;
 using Android.Provider;
@@ -10,7 +10,7 @@ using Android.Widget;
 using Android.Content.PM;
 using Android.Content;
 using System.IO;
-using SoftWing.System.Messages;
+using SoftWing.SwSystem.Messages;
 
 namespace SoftWing
 {

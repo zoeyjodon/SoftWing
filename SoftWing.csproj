@@ -118,21 +118,21 @@
     <Compile Include="SwBootReceiver.cs" />
     <Compile Include="SwJoystickListener.cs" />
     <Compile Include="SwButtonListener.cs" />
-    <Compile Include="System\MessageDispatcher.cs" />
-    <Compile Include="System\MessageSubscriber.cs" />
+    <Compile Include="SwSystem\MessageDispatcher.cs" />
+    <Compile Include="SwSystem\MessageSubscriber.cs" />
     <Compile Include="NotificationReceiver.cs" />
     <Compile Include="SwDisplayManager.cs" />
     <Compile Include="SoftWingInput.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="System\Messages\ControlUpdateMessage.cs" />
-    <Compile Include="System\Messages\AudioUpdateMessage.cs" />
-    <Compile Include="System\Messages\DonationUpdateMessage.cs" />
-    <Compile Include="System\Messages\ShowImeMessage.cs" />
-    <Compile Include="System\Messages\DisplayUpdateMessage.cs" />
-    <Compile Include="System\SwSettings.cs" />
-    <Compile Include="System\SystemMessage.cs" />
+    <Compile Include="SwSystem\Messages\ControlUpdateMessage.cs" />
+    <Compile Include="SwSystem\Messages\AudioUpdateMessage.cs" />
+    <Compile Include="SwSystem\Messages\DonationUpdateMessage.cs" />
+    <Compile Include="SwSystem\Messages\ShowImeMessage.cs" />
+    <Compile Include="SwSystem\Messages\DisplayUpdateMessage.cs" />
+    <Compile Include="SwSystem\SwSettings.cs" />
+    <Compile Include="SwSystem\SystemMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

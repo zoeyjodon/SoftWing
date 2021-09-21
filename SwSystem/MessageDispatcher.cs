@@ -8,7 +8,7 @@
 using Android.App;
 using System.Collections.Generic;
 
-namespace SoftWing.System
+namespace SoftWing.SwSystem
 {
     public class MessageDispatcher
     {

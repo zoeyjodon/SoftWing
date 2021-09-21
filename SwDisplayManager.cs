@@ -7,20 +7,20 @@ using Com.Lge.Display;
 using Android.Provider;
 using System;
 using Android.Media;
-using SoftWing.System.Messages;
+using SoftWing.SwSystem.Messages;
 using System.IO;
-using SoftWing.System;
+using SoftWing.SwSystem;
 using System.Threading.Tasks;
 
 namespace SoftWing
 {
     [Service(Exported = true, Enabled = true, Name = "com.jodonlucas.softwing.SoftWing.SwDisplayManager")]
-    public class SwDisplayManager : Service, System.MessageSubscriber
+    public class SwDisplayManager : Service, SwSystem.MessageSubscriber
     {
         private const String TAG = "SwDisplayManager";
         private DisplayManagerHelper lg_display_manager;
         private LgSwivelStateCallback swivel_state_cb;
-        private System.MessageDispatcher dispatcher;
+        private SwSystem.MessageDispatcher dispatcher;
         private static SwDisplayManager instance;
 
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
@@ -68,10 +68,10 @@ namespace SoftWing
             lg_display_manager = new DisplayManagerHelper(this);
             instance = this;
 
-            dispatcher = System.MessageDispatcher.GetInstance();
-            dispatcher.Subscribe(System.MessageType.DisplayUpdate, this);
-            dispatcher.Subscribe(System.MessageType.ShowIme, this);
-            dispatcher.Subscribe(System.MessageType.AudioUpdate, this);
+            dispatcher = SwSystem.MessageDispatcher.GetInstance();
+            dispatcher.Subscribe(SwSystem.MessageType.DisplayUpdate, this);
+            dispatcher.Subscribe(SwSystem.MessageType.ShowIme, this);
+            dispatcher.Subscribe(SwSystem.MessageType.AudioUpdate, this);
 
             swivel_state_cb = new LgSwivelStateCallback();
             lg_display_manager.RegisterSwivelStateCallback(swivel_state_cb);
@@ -357,19 +357,19 @@ namespace SoftWing
             }
         }
 
-        public void Accept(SoftWing.System.SystemMessage message)
+        public void Accept(SoftWing.SwSystem.SystemMessage message)
         {
             Log.Debug(TAG, "Accept");
 
             switch (message.getMessageType())
             {
-                case System.MessageType.ShowIme:
+                case SwSystem.MessageType.ShowIme:
                     HandleShowIme();
                     break;
-                case System.MessageType.DisplayUpdate:
+                case SwSystem.MessageType.DisplayUpdate:
                     HandleDisplayUpdate((DisplayUpdateMessage)message);
                     break;
-                case System.MessageType.AudioUpdate:
+                case SwSystem.MessageType.AudioUpdate:
                     HandleAudioUpdate((AudioUpdateMessage)message);
                     break;
                 default:
@@ -393,12 +393,12 @@ namespace SoftWing
     public class LgSwivelStateCallback : DisplayManagerHelper.SwivelStateCallback
     {
         private const String TAG = "LgSwivelStateCallback";
-        private System.MessageDispatcher dispatcher;
+        private SwSystem.MessageDispatcher dispatcher;
         private bool ignore_transition = true;
 
         public LgSwivelStateCallback()
         {
-            dispatcher = System.MessageDispatcher.GetInstance(new Activity());
+            dispatcher = SwSystem.MessageDispatcher.GetInstance(new Activity());
         }
 
         public override void OnSwivelStateChanged(int state)

@@ -5,7 +5,7 @@
  * \author Lucas Jodon 
  * \date   8/14/2020
 ***********************************************************************/
-namespace SoftWing.System
+namespace SoftWing.SwSystem
 {
     public interface MessageSubscriber
     {

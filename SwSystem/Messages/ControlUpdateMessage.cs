@@ -1,6 +1,6 @@
 ﻿using Android.Views;
 
-namespace SoftWing.System.Messages
+namespace SoftWing.SwSystem.Messages
 {
     public class ControlUpdateMessage : SystemMessage
     {

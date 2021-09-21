@@ -3,7 +3,7 @@ using Android.BillingClient.Api;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using SoftWing.System;
+using SoftWing.SwSystem;
 using System;
 using System.Collections.Generic;
 
@@ -136,7 +136,7 @@ namespace SoftWing
             }
             skuDetails.AddRange(sku_list);
             skuDetails.Sort((p, q) => p.PriceAmountMicros.CompareTo(q.PriceAmountMicros));
-            dispatcher.Post(new System.Messages.DonationUpdateMessage(System.Messages.DonationUpdateMessage.UpdateType.SetupComplete));
+            dispatcher.Post(new SwSystem.Messages.DonationUpdateMessage(SwSystem.Messages.DonationUpdateMessage.UpdateType.SetupComplete));
         }
 
         public Spinner CreateDonationSpinner()

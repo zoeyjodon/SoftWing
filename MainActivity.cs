@@ -12,7 +12,7 @@ using AndroidX.Core.App;
 using Android;
 using Android.Support.Design.Widget;
 using Android.Content;
-using SoftWing.System;
+using SoftWing.SwSystem;
 
 namespace SoftWing
 {
@@ -196,8 +196,8 @@ namespace SoftWing
             {
                 return;
             }
-            var donation_message = (System.Messages.DonationUpdateMessage)message;
-            if (donation_message.DonationType == System.Messages.DonationUpdateMessage.UpdateType.SetupComplete)
+            var donation_message = (SwSystem.Messages.DonationUpdateMessage)message;
+            if (donation_message.DonationType == SwSystem.Messages.DonationUpdateMessage.UpdateType.SetupComplete)
             {
                 ConfigureDonationButton();
             }

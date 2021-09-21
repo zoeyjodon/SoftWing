@@ -1,6 +1,6 @@
 ﻿using Android.Net;
 
-namespace SoftWing.System.Messages
+namespace SoftWing.SwSystem.Messages
 {
     class AudioUpdateMessage : SystemMessage
     {

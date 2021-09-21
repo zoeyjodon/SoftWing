@@ -1,8 +1,8 @@
 ﻿using Android.Util;
 using Android.Views;
 using System;
-using SoftWing.System;
-using SoftWing.System.Messages;
+using SoftWing.SwSystem;
+using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
 using Android.App;
 using Xamarin.Essentials;

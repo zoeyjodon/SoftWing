@@ -1,4 +1,4 @@
-﻿namespace SoftWing.System.Messages
+﻿namespace SoftWing.SwSystem.Messages
 {
     class ShowImeMessage : SystemMessage
     {

@@ -6,16 +6,16 @@ using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using System;
-using SoftWing.System.Messages;
+using SoftWing.SwSystem.Messages;
 using Com.Jackandphantom.Joystickview;
-using SoftWing.System;
+using SoftWing.SwSystem;
 
 namespace SoftWing
 {
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
     [MetaData("android.view.im", Resource = "@xml/method")]
-    public class SoftWingInput : InputMethodService, System.MessageSubscriber
+    public class SoftWingInput : InputMethodService, SwSystem.MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
@@ -149,7 +149,7 @@ namespace SoftWing
             Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
             dispatcher = MessageDispatcher.GetInstance(new Activity());
-            dispatcher.Subscribe(System.MessageType.ControlUpdate, this);
+            dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
         }
 
         public override AbstractInputMethodImpl OnCreateInputMethodInterface()

@@ -8,11 +8,11 @@ namespace SoftWing
     {
         private const String TAG = "NotificationReceiver";
         public const String ACTION_SHOW = "org.pocketworkstation.pckeyboard.SHOW";
-        private System.MessageDispatcher dispatcher;
+        private SwSystem.MessageDispatcher dispatcher;
 
         public NotificationReceiver()
         {
-            dispatcher = System.MessageDispatcher.GetInstance();
+            dispatcher = SwSystem.MessageDispatcher.GetInstance();
         }
 
         public override void OnReceive(Context context, Intent intent)
@@ -22,7 +22,7 @@ namespace SoftWing
 
             if (action.Equals(ACTION_SHOW))
             {
-                dispatcher.Post(new System.Messages.ShowImeMessage());
+                dispatcher.Post(new SwSystem.Messages.ShowImeMessage());
             }
         }
     }

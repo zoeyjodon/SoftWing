@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Xamarin.Essentials;
 
-namespace SoftWing.System
+namespace SoftWing.SwSystem
 {
     public static class SwSettings
     {

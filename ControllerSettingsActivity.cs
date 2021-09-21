@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.OS;
 using Android.Support.V7.App;
-using SoftWing.System;
+using SoftWing.SwSystem;
 using System;
 using Android.Util;
 using Android.Widget;
@@ -9,7 +9,7 @@ using Android.Views;
 using System.Collections.Generic;
 using Android.Content.PM;
 using Com.Jackandphantom.Joystickview;
-using SoftWing.System.Messages;
+using SoftWing.SwSystem.Messages;
 
 namespace SoftWing
 {
