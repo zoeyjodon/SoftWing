@@ -34,7 +34,6 @@ namespace SoftWing
         private static String OPEN_SOUND_PATH;
         private static String CLOSE_SOUND_PATH;
         private int media_volume = 0;
-        private MediaPlayer media_player;
         private AudioFocusRequestClass focus_request = new AudioFocusRequestClass.Builder(AudioFocus.GainTransient).Build();
 
         public static void StartSwDisplayManager()
@@ -242,40 +241,10 @@ namespace SoftWing
 
         private void StartSound(String audio_path)
         {
-            var audio_manager = (AudioManager)GetSystemService(AudioService);
-            if ((media_player != null) && (media_player.IsPlaying))
-            {
-                media_player.Stop();
-                media_player.Release();
-            }
-            else
-            {
-                media_volume = audio_manager.GetStreamVolume(Android.Media.Stream.Music);
-                audio_manager.RequestAudioFocus(focus_request);
-            }
-            int systemVolume = audio_manager.GetStreamVolume(Android.Media.Stream.System);
-            // Make sure we return all settings to normal after we're done
-            media_player = MediaPlayer.Create(ApplicationContext, Android.Net.Uri.Parse(audio_path));
-            media_player.Completion += delegate
-            {
-                audio_manager.SetStreamVolume(Android.Media.Stream.Music, media_volume, 0);
-                audio_manager.AbandonAudioFocusRequest(focus_request);
-            };
-            // Give the system time to pause any running audio
-            var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-            var end_time = start_time + PLAY_SOUND_MAX_DELAY_MS;
-            while (audio_manager.IsMusicActive)
-            {
-                if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
-                {
-                    break;
-                }
-            }
-            if (!audio_manager.IsMusicActive)
-            {
-                audio_manager.SetStreamVolume(Android.Media.Stream.Music, systemVolume, 0);
-            }
-            media_player.Start();
+            // Play as a system sound
+            Ringtone swingRing = RingtoneManager.GetRingtone(ApplicationContext, Android.Net.Uri.Parse(audio_path));
+            swingRing.StreamType = Android.Media.Stream.System;
+            swingRing.Play();
         }
 
         public void PlayWingSound(String audio_path)
