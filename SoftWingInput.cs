@@ -14,8 +14,8 @@ namespace SoftWing
 {
     [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD")]
     [IntentFilter(new[] { "android.view.InputMethod" })]
-    [MetaData("android.view.im", Resource = "@xml/method")]
-    public class SoftWingInput : InputMethodService, SwSystem.MessageSubscriber
+    [MetaData("android.view.im", Resource = "@xml/input_method_config")]
+    public class SoftWingInput : InputMethodService, MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;

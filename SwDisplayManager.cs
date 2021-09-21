@@ -250,9 +250,10 @@ namespace SoftWing
         public void PlayWingSound(String audio_path)
         {
             Log.Debug(TAG, "PlayWingSound");
-            if (!File.Exists(audio_path))
+            if (String.IsNullOrEmpty(audio_path))
             {
-                Log.Debug(TAG, audio_path + " File Not Found!");
+                Log.Debug(TAG, "Audio File Invalid!");
+                return;
             }
             try
             {

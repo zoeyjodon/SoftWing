@@ -114,6 +114,7 @@
     <Compile Include="ControllerHelpActivity.cs" />
     <Compile Include="DonationHandler.cs" />
     <Compile Include="ControllerSettingsActivity.cs" />
+    <Compile Include="SoftWingAccessibility.cs" />
     <Compile Include="SoundSettingsActivity.cs" />
     <Compile Include="SwBootReceiver.cs" />
     <Compile Include="SwJoystickListener.cs" />
@@ -157,7 +158,7 @@
     <AndroidResource Include="Resources\mipmap-xxhdpi\ic_launcher_foreground.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_foreground.png" />
-    <AndroidResource Include="Resources\xml\method.xml" />
+    <AndroidResource Include="Resources\xml\input_method_config.xml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Google.Apis.Core">
@@ -268,6 +269,9 @@
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\accessibility_service_config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
