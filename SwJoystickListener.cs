@@ -95,7 +95,7 @@ namespace SoftWing
 
             double angleRad = Math.PI * angle / 180.0;
             float endX = motion.beginX + (float)(strengthMod * Math.Cos(angleRad));
-            float endY = motion.beginY + (float)(strengthMod * Math.Sin(angleRad));
+            float endY = motion.beginY - (float)(strengthMod * Math.Sin(angleRad));
             return new MotionDescription(endX, endY, endX, endY);
         }
 
