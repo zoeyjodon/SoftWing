@@ -15,6 +15,7 @@ namespace SoftWing.SwSystem
         ControlUpdate,
         ShowIme,
         DonationUpdate,
+        MotionUpdate
     }
 
     public interface SystemMessage

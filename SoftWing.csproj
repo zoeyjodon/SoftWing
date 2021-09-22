@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerHelpActivity.cs" />
+    <Compile Include="MotionConfigurationActivity.cs" />
     <Compile Include="DonationHandler.cs" />
     <Compile Include="ControllerSettingsActivity.cs" />
     <Compile Include="SoftWingAccessibility.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwSystem\Messages\MotionUpdateMessage.cs" />
     <Compile Include="SwSystem\Messages\ControlUpdateMessage.cs" />
     <Compile Include="SwSystem\Messages\AudioUpdateMessage.cs" />
     <Compile Include="SwSystem\Messages\DonationUpdateMessage.cs" />
@@ -272,6 +274,12 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\xml\accessibility_service_config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\motion_configuration.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using Android.Content.PM;
 using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem.Messages;
+using Android.Content;
+using Android.Runtime;
 
 namespace SoftWing
 {
@@ -21,6 +23,7 @@ namespace SoftWing
         private int ignore_delayset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
+        private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -155,8 +158,15 @@ namespace SoftWing
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
             var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
-
-            SwSettings.SetControlKeycode(selected_control, key);
+            // Special case: Touch input
+            if (key == Keycode.Unknown)
+            {
+                SelectImageFile();
+            }
+            else
+            {
+                SwSettings.SetControlKeycode(selected_control, key);
+            }
         }
 
         private void ConfigureControlLabel(SwSettings.ControlId control)
@@ -315,6 +325,35 @@ namespace SoftWing
                     break;
             }
 
+        }
+
+        private void SelectImageFile()
+        {
+            Intent intent = new Intent(Intent.ActionOpenDocument);
+            intent.AddCategory(Intent.CategoryOpenable);
+            intent.SetType("image/*");
+            StartActivityForResult(intent, REQUEST_IMAGE_FILE_CALLBACK);
+        }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            if (data == null)
+            {
+                Log.Debug(TAG, "OnActivityResult received null");
+                return;
+            }
+            Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
+            base.OnActivityResult(requestCode, resultCode, data);
+            switch (requestCode)
+            {
+                case REQUEST_IMAGE_FILE_CALLBACK:
+                    MotionConfigurationActivity.BackgroundImageUri = data.Data;
+                    StartActivity(typeof(MotionConfigurationActivity));
+                    break;
+                default:
+                    Log.Debug(TAG, "Ignoring Activity Result");
+                    break;
+            }
         }
     }
 }

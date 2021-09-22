@@ -1,13 +1,13 @@
 ﻿using System;
 using Android.App;
 using Android.Content;
-using Android.OS;
 using Android.Util;
-using Android.Views;
 using Android.AccessibilityServices;
 using Android.Views.Accessibility;
 using Android.Graphics;
 using static Android.AccessibilityServices.AccessibilityService;
+using SoftWing.SwSystem;
+using SoftWing.SwSystem.Messages;
 
 namespace SoftWing
 {
@@ -36,16 +36,17 @@ namespace SoftWing
     [Service(Label = "SoftWingAccessibility", Permission = "android.permission.BIND_ACCESSIBILITY_SERVICE")]
     [IntentFilter(new[] { "android.accessibilityservice.AccessibilityService" })]
     [MetaData("android.accessibilityservice", Resource = "@xml/accessibility_service_config")]
-    class SoftWingAccessibility : AccessibilityService
+    class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
-        private static SoftWingAccessibility instance = null;
+        private MessageDispatcher dispatcher;
 
         public override void OnCreate()
         {
             Log.Info(TAG, "OnCreate");
-            instance = this;
             base.OnCreate();
+            dispatcher = MessageDispatcher.GetInstance();
+            dispatcher.Subscribe(MessageType.MotionUpdate, this);
         }
 
         protected override void OnServiceConnected()
@@ -60,21 +61,17 @@ namespace SoftWing
             return base.OnUnbind(intent);
         }
 
-        public static void PerformGesture()
+        private void PerformGesture(MotionDescription motion, long durationMs)
         {
             Log.Info(TAG, "PerformGesture");
-            if (instance == null)
-            {
-                Log.Info(TAG, "instance invalid");
-                return;
-            }
+
             Path path = new Path();
-            path.MoveTo(0, 0);
-            path.LineTo(500, 500);
+            path.MoveTo(motion.beginX, motion.beginY);
+            path.LineTo(motion.endX, motion.endY);
 
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-            gestureBuilder.AddStroke(new GestureDescription.StrokeDescription(path, 0, 3000));
-            if (instance.DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
+            gestureBuilder.AddStroke(new GestureDescription.StrokeDescription(path, 0, durationMs));
+            if (DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
             {
                 Log.Info(TAG, "Dispatch Success!");
             }
@@ -93,6 +90,16 @@ namespace SoftWing
         public override void OnInterrupt()
         {
             Log.Info(TAG, "OnInterrupt");
+        }
+
+        public void Accept(SystemMessage message)
+        {
+            if (message.getMessageType() != MessageType.MotionUpdate)
+            {
+                return;
+            }
+            var motionUpdate = (MotionUpdateMessage)message;
+            PerformGesture(motionUpdate.motion, 1000);
         }
     }
 }

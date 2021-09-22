@@ -1,10 +1,10 @@
-﻿using Android.Net;
-using Android.Util;
+﻿using Android.Util;
 using Android.Views;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Xamarin.Essentials;
+using SoftWing.SwSystem.Messages;
 
 namespace SoftWing.SwSystem
 {
@@ -20,6 +20,7 @@ namespace SoftWing.SwSystem
         private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
         private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
+        private const string MOTION_DELIMITER = ",";
         private static bool local_keymap_updated = false;
         public const Keycode Default_L_Button = Keycode.ButtonL1;
         public const Keycode Default_R_Button = Keycode.ButtonR1;
@@ -42,6 +43,7 @@ namespace SoftWing.SwSystem
         public const Keycode Default_D_Pad_Right = Keycode.DpadRight;
         public const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
         public const int Default_Transition_Delay_Ms = 500;
+        public static MotionDescription Default_Motion = new MotionDescription(0, 0, 0, 0);
         public enum ControlId : int
         {
             L_Button,
@@ -149,7 +151,8 @@ namespace SoftWing.SwSystem
             { "Button R1", Keycode.ButtonR1 },
             { "Button R2", Keycode.ButtonR2 },
             { "Button SELECT", Keycode.ButtonSelect },
-            { "Button START", Keycode.ButtonStart }
+            { "Button START", Keycode.ButtonStart },
+            { "Touch Control", Keycode.Unknown }
         };
         private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
         {
@@ -173,6 +176,29 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Left      , Default_D_Pad_Left     },
             { ControlId.D_Pad_Right     , Default_D_Pad_Right    },
             { ControlId.D_Pad_Center    , Default_D_Pad_Center   }
+        };
+        private static Dictionary<ControlId, MotionDescription> CONTROL_TO_MOTION_MAP = new Dictionary<ControlId, MotionDescription>
+        {
+            { ControlId.L_Button        , Default_Motion},
+            { ControlId.R_Button        , Default_Motion},
+            { ControlId.L_Analog_Up     , Default_Motion},
+            { ControlId.L_Analog_Down   , Default_Motion},
+            { ControlId.L_Analog_Left   , Default_Motion},
+            { ControlId.L_Analog_Right  , Default_Motion},
+            { ControlId.R_Analog_Up     , Default_Motion},
+            { ControlId.R_Analog_Down   , Default_Motion},
+            { ControlId.R_Analog_Left   , Default_Motion},
+            { ControlId.R_Analog_Right  , Default_Motion},
+            { ControlId.X_Button        , Default_Motion},
+            { ControlId.Y_Button        , Default_Motion},
+            { ControlId.A_Button        , Default_Motion},
+            { ControlId.B_Button        , Default_Motion},
+            { ControlId.Start_Button    , Default_Motion},
+            { ControlId.D_Pad_Up        , Default_Motion},
+            { ControlId.D_Pad_Down      , Default_Motion},
+            { ControlId.D_Pad_Left      , Default_Motion},
+            { ControlId.D_Pad_Right     , Default_Motion},
+            { ControlId.D_Pad_Center    , Default_Motion}
         };
 
         public static ControlId DefaultKeycodeToControlId(Keycode key)
@@ -319,6 +345,13 @@ namespace SoftWing.SwSystem
             }
         }
 
+        public static void SetControlMotion(ControlId control, MotionDescription motion)
+        {
+            CONTROL_TO_KEY_MAP[control] = Keycode.Unknown;
+            CONTROL_TO_MOTION_MAP[control] = motion;
+            UpdateStoredKeymap();
+        }
+
         public static void SetControlKeycode(ControlId control, Keycode key)
         {
             CONTROL_TO_KEY_MAP[control] = key;
@@ -329,6 +362,12 @@ namespace SoftWing.SwSystem
         {
             UpdateLocalKeymap();
             return CONTROL_TO_KEY_MAP[control];
+        }
+
+        public static MotionDescription GetControlMotion(ControlId control)
+        {
+            UpdateLocalKeymap();
+            return CONTROL_TO_MOTION_MAP[control];
         }
 
         private static void UpdateLocalKeymap()
@@ -356,6 +395,11 @@ namespace SoftWing.SwSystem
                     var control = GetControlFromString(control_key_str[0]);
                     var key = STRING_TO_KEYCODE_MAP[control_key_str[1]];
                     CONTROL_TO_KEY_MAP[control] = key;
+                    if (control_key_str.Length > 2)
+                    {
+                        CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[2]);
+                    }
+
                     line = reader.ReadLine();
                 }
             }
@@ -370,8 +414,10 @@ namespace SoftWing.SwSystem
                 {
                     Keycode key;
                     CONTROL_TO_KEY_MAP.TryGetValue(control, out key);
+                    MotionDescription motion;
+                    CONTROL_TO_MOTION_MAP.TryGetValue(control, out motion);
 
-                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromKeycode(key);
+                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromKeycode(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
                     writer.WriteLine(writetext);
                 }
             }
@@ -387,6 +433,36 @@ namespace SoftWing.SwSystem
                 }
             }
             return "";
+        }
+
+        private static string GetStringFromMotion(MotionDescription motion)
+        {
+            return motion.beginX.ToString() + MOTION_DELIMITER +
+                motion.beginY.ToString() + MOTION_DELIMITER +
+                motion.endX.ToString() + MOTION_DELIMITER +
+                motion.endY.ToString();
+        }
+
+        private static MotionDescription GetMotionFromString(string motionString)
+        {
+            float beginX = 0;
+            float beginY = 0;
+            float endX = 0;
+            float endY = 0;
+            try
+            {
+                var motions = motionString.Split(MOTION_DELIMITER);
+                beginX = float.Parse(motions[0]);
+                beginY = float.Parse(motions[1]);
+                endX = float.Parse(motions[2]);
+                endY = float.Parse(motions[3]);
+            }
+            catch (Exception e)
+            {
+                Log.Error(TAG, e.Message);
+            }
+
+            return new MotionDescription(beginX, beginY, endX, endY);
         }
 
         private static ControlId GetControlFromString(string control_string)
