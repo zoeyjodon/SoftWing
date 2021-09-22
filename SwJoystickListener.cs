@@ -35,10 +35,11 @@ namespace SoftWing
         private const double ANGLE_DOWN_MAX = ANGLE_DOWN + ANGLE_TOLERANCE;
         private const double ANGLE_DOWN_MIN = ANGLE_DOWN - ANGLE_TOLERANCE;
 
-        private Keycode up_keycode;
-        private Keycode down_keycode;
-        private Keycode left_keycode;
-        private Keycode right_keycode;
+        private Keycode up_keycode = Keycode.Unknown;
+        private Keycode down_keycode = Keycode.Unknown;
+        private Keycode left_keycode = Keycode.Unknown;
+        private Keycode right_keycode = Keycode.Unknown;
+        private MotionDescription motion = new MotionDescription(-1, -1, -1, -1);
         private MessageDispatcher dispatcher;
         private bool up_pressed = false;
         private bool down_pressed = false;
@@ -54,6 +55,12 @@ namespace SoftWing
             right_keycode = right_keycode_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
+        public SwJoystickListener(MotionDescription motion_in)
+        {
+            Log.Info(TAG, "SwJoystickListener");
+            motion = motion_in;
+            dispatcher = MessageDispatcher.GetInstance(new Activity());
+        }
 
         ~SwJoystickListener()
         {
@@ -62,6 +69,12 @@ namespace SoftWing
 
         public void OnMove(double angle, float strength)
         {
+            if (up_keycode == Keycode.Unknown)
+            {
+                HandleMotion(angle, strength);
+                return;
+            }
+
             if (strength < STRENGTH_THRESHOLD)
             {
                 DisableRunningInputs();
@@ -71,6 +84,25 @@ namespace SoftWing
             HandleLeftPress(angle);
             HandleUpPress(angle);
             HandleDownPress(angle);
+        }
+
+        private MotionDescription CalculateMotion(double angle, float strength)
+        {
+            var diffX2 = Math.Pow((motion.endX - motion.beginX), 2);
+            var diffY2 = Math.Pow((motion.endY - motion.beginY), 2);
+            var distance = Math.Sqrt(diffX2 + diffY2);
+            var strengthMod = distance * strength / 100.0;
+
+            double angleRad = Math.PI * angle / 180.0;
+            float endX = motion.beginX + (float)(strengthMod * Math.Cos(angleRad));
+            float endY = motion.beginY + (float)(strengthMod * Math.Sin(angleRad));
+            return new MotionDescription(endX, endY, endX, endY);
+        }
+
+        private void HandleMotion(double angle, float strength)
+        {
+            var angleMotion = CalculateMotion(angle, strength);
+            dispatcher.Post(new MotionUpdateMessage(angleMotion));
         }
 
         private void HandleRightPress(double angle)

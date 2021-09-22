@@ -71,7 +71,13 @@ namespace SoftWing
             };
         }
 
-        private void SetJoystickListener(JoyStickView joystick, Android.Views.Keycode up, Android.Views.Keycode down, Android.Views.Keycode left, Android.Views.Keycode right)
+        private void SetInputListener(View vin, Keycode key)
+        {
+            var motion = new MotionDescription(0, 0, 0, 0);
+            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion));
+        }
+
+        private void SetJoystickListener(JoyStickView joystick, Keycode up, Keycode down, Keycode left, Keycode right)
         {
             var listener = new SwJoystickListener(up, down, left, right);
             joystick.SetOnMoveListener(listener);
@@ -104,40 +110,40 @@ namespace SoftWing
                         }
                         break;
                     case (Resource.Id.d_pad_up):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Up));
+                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Up);
                         break;
                     case (Resource.Id.d_pad_down):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Down));
+                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Down);
                         break;
                     case (Resource.Id.d_pad_left):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Left));
+                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Left);
                         break;
                     case (Resource.Id.d_pad_right):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Right));
+                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Right);
                         break;
                     case (Resource.Id.d_pad_center):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_D_Pad_Center));
+                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Center);
                         break;
                     case (Resource.Id.a_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_A_Button));
+                        SetInputListener(nextChild, SwSettings.Default_A_Button);
                         break;
                     case (Resource.Id.b_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_B_Button));
+                        SetInputListener(nextChild, SwSettings.Default_B_Button);
                         break;
                     case (Resource.Id.y_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_Y_Button));
+                        SetInputListener(nextChild, SwSettings.Default_Y_Button);
                         break;
                     case (Resource.Id.x_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_X_Button));
+                        SetInputListener(nextChild, SwSettings.Default_X_Button);
                         break;
                     case (Resource.Id.l_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_L_Button));
+                        SetInputListener(nextChild, SwSettings.Default_L_Button);
                         break;
                     case (Resource.Id.r_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_R_Button));
+                        SetInputListener(nextChild, SwSettings.Default_R_Button);
                         break;
                     case (Resource.Id.start_button):
-                        nextChild.SetOnTouchListener(new SwButtonListener(nextChild, SwSettings.Default_Start_Button));
+                        SetInputListener(nextChild, SwSettings.Default_Start_Button);
                         break;
                     default:
                         break;
@@ -158,9 +164,15 @@ namespace SoftWing
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
             var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
+            if (SwSettings.GetControlKeycode(selected_control) == key)
+            {
+                Log.Debug(TAG, "Item already selected, ignoring");
+                return;
+            }
             // Special case: Touch input
             if (key == Keycode.Unknown)
             {
+                MotionConfigurationActivity.controls = GetAssociatedControls(selected_control);
                 SelectImageFile();
             }
             else
@@ -269,6 +281,35 @@ namespace SoftWing
             var adapter = (ArrayAdapter<string>)spinner.Adapter;
             int spinner_position = adapter.GetPosition(set_key_string);
             spinner.SetSelection(spinner_position);
+        }
+
+        private List<SwSettings.ControlId> GetAssociatedControls(SwSettings.ControlId id)
+        {
+            switch (id)
+            {
+                case SwSettings.ControlId.L_Analog_Up:
+                case SwSettings.ControlId.L_Analog_Down:
+                case SwSettings.ControlId.L_Analog_Left:
+                case SwSettings.ControlId.L_Analog_Right:
+                    return new List<SwSettings.ControlId> {
+                        SwSettings.ControlId.L_Analog_Up,
+                        SwSettings.ControlId.L_Analog_Down,
+                        SwSettings.ControlId.L_Analog_Left,
+                        SwSettings.ControlId.L_Analog_Right
+                    };
+                case SwSettings.ControlId.R_Analog_Up:
+                case SwSettings.ControlId.R_Analog_Down:
+                case SwSettings.ControlId.R_Analog_Left:
+                case SwSettings.ControlId.R_Analog_Right:
+                    return new List<SwSettings.ControlId> {
+                        SwSettings.ControlId.R_Analog_Up,
+                        SwSettings.ControlId.R_Analog_Down,
+                        SwSettings.ControlId.R_Analog_Left,
+                        SwSettings.ControlId.R_Analog_Right
+                    };
+                default:
+                    return new List<SwSettings.ControlId> { id };
+            }
         }
 
         private bool IsAnalogControl(SwSettings.ControlId id)

@@ -9,6 +9,8 @@ using Android.Content.PM;
 using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
 using Android.Widget;
+using SoftWing.SwSystem;
+using System.Collections.Generic;
 
 namespace SoftWing
 {
@@ -19,8 +21,11 @@ namespace SoftWing
         private ISurfaceHolder surfaceHolder = null;
         private Paint surfacePaint = new Paint(PaintFlags.AntiAlias);
         private const int surfaceRadius = 50;
+        private const int strokeWidth = 50;
         private MotionDescription motion = new MotionDescription(-1, -1, -1, -1);
+
         public static Android.Net.Uri BackgroundImageUri = null;
+        public static List<SwSettings.ControlId> controls;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,6 +42,8 @@ namespace SoftWing
                  SystemUiFlags.LayoutStable |
                  SystemUiFlags.ImmersiveSticky;
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
+
+            surfacePaint.StrokeWidth = strokeWidth;
 
             SetContentView(Resource.Layout.motion_configuration);
         }
@@ -67,6 +74,7 @@ namespace SoftWing
             canvas.DrawCircle(e.GetX(), e.GetY(), surfaceRadius, surfacePaint);
             if (motion.beginX > -1)
             {
+                canvas.DrawLine(motion.beginX, motion.beginY, e.GetX(), e.GetY(), surfacePaint);
                 canvas.DrawCircle(motion.beginX, motion.beginY, surfaceRadius, surfacePaint);
             }
             surfaceHolder.UnlockCanvasAndPost(canvas);
@@ -74,10 +82,21 @@ namespace SoftWing
 
         private void EndPointSetting(MotionEvent e)
         {
-            motion.beginX = e.GetX();
-            motion.beginY = e.GetY();
-            motion.endX = e.GetX();
-            motion.endY = e.GetY();
+            if (motion.beginX == -1)
+            {
+                motion.beginX = e.GetX();
+                motion.beginY = e.GetY();
+            }
+            else
+            {
+                motion.endX = e.GetX();
+                motion.endY = e.GetY();
+                foreach (var control in controls)
+                {
+                    SwSettings.SetControlMotion(control, motion);
+                }
+                Finish();
+            }
         }
 
         public bool OnTouch(View v, MotionEvent e)

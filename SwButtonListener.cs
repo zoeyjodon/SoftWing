@@ -14,14 +14,16 @@ namespace SoftWing
         private const String TAG = "SwButtonListener";
         private TimeSpan KEY_VIBRATION_TIME = TimeSpan.FromSeconds(0.01);
         private View button;
-        private Keycode key;
+        private Keycode key = Keycode.Unknown;
+        private MotionDescription motion = new MotionDescription(-1, -1, -1, -1);
         private MessageDispatcher dispatcher;
 
-        public SwButtonListener(View button_in, Keycode key_in)
+        public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in)
         {
-            Log.Info(TAG, "SwButtonListener");
+            Log.Info(TAG, "SwButtonListener - key");
             button = button_in;
             key = key_in;
+            motion = motion_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
 
@@ -38,19 +40,29 @@ namespace SoftWing
                     Log.Info(TAG, "OnTouch - Down");
                     button.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
                     Vibration.Vibrate(KEY_VIBRATION_TIME);
-                    dispatcher.Post(new ControlUpdateMessage(key, ControlUpdateMessage.UpdateType.Pressed));
+                    ReportEvent(ControlUpdateMessage.UpdateType.Pressed);
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
                     button.SetBackgroundColor(Android.Graphics.Color.Transparent);
                     Vibration.Vibrate(KEY_VIBRATION_TIME);
-                    dispatcher.Post(new ControlUpdateMessage(key, ControlUpdateMessage.UpdateType.Released));
+                    ReportEvent(ControlUpdateMessage.UpdateType.Released);
                     break;
                 default:
                     Log.Info(TAG, "OnTouch - Other");
                     break;
             }
             return true;
+        }
+
+        private void ReportEvent(ControlUpdateMessage.UpdateType update)
+        {
+            if (key != Keycode.Unknown)
+            {
+                dispatcher.Post(new ControlUpdateMessage(key, update));
+                return;
+            }
+            dispatcher.Post(new MotionUpdateMessage(motion));
         }
     }
 }
