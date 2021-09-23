@@ -64,6 +64,46 @@ namespace SoftWing
             EnsureControllerEnabled();
         }
 
+        private void EnsureSwAccessibility()
+        {
+            Log.Info(TAG, "EnableSwAccessibility");
+            try
+            {
+                //en = "com.jodonlucas.softwing / crc64b8a8e0418bb06473.SoftWingAccessibility:" + en;
+                var enabledServices = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.EnabledAccessibilityServices);
+                if (!enabledServices.Contains("SoftWingAccessibility"))
+                {
+                    PromptAccessibilityEnable();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Info(TAG, "Failed to read secure setting");
+            }
+        }
+
+        private void PromptAccessibilityEnable()
+        {
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Enable Accessibility Service");
+            var message = "In order for the controller to emulate touch inputs, you must enable SoftWingAccessibility in your device's Accessibility options";
+            alert.SetMessage(message);
+            alert.SetButton("OK", (c, ev) =>
+            {
+                var enableIntent = new Intent(Settings.ActionAccessibilitySettings);
+                enableIntent.SetFlags(ActivityFlags.NewTask);
+                StartActivity(enableIntent);
+                alert.Cancel();
+                OfferControllerHelp();
+            });
+            alert.SetButton2("SKIP", (c, ev) =>
+            {
+                OfferControllerHelp();
+            });
+            alert.Show();
+        }
+
         private void OfferControllerHelp()
         {
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
@@ -88,6 +128,7 @@ namespace SoftWing
             Log.Debug(TAG, enabled_imes);
             if (enabled_imes.Contains("SoftWingInput") && enabled_imes.Contains("LgeImeImpl"))
             {
+                EnsureSwAccessibility();
                 return;
             }
 
@@ -105,11 +146,11 @@ namespace SoftWing
                 enableIntent.SetFlags(ActivityFlags.NewTask);
                 StartActivity(enableIntent);
                 alert.Cancel();
-                OfferControllerHelp();
+                EnsureSwAccessibility();
             });
             alert.SetButton2("SKIP", (c, ev) =>
             {
-                OfferControllerHelp();
+                EnsureSwAccessibility();
             });
             alert.Show();
         }

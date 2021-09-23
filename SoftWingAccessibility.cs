@@ -40,8 +40,9 @@ namespace SoftWing
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
-        private const long FIRST_STROKE_DURATION_MS = 25;
-        private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration;
+        private const long GESTURE_START_DELAY_MS = 10;
+        private const long FIRST_STROKE_DURATION_MS = 10;
+        private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration / 10;
 
         private MessageDispatcher dispatcher;
         private Dictionary<int, MotionDescription> activeMotions = new Dictionary<int, MotionDescription>();
@@ -78,12 +79,12 @@ namespace SoftWing
 
             if (motion.type == MotionType.Swipe)
             {
-                var stroke = new GestureDescription.StrokeDescription(firstPath, 0, FIRST_STROKE_DURATION_MS, true);
-                stroke.ContinueStroke(holdPath, FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, false);
+                var stroke = new GestureDescription.StrokeDescription(firstPath, GESTURE_START_DELAY_MS, FIRST_STROKE_DURATION_MS, true);
+                stroke.ContinueStroke(holdPath, GESTURE_START_DELAY_MS + FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, false);
                 return stroke;
             }
 
-            return new GestureDescription.StrokeDescription(holdPath, 0, HOLD_STROKE_DURATION_MS, false);
+            return new GestureDescription.StrokeDescription(holdPath, GESTURE_START_DELAY_MS, HOLD_STROKE_DURATION_MS, false);
         }
 
         private List<GestureDescription.StrokeDescription> GenerateActiveStrokeList()

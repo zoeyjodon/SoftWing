@@ -36,7 +36,7 @@ namespace SoftWing
         private const double ANGLE_DOWN_MIN = ANGLE_DOWN - ANGLE_TOLERANCE;
 
         private const int MOTION_ANGLE_INCREMENT_DEGREES = 45;
-        private const int MOTION_FORCE_INCREMENT_PERCENT = 50;
+        private const int MOTION_FORCE_INCREMENT_PERCENT = 33;
 
         private Keycode up_keycode = Keycode.Unknown;
         private Keycode down_keycode = Keycode.Unknown;
