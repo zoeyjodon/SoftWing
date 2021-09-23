@@ -22,7 +22,7 @@ namespace SoftWing
         private Paint surfacePaint = new Paint(PaintFlags.AntiAlias);
         private const int surfaceRadius = 50;
         private const int strokeWidth = 50;
-        private MotionDescription motion = new MotionDescription(-1, -1, -1, -1);
+        private MotionDescription motion = MotionDescription.InvalidMotion();
 
         public static Android.Net.Uri BackgroundImageUri = null;
         public static List<SwSettings.ControlId> controls;

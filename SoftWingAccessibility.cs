@@ -8,6 +8,7 @@ using Android.Graphics;
 using static Android.AccessibilityServices.AccessibilityService;
 using SoftWing.SwSystem;
 using SoftWing.SwSystem.Messages;
+using System.Collections.Generic;
 
 namespace SoftWing
 {
@@ -43,7 +44,7 @@ namespace SoftWing
         private const long HOLD_STROKE_DURATION_MS = 0x0FFFFFFFFFFFFFFF;
 
         private MessageDispatcher dispatcher;
-        private MotionDescription lastMotion = new MotionDescription(0, 0, 0, 0);
+        private List<MotionDescription> activeMotions = new List<MotionDescription>();
 
         public override void OnCreate()
         {
@@ -65,34 +66,8 @@ namespace SoftWing
             return base.OnUnbind(intent);
         }
 
-        private void CancelGesture()
+        private GestureDescription.StrokeDescription GenerateStroke(MotionDescription motion)
         {
-            Log.Info(TAG, "CancelGesture");
-
-            Path path = new Path();
-            path.MoveTo(lastMotion.endX, lastMotion.endY);
-            path.LineTo(lastMotion.endX, lastMotion.endY);
-
-            var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
-
-            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-            gestureBuilder.AddStroke(stroke);
-            if (DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
-            {
-                Log.Info(TAG, "Dispatch Success!");
-            }
-            else
-            {
-                Log.Info(TAG, "Dispatch Failure");
-            }
-        }
-
-        private void PerformGesture(MotionDescription motion)
-        {
-            Log.Info(TAG, "PerformGesture");
-
-            lastMotion = motion;
-
             Path firstPath = new Path();
             firstPath.MoveTo(motion.beginX, motion.beginY);
             firstPath.LineTo(motion.endX, motion.endY);
@@ -104,17 +79,73 @@ namespace SoftWing
             var stroke = new GestureDescription.StrokeDescription(firstPath, 0, FIRST_STROKE_DURATION_MS, true);
             stroke.ContinueStroke(holdPath, FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, true);
 
-            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-            gestureBuilder.AddStroke(stroke);
-            if (DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
-            {
-                Log.Info(TAG, "Dispatch Success!");
-            }
-            else
-            {
-                Log.Info(TAG, "Dispatch Failure");
-            }
+            return stroke;
+        }
 
+        private List<GestureDescription.StrokeDescription> GenerateActiveStrokeList()
+        {
+            var output = new List<GestureDescription.StrokeDescription>();
+            foreach (var motion in activeMotions)
+            {
+                output.Add(GenerateStroke(motion));
+            }
+            return output;
+        }
+
+        private void RunActiveGestures()
+        {
+            var strokes = GenerateActiveStrokeList();
+
+            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+            foreach (var stroke in strokes)
+            {
+                gestureBuilder.AddStroke(stroke);
+            }
+            DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
+        }
+
+        private void CancelGesture(int id)
+        {
+            Log.Info(TAG, "CancelGesture");
+
+            if (activeMotions.Count == 1)
+            {
+                Path path = new Path();
+                path.MoveTo(activeMotions[0].endX, activeMotions[0].endY);
+                path.LineTo(activeMotions[0].endX, activeMotions[0].endY);
+                var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
+                GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+                gestureBuilder.AddStroke(stroke);
+                DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
+                activeMotions.RemoveAt(0);
+                return;
+            }
+            for (int i = 0; i < activeMotions.Count; i++)
+            {
+                if (activeMotions[i].id == id)
+                {
+                    activeMotions.RemoveAt(i);
+                    break;
+                }
+            }
+            RunActiveGestures();
+
+        }
+
+        private void PerformGesture(MotionDescription motion)
+        {
+            Log.Info(TAG, "PerformGesture");
+
+            for (int i = 0; i < activeMotions.Count; i++)
+            {
+                if (activeMotions[i].id == motion.id)
+                {
+                    activeMotions.RemoveAt(i);
+                    break;
+                }
+            }
+            activeMotions.Add(motion);
+            RunActiveGestures();
         }
 
         public override void OnAccessibilityEvent(AccessibilityEvent e)
@@ -136,7 +167,7 @@ namespace SoftWing
             var motionUpdate = (MotionUpdateMessage)message;
             if (motionUpdate.cancel_requested)
             {
-                CancelGesture();
+                CancelGesture(motionUpdate.motion.id);
             }
             else
             {

@@ -15,7 +15,8 @@ namespace SoftWing
         private TimeSpan KEY_VIBRATION_TIME = TimeSpan.FromSeconds(0.01);
         private View button;
         private Keycode key = Keycode.Unknown;
-        private MotionDescription motion = new MotionDescription(-1, -1, -1, -1);
+        private MotionDescription motion = MotionDescription.InvalidMotion();
+        private int motionId = MotionDescription.GetMotionId();
         private MessageDispatcher dispatcher;
 
         public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in)
@@ -24,6 +25,7 @@ namespace SoftWing
             button = button_in;
             key = key_in;
             motion = motion_in;
+            motion.id = motionId;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
 

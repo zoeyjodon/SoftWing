@@ -2,14 +2,28 @@
 {
     public struct MotionDescription
     {
-        public MotionDescription(float beginX_in, float beginY_in, float endX_in, float endY_in)
+        private static int idCount = 0;
+
+        public MotionDescription(int id_in, float beginX_in, float beginY_in, float endX_in, float endY_in)
         {
+            id = id_in;
             beginX = beginX_in;
             beginY = beginY_in;
             endX = endX_in;
             endY = endY_in;
         }
 
+        public static MotionDescription InvalidMotion()
+        {
+            return new MotionDescription(-1, -1, -1, -1, -1);
+        }
+
+        public static int GetMotionId()
+        {
+            return idCount++;
+        }
+
+        public int id { get; set; }
         public float beginX { get; set; }
         public float beginY { get; set; }
         public float endX { get; set; }

@@ -43,7 +43,7 @@ namespace SoftWing.SwSystem
         public const Keycode Default_D_Pad_Right = Keycode.DpadRight;
         public const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
         public const int Default_Transition_Delay_Ms = 500;
-        public static MotionDescription Default_Motion = new MotionDescription(0, 0, 0, 0);
+        public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public enum ControlId : int
         {
             L_Button,
@@ -462,7 +462,7 @@ namespace SoftWing.SwSystem
                 Log.Error(TAG, e.Message);
             }
 
-            return new MotionDescription(beginX, beginY, endX, endY);
+            return new MotionDescription(-1, beginX, beginY, endX, endY);
         }
 
         private static ControlId GetControlFromString(string control_string)

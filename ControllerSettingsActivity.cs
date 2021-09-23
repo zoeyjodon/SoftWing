@@ -73,7 +73,7 @@ namespace SoftWing
 
         private void SetInputListener(View vin, Keycode key)
         {
-            var motion = new MotionDescription(0, 0, 0, 0);
+            var motion = MotionDescription.InvalidMotion();
             vin.SetOnTouchListener(new SwButtonListener(vin, key, motion));
         }
 
