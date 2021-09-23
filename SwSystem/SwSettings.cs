@@ -440,29 +440,28 @@ namespace SoftWing.SwSystem
             return motion.beginX.ToString() + MOTION_DELIMITER +
                 motion.beginY.ToString() + MOTION_DELIMITER +
                 motion.endX.ToString() + MOTION_DELIMITER +
-                motion.endY.ToString();
+                motion.endY.ToString() + MOTION_DELIMITER +
+                ((Int32)(motion.type)).ToString();
         }
 
         private static MotionDescription GetMotionFromString(string motionString)
         {
-            float beginX = 0;
-            float beginY = 0;
-            float endX = 0;
-            float endY = 0;
+            MotionDescription output = MotionDescription.InvalidMotion();
             try
             {
                 var motions = motionString.Split(MOTION_DELIMITER);
-                beginX = float.Parse(motions[0]);
-                beginY = float.Parse(motions[1]);
-                endX = float.Parse(motions[2]);
-                endY = float.Parse(motions[3]);
+                output.beginX = float.Parse(motions[0]);
+                output.beginY = float.Parse(motions[1]);
+                output.endX = float.Parse(motions[2]);
+                output.endY = float.Parse(motions[3]);
+                output.type = (MotionType)Int32.Parse(motions[4]);
             }
             catch (Exception e)
             {
                 Log.Error(TAG, e.Message);
             }
 
-            return new MotionDescription(-1, beginX, beginY, endX, endY);
+            return output;
         }
 
         private static ControlId GetControlFromString(string control_string)

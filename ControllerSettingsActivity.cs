@@ -24,6 +24,7 @@ namespace SoftWing
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
+        private bool promptInProgress = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -173,12 +174,61 @@ namespace SoftWing
             if (key == Keycode.Unknown)
             {
                 MotionConfigurationActivity.controls = GetAssociatedControls(selected_control);
-                SelectImageFile();
+                PromptUserForMotionType();
             }
             else
             {
                 SwSettings.SetControlKeycode(selected_control, key);
             }
+        }
+
+        private void PromptUserForMotionType()
+        {
+            Log.Debug(TAG, "PromptUserForMotionType()");
+            // TODO: This should be unnecessary, but for some reason this is getting called multiple times
+            if (promptInProgress)
+            {
+                return;
+            }
+
+            promptInProgress = true;
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select a Touch Input Type");
+            var message = "Tap: Only a single point will be pressed in response to this control\n\n";
+            message += "Swipe: This control press a starting point, then drag to a finishing point";
+
+            alert.SetMessage(message);
+            alert.SetButton("Tap", (c, ev) =>
+            {
+                MotionConfigurationActivity.motionType = MotionType.Tap;
+                PromptUserForBackgroundImage();
+                promptInProgress = false;
+            });
+            alert.SetButton2("Swipe", (c, ev) =>
+            {
+                MotionConfigurationActivity.motionType = MotionType.Swipe;
+                PromptUserForBackgroundImage();
+                promptInProgress = false;
+            });
+            alert.Show();
+        }
+
+        private void PromptUserForBackgroundImage()
+        {
+            Log.Debug(TAG, "PromptUserForBackgroundImage()");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select a Background Image");
+            var message = "In order to properly map touch controls to a game, please select a screenshot from your game to be used as a background during the setup process\n";
+
+            alert.SetMessage(message);
+            alert.SetButton("Continue", (c, ev) =>
+            {
+                SelectImageFile();
+            });
+            alert.Show();
         }
 
         private void ConfigureControlLabel(SwSettings.ControlId control)

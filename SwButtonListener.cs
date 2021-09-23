@@ -16,7 +16,7 @@ namespace SoftWing
         private View button;
         private Keycode key = Keycode.Unknown;
         private MotionDescription motion = MotionDescription.InvalidMotion();
-        private int motionId = MotionDescription.GetMotionId();
+        private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
 
         public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in)
@@ -25,7 +25,6 @@ namespace SoftWing
             button = button_in;
             key = key_in;
             motion = motion_in;
-            motion.id = motionId;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
         }
 
@@ -64,7 +63,7 @@ namespace SoftWing
                 dispatcher.Post(new ControlUpdateMessage(key, update));
                 return;
             }
-            dispatcher.Post(new MotionUpdateMessage(motion, update == ControlUpdateMessage.UpdateType.Released));
+            dispatcher.Post(new MotionUpdateMessage(motionId, motion, update == ControlUpdateMessage.UpdateType.Released));
         }
     }
 }

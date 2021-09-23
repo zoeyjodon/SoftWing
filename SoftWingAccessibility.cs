@@ -40,11 +40,11 @@ namespace SoftWing
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
-        private const long FIRST_STROKE_DURATION_MS = 1;
-        private const long HOLD_STROKE_DURATION_MS = 0x0FFFFFFFFFFFFFFF;
+        private const long FIRST_STROKE_DURATION_MS = 25;
+        private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration;
 
         private MessageDispatcher dispatcher;
-        private List<MotionDescription> activeMotions = new List<MotionDescription>();
+        private Dictionary<int, MotionDescription> activeMotions = new Dictionary<int, MotionDescription>();
 
         public override void OnCreate()
         {
@@ -76,16 +76,20 @@ namespace SoftWing
             holdPath.MoveTo(motion.endX, motion.endY);
             holdPath.LineTo(motion.endX, motion.endY);
 
-            var stroke = new GestureDescription.StrokeDescription(firstPath, 0, FIRST_STROKE_DURATION_MS, true);
-            stroke.ContinueStroke(holdPath, FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, true);
+            if (motion.type == MotionType.Swipe)
+            {
+                var stroke = new GestureDescription.StrokeDescription(firstPath, 0, FIRST_STROKE_DURATION_MS, true);
+                stroke.ContinueStroke(holdPath, FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, false);
+                return stroke;
+            }
 
-            return stroke;
+            return new GestureDescription.StrokeDescription(holdPath, 0, HOLD_STROKE_DURATION_MS, false);
         }
 
         private List<GestureDescription.StrokeDescription> GenerateActiveStrokeList()
         {
             var output = new List<GestureDescription.StrokeDescription>();
-            foreach (var motion in activeMotions)
+            foreach (var motion in activeMotions.Values)
             {
                 output.Add(GenerateStroke(motion));
             }
@@ -111,40 +115,26 @@ namespace SoftWing
             if (activeMotions.Count == 1)
             {
                 Path path = new Path();
-                path.MoveTo(activeMotions[0].endX, activeMotions[0].endY);
-                path.LineTo(activeMotions[0].endX, activeMotions[0].endY);
+                path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
+                path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
                 var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
                 GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
                 gestureBuilder.AddStroke(stroke);
                 DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
-                activeMotions.RemoveAt(0);
+                activeMotions.Remove(id);
                 return;
             }
-            for (int i = 0; i < activeMotions.Count; i++)
-            {
-                if (activeMotions[i].id == id)
-                {
-                    activeMotions.RemoveAt(i);
-                    break;
-                }
-            }
+            activeMotions.Remove(id);
             RunActiveGestures();
 
         }
 
-        private void PerformGesture(MotionDescription motion)
+        private void PerformGesture(int id, MotionDescription motion)
         {
             Log.Info(TAG, "PerformGesture");
 
-            for (int i = 0; i < activeMotions.Count; i++)
-            {
-                if (activeMotions[i].id == motion.id)
-                {
-                    activeMotions.RemoveAt(i);
-                    break;
-                }
-            }
-            activeMotions.Add(motion);
+            activeMotions.Remove(id);
+            activeMotions.Add(id, motion);
             RunActiveGestures();
         }
 
@@ -167,11 +157,11 @@ namespace SoftWing
             var motionUpdate = (MotionUpdateMessage)message;
             if (motionUpdate.cancel_requested)
             {
-                CancelGesture(motionUpdate.motion.id);
+                CancelGesture(motionUpdate.id);
             }
             else
             {
-                PerformGesture(motionUpdate.motion);
+                PerformGesture(motionUpdate.id, motionUpdate.motion);
             }
         }
     }

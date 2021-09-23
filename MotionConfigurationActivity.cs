@@ -18,14 +18,16 @@ namespace SoftWing
     public class MotionConfigurationActivity : AppCompatActivity, IOnTouchListener
     {
         private const String TAG = "MotionConfigurationActivity";
+        private const int SURFACE_RADIUS = 50;
+        private const int STROKE_WIDTH = 50;
+
         private ISurfaceHolder surfaceHolder = null;
         private Paint surfacePaint = new Paint(PaintFlags.AntiAlias);
-        private const int surfaceRadius = 50;
-        private const int strokeWidth = 50;
         private MotionDescription motion = MotionDescription.InvalidMotion();
 
         public static Android.Net.Uri BackgroundImageUri = null;
         public static List<SwSettings.ControlId> controls;
+        public static MotionType motionType = MotionType.Invalid;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -43,7 +45,7 @@ namespace SoftWing
                  SystemUiFlags.ImmersiveSticky;
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
 
-            surfacePaint.StrokeWidth = strokeWidth;
+            surfacePaint.StrokeWidth = STROKE_WIDTH;
 
             SetContentView(Resource.Layout.motion_configuration);
         }
@@ -71,31 +73,43 @@ namespace SoftWing
         {
             var canvas = surfaceHolder.LockCanvas();
             canvas.DrawColor(0, BlendMode.Clear);
-            canvas.DrawCircle(e.GetX(), e.GetY(), surfaceRadius, surfacePaint);
+            canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS, surfacePaint);
             if (motion.beginX > -1)
             {
                 canvas.DrawLine(motion.beginX, motion.beginY, e.GetX(), e.GetY(), surfacePaint);
-                canvas.DrawCircle(motion.beginX, motion.beginY, surfaceRadius, surfacePaint);
+                canvas.DrawCircle(motion.beginX, motion.beginY, SURFACE_RADIUS, surfacePaint);
             }
             surfaceHolder.UnlockCanvasAndPost(canvas);
         }
 
+        private void CommitMotionAndFinish()
+        {
+            foreach (var control in controls)
+            {
+                SwSettings.SetControlMotion(control, motion);
+            }
+            Finish();
+        }
+
         private void EndPointSetting(MotionEvent e)
         {
+            motion.type = motionType;
             if (motion.beginX == -1)
             {
                 motion.beginX = e.GetX();
                 motion.beginY = e.GetY();
+                if ((motion.type == MotionType.Tap) && (controls.Count == 1))
+                {
+                    motion.endX = motion.beginX;
+                    motion.endY = motion.beginY;
+                    CommitMotionAndFinish();
+                }
             }
             else
             {
                 motion.endX = e.GetX();
                 motion.endY = e.GetY();
-                foreach (var control in controls)
-                {
-                    SwSettings.SetControlMotion(control, motion);
-                }
-                Finish();
+                CommitMotionAndFinish();
             }
         }
 

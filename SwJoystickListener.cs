@@ -35,12 +35,16 @@ namespace SoftWing
         private const double ANGLE_DOWN_MAX = ANGLE_DOWN + ANGLE_TOLERANCE;
         private const double ANGLE_DOWN_MIN = ANGLE_DOWN - ANGLE_TOLERANCE;
 
+        private const int MOTION_ANGLE_INCREMENT_DEGREES = 45;
+        private const int MOTION_FORCE_INCREMENT_PERCENT = 50;
+
         private Keycode up_keycode = Keycode.Unknown;
         private Keycode down_keycode = Keycode.Unknown;
         private Keycode left_keycode = Keycode.Unknown;
         private Keycode right_keycode = Keycode.Unknown;
         private MotionDescription motion = MotionDescription.InvalidMotion();
-        private int motionId = MotionDescription.GetMotionId();
+        private MotionDescription lastMotion = MotionDescription.InvalidMotion();
+        private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
         private bool up_pressed = false;
         private bool down_pressed = false;
@@ -87,29 +91,72 @@ namespace SoftWing
             HandleDownPress(angle);
         }
 
+        private bool TopRegionActive(double angle)
+        {
+            return (angle < ANGLE_UP_MAX) && (angle > ANGLE_UP_MIN);
+        }
+
+        private bool BottomRegionActive(double angle)
+        {
+            return (angle < ANGLE_DOWN_MAX) && (angle > ANGLE_DOWN_MIN);
+        }
+
+        private bool RightRegionActive(double angle)
+        {
+            return (angle < ANGLE_RIGHT_MAX) || (angle > ANGLE_RIGHT_MIN);
+        }
+
+        private bool LeftRegionActive(double angle)
+        {
+            return (angle < ANGLE_LEFT_MAX) && (angle > ANGLE_LEFT_MIN);
+        }
+
+        private double ClipAngle(double angle)
+        {
+            // Clip to increments of 10 degrees
+            return (int)(angle / MOTION_ANGLE_INCREMENT_DEGREES) * MOTION_ANGLE_INCREMENT_DEGREES;
+        }
+
         private MotionDescription CalculateMotion(double angle, float strength)
         {
             var diffX2 = Math.Pow((motion.endX - motion.beginX), 2);
             var diffY2 = Math.Pow((motion.endY - motion.beginY), 2);
             var distance = Math.Sqrt(diffX2 + diffY2);
-            var strengthMod = distance * strength / 100.0;
+            double strengthMod = distance * strength / 100.0;
 
+            if (motion.type == MotionType.Swipe)
+            {
+                // Clip joystick controls for swipe to avoid choppy behavior
+                strengthMod = (int)(strengthMod / MOTION_FORCE_INCREMENT_PERCENT) * MOTION_FORCE_INCREMENT_PERCENT;
+                angle = ClipAngle(angle);
+            }
             double angleRad = Math.PI * angle / 180.0;
             float endX = motion.beginX + (float)(strengthMod * Math.Cos(angleRad));
             float endY = motion.beginY - (float)(strengthMod * Math.Sin(angleRad));
-            return new MotionDescription(motionId, endX, endY, endX, endY);
+            return new MotionDescription(motion.type, motion.beginX, motion.beginY, endX, endY);
+        }
+
+        private bool MotionHasChanged(MotionDescription motion)
+        {
+            return (motion.endX != lastMotion.endX) ||
+                   (motion.endY != lastMotion.endY);
         }
 
         private void HandleMotion(double angle, float strength)
         {
             bool motionComplete = strength == 0;
             var angleMotion = CalculateMotion(angle, strength);
-            dispatcher.Post(new MotionUpdateMessage(angleMotion, motionComplete));
+
+            if (MotionHasChanged(angleMotion))
+            {
+                dispatcher.Post(new MotionUpdateMessage(motionId, angleMotion, motionComplete));
+                lastMotion = angleMotion;
+            }
         }
 
         private void HandleRightPress(double angle)
         {
-            if ((angle < ANGLE_RIGHT_MAX) || (angle > ANGLE_RIGHT_MIN))
+            if (RightRegionActive(angle))
             {
                 if (!right_pressed)
                 {
@@ -128,7 +175,7 @@ namespace SoftWing
 
         private void HandleLeftPress(double angle)
         {
-            if ((angle < ANGLE_LEFT_MAX) && (angle > ANGLE_LEFT_MIN))
+            if (LeftRegionActive(angle))
             {
                 if (!left_pressed)
                 {
@@ -147,7 +194,7 @@ namespace SoftWing
 
         private void HandleUpPress(double angle)
         {
-            if ((angle < ANGLE_UP_MAX) && (angle > ANGLE_UP_MIN))
+            if (TopRegionActive(angle))
             {
                 if (!up_pressed)
                 {
@@ -166,7 +213,7 @@ namespace SoftWing
 
         private void HandleDownPress(double angle)
         {
-            if ((angle < ANGLE_DOWN_MAX) && (angle > ANGLE_DOWN_MIN))
+            if (BottomRegionActive(angle))
             {
                 if (!down_pressed)
                 {
