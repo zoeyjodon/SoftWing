@@ -19,10 +19,12 @@
     public class MotionUpdateMessage : SystemMessage
     {
         public MotionDescription motion { get; }
+        public bool cancel_requested { get; }
 
-        public MotionUpdateMessage(MotionDescription motion_in)
+        public MotionUpdateMessage(MotionDescription motion_in, bool cancel_requested_in = false)
         {
             motion = motion_in;
+            cancel_requested = cancel_requested_in;
         }
 
         public MessageType getMessageType()

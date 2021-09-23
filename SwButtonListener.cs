@@ -62,7 +62,7 @@ namespace SoftWing
                 dispatcher.Post(new ControlUpdateMessage(key, update));
                 return;
             }
-            dispatcher.Post(new MotionUpdateMessage(motion));
+            dispatcher.Post(new MotionUpdateMessage(motion, update == ControlUpdateMessage.UpdateType.Released));
         }
     }
 }

@@ -101,8 +101,9 @@ namespace SoftWing
 
         private void HandleMotion(double angle, float strength)
         {
+            bool motionComplete = strength == 0;
             var angleMotion = CalculateMotion(angle, strength);
-            dispatcher.Post(new MotionUpdateMessage(angleMotion));
+            dispatcher.Post(new MotionUpdateMessage(angleMotion, motionComplete));
         }
 
         private void HandleRightPress(double angle)

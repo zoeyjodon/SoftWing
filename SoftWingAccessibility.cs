@@ -39,7 +39,11 @@ namespace SoftWing
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
+        private const long FIRST_STROKE_DURATION_MS = 1;
+        private const long HOLD_STROKE_DURATION_MS = 0x0FFFFFFFFFFFFFFF;
+
         private MessageDispatcher dispatcher;
+        private MotionDescription lastMotion = new MotionDescription(0, 0, 0, 0);
 
         public override void OnCreate()
         {
@@ -61,16 +65,47 @@ namespace SoftWing
             return base.OnUnbind(intent);
         }
 
-        private void PerformGesture(MotionDescription motion, long durationMs)
+        private void CancelGesture()
+        {
+            Log.Info(TAG, "CancelGesture");
+
+            Path path = new Path();
+            path.MoveTo(lastMotion.endX, lastMotion.endY);
+            path.LineTo(lastMotion.endX, lastMotion.endY);
+
+            var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
+
+            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+            gestureBuilder.AddStroke(stroke);
+            if (DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
+            {
+                Log.Info(TAG, "Dispatch Success!");
+            }
+            else
+            {
+                Log.Info(TAG, "Dispatch Failure");
+            }
+        }
+
+        private void PerformGesture(MotionDescription motion)
         {
             Log.Info(TAG, "PerformGesture");
 
-            Path path = new Path();
-            path.MoveTo(motion.beginX, motion.beginY);
-            path.LineTo(motion.endX, motion.endY);
+            lastMotion = motion;
+
+            Path firstPath = new Path();
+            firstPath.MoveTo(motion.beginX, motion.beginY);
+            firstPath.LineTo(motion.endX, motion.endY);
+
+            Path holdPath = new Path();
+            holdPath.MoveTo(motion.endX, motion.endY);
+            holdPath.LineTo(motion.endX, motion.endY);
+
+            var stroke = new GestureDescription.StrokeDescription(firstPath, 0, FIRST_STROKE_DURATION_MS, true);
+            stroke.ContinueStroke(holdPath, FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, true);
 
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-            gestureBuilder.AddStroke(new GestureDescription.StrokeDescription(path, 0, durationMs));
+            gestureBuilder.AddStroke(stroke);
             if (DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null))
             {
                 Log.Info(TAG, "Dispatch Success!");
@@ -99,7 +134,14 @@ namespace SoftWing
                 return;
             }
             var motionUpdate = (MotionUpdateMessage)message;
-            PerformGesture(motionUpdate.motion, 1000);
+            if (motionUpdate.cancel_requested)
+            {
+                CancelGesture();
+            }
+            else
+            {
+                PerformGesture(motionUpdate.motion);
+            }
         }
     }
 }
