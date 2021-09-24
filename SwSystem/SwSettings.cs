@@ -11,8 +11,9 @@ namespace SoftWing.SwSystem
     public static class SwSettings
     {
         private static string TAG = "KeymapStorage";
-        private static string KEYMAP_FILENAME = "keymap.txt";
-        private static string KEYMAP_PATH = Path.Combine(FileSystem.AppDataDirectory, KEYMAP_FILENAME);
+        private static string KEYMAP_SELECTION_FILENAME = "SelectedKeymap.txt";
+        private static string KEYMAP_SELECTION_PATH = Path.Combine(FileSystem.AppDataDirectory, KEYMAP_SELECTION_FILENAME);
+        public static List<string> KEYMAP_FILENAMES = new List<string> { "Profile1", "Profile2", "Profile3", "Profile4", "Profile5" };
         private static string OPEN_SOUND_FILENAME = "open_sound.txt";
         private static string CLOSE_SOUND_FILENAME = "close_sound.txt";
         private static string OPEN_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, OPEN_SOUND_FILENAME);
@@ -307,6 +308,15 @@ namespace SoftWing.SwSystem
             }
         }
 
+        public static void SetCloseSoundPath(Android.Net.Uri path)
+        {
+            Log.Debug(TAG, "SetCloseSoundPath");
+            using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
+            {
+                writer.WriteLine(path.ToString());
+            }
+        }
+
         public static int GetTransitionDelayMs()
         {
             Log.Debug(TAG, "GetTransitionDelayMs");
@@ -336,12 +346,40 @@ namespace SoftWing.SwSystem
             }
         }
 
-        public static void SetCloseSoundPath(Android.Net.Uri path)
+        public static string GetSelectedKeymap()
         {
-            Log.Debug(TAG, "SetCloseSoundPath");
-            using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
+            Log.Debug(TAG, "GetSelectedKeymap");
+            if (!File.Exists(KEYMAP_SELECTION_PATH))
             {
-                writer.WriteLine(path.ToString());
+                Log.Debug(TAG, "Selected keymap record not found");
+                return KEYMAP_FILENAMES[0];
+            }
+            var stream = File.OpenRead(KEYMAP_SELECTION_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var keymapStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                return keymapStr;
+            }
+        }
+
+        public static void SetSelectedKeymap(string keymapName)
+        {
+            Log.Debug(TAG, "SetSelectedKeymap");
+            using (var writer = File.CreateText(KEYMAP_SELECTION_PATH))
+            {
+                writer.WriteLine(keymapName);
+            }
+
+            // If the keymap does not exist yet, initialize it
+            var keymapPath = Path.Combine(FileSystem.AppDataDirectory, keymapName);
+            if (!File.Exists(keymapPath))
+            {
+                SetDefaultKeycodes();
+            }
+            else
+            {
+                local_keymap_updated = false;
+                UpdateLocalKeymap();
             }
         }
 
@@ -380,12 +418,15 @@ namespace SoftWing.SwSystem
                 return;
             }
             local_keymap_updated = true;
-            if (!File.Exists(KEYMAP_PATH))
+
+            var keymapName = GetSelectedKeymap();
+            var keymapPath = Path.Combine(FileSystem.AppDataDirectory, keymapName);
+            if (!File.Exists(keymapPath))
             {
                 Log.Debug(TAG, "Keymap not found");
                 return;
             }
-            var stream = File.OpenRead(KEYMAP_PATH);
+            var stream = File.OpenRead(keymapPath);
             using (var reader = new StreamReader(stream))
             {
                 string line = reader.ReadLine();
@@ -408,7 +449,9 @@ namespace SoftWing.SwSystem
         private static void UpdateStoredKeymap()
         {
             Log.Debug(TAG, "UpdateStoredKeymap");
-            using (var writer = File.CreateText(KEYMAP_PATH))
+            var keymapName = GetSelectedKeymap();
+            var keymapPath = Path.Combine(FileSystem.AppDataDirectory, keymapName);
+            using (var writer = File.CreateText(keymapPath))
             {
                 foreach (var control in CONTROL_TO_KEY_MAP.Keys)
                 {

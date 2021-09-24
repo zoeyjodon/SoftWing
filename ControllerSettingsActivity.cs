@@ -42,8 +42,8 @@ namespace SoftWing
             ConfigureResetButton();
             ConfigureControlLabel(selected_control);
             ConfigureControlSpinner(selected_control);
-            ConfigureControlSpinner(selected_control);
             ConfigureDelaySpinner();
+            ConfigureProfileSpinner();
         }
 
         protected override void OnStart()
@@ -290,6 +290,42 @@ namespace SoftWing
             var delay = SwSettings.DELAY_TO_STRING_MAP[delay_string];
 
             SwSettings.SetTransitionDelayMs(delay);
+        }
+
+        private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "ProfileSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (ignore_delayset_count != 0)
+            {
+                ignore_delayset_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var profile_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+            SwSettings.SetSelectedKeymap(profile_string);
+
+            ConfigureControlSpinner(selected_control);
+        }
+
+        private void ConfigureProfileSpinner()
+        {
+            Log.Debug(TAG, "ConfigureProfileSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
+            spinner.Prompt = "Select Controller Profile";
+
+            var set_keymap = SwSettings.GetSelectedKeymap();
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, SwSettings.KEYMAP_FILENAMES);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ProfileSpinnerItemSelected);
+            ignore_delayset_count++;
+
+            int spinner_position = adapter.GetPosition(set_keymap);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
         }
 
         private void ConfigureDelaySpinner()
