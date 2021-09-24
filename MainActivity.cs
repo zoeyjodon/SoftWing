@@ -78,7 +78,7 @@ namespace SoftWing
             }
             catch (Exception ex)
             {
-                Log.Info(TAG, "Failed to read secure setting");
+                Log.Info(TAG, "Failed to read secure setting: " + ex.Message);
             }
         }
 
@@ -91,10 +91,10 @@ namespace SoftWing
             alert.SetMessage(message);
             alert.SetButton("OK", (c, ev) =>
             {
+                alert.Cancel();
                 var enableIntent = new Intent(Settings.ActionAccessibilitySettings);
                 enableIntent.SetFlags(ActivityFlags.NewTask);
                 StartActivity(enableIntent);
-                alert.Cancel();
                 OfferControllerHelp();
             });
             alert.SetButton2("SKIP", (c, ev) =>
@@ -142,10 +142,10 @@ namespace SoftWing
             alert.SetMessage(message);
             alert.SetButton("OK", (c, ev) =>
             {
+                alert.Cancel();
                 var enableIntent = new Intent(Settings.ActionInputMethodSettings);
                 enableIntent.SetFlags(ActivityFlags.NewTask);
                 StartActivity(enableIntent);
-                alert.Cancel();
                 EnsureSwAccessibility();
             });
             alert.SetButton2("SKIP", (c, ev) =>

@@ -35,7 +35,7 @@ namespace SoftWing
         private const double ANGLE_DOWN_MAX = ANGLE_DOWN + ANGLE_TOLERANCE;
         private const double ANGLE_DOWN_MIN = ANGLE_DOWN - ANGLE_TOLERANCE;
 
-        private const int MOTION_ANGLE_INCREMENT_DEGREES = 45;
+        private const int MOTION_ANGLE_INCREMENT_DEGREES = 30;
         private const int MOTION_FORCE_INCREMENT_PERCENT = 33;
 
         private Keycode up_keycode = Keycode.Unknown;
@@ -113,8 +113,16 @@ namespace SoftWing
 
         private double ClipAngle(double angle)
         {
-            // Clip to increments of 10 degrees
-            return (int)(angle / MOTION_ANGLE_INCREMENT_DEGREES) * MOTION_ANGLE_INCREMENT_DEGREES;
+            angle = (angle + (MOTION_ANGLE_INCREMENT_DEGREES / 2)) % 360;
+            angle = (int)(angle / MOTION_ANGLE_INCREMENT_DEGREES) * MOTION_ANGLE_INCREMENT_DEGREES;
+            return angle;
+        }
+
+        private double ClipStrength(double strength)
+        {
+            strength = strength + (MOTION_FORCE_INCREMENT_PERCENT / 2);
+            strength = (int)(strength / MOTION_FORCE_INCREMENT_PERCENT) * MOTION_FORCE_INCREMENT_PERCENT;
+            return strength;
         }
 
         private MotionDescription CalculateMotion(double angle, float strength)
@@ -124,10 +132,10 @@ namespace SoftWing
             var distance = Math.Sqrt(diffX2 + diffY2);
             double strengthMod = distance * strength / 100.0;
 
-            if (motion.type == MotionType.Swipe)
+            if (motion.type != MotionType.Tap)
             {
-                // Clip joystick controls for swipe to avoid choppy behavior
-                strengthMod = (int)(strengthMod / MOTION_FORCE_INCREMENT_PERCENT) * MOTION_FORCE_INCREMENT_PERCENT;
+                // Clip joystick controls to avoid choppy behavior
+                strengthMod = ClipStrength(strengthMod);
                 angle = ClipAngle(angle);
             }
             double angleRad = Math.PI * angle / 180.0;

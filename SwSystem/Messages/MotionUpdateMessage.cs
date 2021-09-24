@@ -4,7 +4,8 @@
     {
         Invalid = -1,
         Tap = 0,
-        Swipe = 1
+        Swipe = 1,
+        Continuous = 2,
     }
 
     public struct MotionDescription

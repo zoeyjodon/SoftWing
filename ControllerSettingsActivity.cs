@@ -196,7 +196,8 @@ namespace SoftWing
             var alert = dialog.Create();
             alert.SetTitle("Select a Touch Input Type");
             var message = "Tap: Only a single point will be pressed in response to this control\n\n";
-            message += "Swipe: This control press a starting point, then drag to a finishing point";
+            message += "Swipe: This control presses a starting point, then immediately drags to a finishing point where it will hold indefinitely\n\n";
+            message += "Continuous: This control presses a starting point, then drags to a finishing point before returning to the start and repeating the process\n\n";
 
             alert.SetMessage(message);
             alert.SetButton("Tap", (c, ev) =>
@@ -208,6 +209,12 @@ namespace SoftWing
             alert.SetButton2("Swipe", (c, ev) =>
             {
                 MotionConfigurationActivity.motionType = MotionType.Swipe;
+                PromptUserForBackgroundImage();
+                promptInProgress = false;
+            });
+            alert.SetButton3("Continuous", (c, ev) =>
+            {
+                MotionConfigurationActivity.motionType = MotionType.Continuous;
                 PromptUserForBackgroundImage();
                 promptInProgress = false;
             });

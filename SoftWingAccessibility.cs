@@ -40,8 +40,9 @@ namespace SoftWing
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
-        private const long GESTURE_START_DELAY_MS = 10;
+        private const long GESTURE_START_DELAY_MS = 50;
         private const long FIRST_STROKE_DURATION_MS = 10;
+        private const long CONTINUOUS_STROKE_DURATION_MS = 500;
         private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration / 10;
 
         private MessageDispatcher dispatcher;
@@ -67,7 +68,7 @@ namespace SoftWing
             return base.OnUnbind(intent);
         }
 
-        private GestureDescription.StrokeDescription GenerateStroke(MotionDescription motion)
+        private List<GestureDescription.StrokeDescription> GenerateTap(MotionDescription motion)
         {
             Path firstPath = new Path();
             firstPath.MoveTo(motion.beginX, motion.beginY);
@@ -77,14 +78,58 @@ namespace SoftWing
             holdPath.MoveTo(motion.endX, motion.endY);
             holdPath.LineTo(motion.endX, motion.endY);
 
-            if (motion.type == MotionType.Swipe)
-            {
-                var stroke = new GestureDescription.StrokeDescription(firstPath, GESTURE_START_DELAY_MS, FIRST_STROKE_DURATION_MS, true);
-                stroke.ContinueStroke(holdPath, GESTURE_START_DELAY_MS + FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, false);
-                return stroke;
-            }
+            var stroke = new GestureDescription.StrokeDescription(holdPath, 0, HOLD_STROKE_DURATION_MS, false);
+            return new List<GestureDescription.StrokeDescription> { stroke };
+        }
 
-            return new GestureDescription.StrokeDescription(holdPath, GESTURE_START_DELAY_MS, HOLD_STROKE_DURATION_MS, false);
+        private List<GestureDescription.StrokeDescription> GenerateSwipe(MotionDescription motion)
+        {
+            Path firstPath = new Path();
+            firstPath.MoveTo(motion.beginX, motion.beginY);
+            firstPath.LineTo(motion.endX, motion.endY);
+
+            Path holdPath = new Path();
+            holdPath.MoveTo(motion.endX, motion.endY);
+            holdPath.LineTo(motion.endX, motion.endY);
+
+            var stroke = new GestureDescription.StrokeDescription(firstPath, GESTURE_START_DELAY_MS, FIRST_STROKE_DURATION_MS, true);
+            stroke.ContinueStroke(holdPath, GESTURE_START_DELAY_MS + FIRST_STROKE_DURATION_MS, HOLD_STROKE_DURATION_MS, false);
+            return new List<GestureDescription.StrokeDescription> { stroke };
+        }
+
+        private List<GestureDescription.StrokeDescription> GenerateContinuous(MotionDescription motion)
+        {
+            var output = new List<GestureDescription.StrokeDescription>();
+
+            Path swipePath = new Path();
+            swipePath.MoveTo(motion.beginX, motion.beginY);
+            swipePath.LineTo(motion.endX, motion.endY);
+
+            var stroke = new GestureDescription.StrokeDescription(swipePath, 0, CONTINUOUS_STROKE_DURATION_MS, false);
+            output.Add(stroke);
+
+            // Add a callback to add more strokes for "continuous" behavior
+            new Android.OS.Handler().PostDelayed(delegate
+            {
+                if (activeMotions.ContainsValue(motion))
+                {
+                    RunActiveGestures();
+                }
+            }, CONTINUOUS_STROKE_DURATION_MS);
+            return output;
+        }
+
+        private List<GestureDescription.StrokeDescription> GenerateStroke(MotionDescription motion)
+        {
+            switch (motion.type)
+            {
+                case MotionType.Swipe:
+                    return GenerateSwipe(motion);
+                case MotionType.Continuous:
+                    return GenerateContinuous(motion);
+                default:
+                    return GenerateTap(motion);
+            }
         }
 
         private List<GestureDescription.StrokeDescription> GenerateActiveStrokeList()
@@ -92,7 +137,7 @@ namespace SoftWing
             var output = new List<GestureDescription.StrokeDescription>();
             foreach (var motion in activeMotions.Values)
             {
-                output.Add(GenerateStroke(motion));
+                output.AddRange(GenerateStroke(motion));
             }
             return output;
         }

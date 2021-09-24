@@ -138,7 +138,7 @@ namespace SoftWing
             }
             catch (Exception ex)
             {
-                Log.Debug(TAG, "Failed to lock phone orientation");
+                Log.Debug(TAG, "Failed to lock phone orientation: " + ex.Message);
             }
         }
 
@@ -162,7 +162,7 @@ namespace SoftWing
             {
                 // If we can't write the setting directly, try the old fashioned way.
                 // Note: This will only work if SoftWing is the current input method.
-                Log.Debug(TAG, "Failed to write secure setting, using IMM");
+                Log.Debug(TAG, "Failed to write secure setting, using IMM: " + ex.Message);
                 InputMethodManager imm = (InputMethodManager)
                     Application.Context.GetSystemService(InputMethodService);
                 imm.SetInputMethod(SoftWingInput.InputSessionToken, input_method_id);
@@ -261,7 +261,7 @@ namespace SoftWing
             }
             catch (Exception ex)
             {
-                Log.Debug(TAG, "Failed to play audio");
+                Log.Debug(TAG, "Failed to play audio: " + ex.Message);
                 var audio_manager = (AudioManager)GetSystemService(AudioService);
                 audio_manager.SetStreamVolume(Android.Media.Stream.Music, media_volume, 0);
                 audio_manager.AbandonAudioFocusRequest(focus_request);
