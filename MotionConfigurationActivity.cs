@@ -58,6 +58,61 @@ namespace SoftWing
             motionSurface.SetImageURI(BackgroundImageUri);
 
             ConfigureMotionDrawSurface();
+            if (multiplePointsRequired())
+            {
+                PromptUserForSwipeBegin();
+            }
+            else
+            {
+                PromptUserForTap();
+            }
+        }
+
+        private bool multiplePointsRequired()
+        {
+            return (motionType != MotionType.Tap) || (controls.Count > 1);
+        }
+
+        private void PromptUserForSwipeBegin()
+        {
+            Log.Debug(TAG, "PromptUserForSwipeBegin()");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select Touch Origin");
+            var message = "Tap the origin point for the touch action.\nThis could be the center of a joystick, or the beginning of a swpie motion\n";
+
+            alert.SetMessage(message);
+            alert.SetButton("Continue", (c, ev) => { });
+            alert.Show();
+        }
+
+        private void PromptUserForSwipeEnd()
+        {
+            Log.Debug(TAG, "PromptUserForSwipeEnd()");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select Starting Touch Point");
+            var message = "Tap the end point for the touch action.\nThis could be the outer edge of a joystick, or the end of a swpie motion\n";
+
+            alert.SetMessage(message);
+            alert.SetButton("Continue", (c, ev) => { });
+            alert.Show();
+        }
+
+        private void PromptUserForTap()
+        {
+            Log.Debug(TAG, "PromptUserForTap()");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select Touch Point");
+            var message = "Tap the point on the screen where you want the tap action to occur\n";
+
+            alert.SetMessage(message);
+            alert.SetButton("Continue", (c, ev) => { });
+            alert.Show();
         }
 
         private void ConfigureMotionDrawSurface()
@@ -98,7 +153,11 @@ namespace SoftWing
             {
                 motion.beginX = e.GetX();
                 motion.beginY = e.GetY();
-                if ((motion.type == MotionType.Tap) && (controls.Count == 1))
+                if (multiplePointsRequired())
+                {
+                    PromptUserForSwipeEnd();
+                }
+                else
                 {
                     motion.endX = motion.beginX;
                     motion.endY = motion.beginY;
