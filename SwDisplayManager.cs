@@ -243,7 +243,7 @@ namespace SoftWing
         {
             // Play as a system sound
             Ringtone swingRing = RingtoneManager.GetRingtone(ApplicationContext, Android.Net.Uri.Parse(audio_path));
-            swingRing.StreamType = Android.Media.Stream.System;
+            swingRing.AudioAttributes = new AudioAttributes.Builder().SetFlags(AudioFlags.None).SetLegacyStreamType(Android.Media.Stream.System).Build();
             swingRing.Play();
         }
 
@@ -287,7 +287,7 @@ namespace SoftWing
         {
             UseSwKeyboard();
             // Give the IME time to update
-            new Android.OS.Handler().PostDelayed(delegate
+            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
             {
                 ShowSwKeyboard();
             }, SHOW_IME_DELAY_MS);
@@ -313,7 +313,7 @@ namespace SoftWing
                     //LockOrientation();
                     UseLgKeyboard();
                     // Give the LG keyboard time to perform the screen transition
-                    new Android.OS.Handler().PostDelayed(delegate
+                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
                     {
                         UseSwKeyboard();
                     }, SwSettings.GetTransitionDelayMs());

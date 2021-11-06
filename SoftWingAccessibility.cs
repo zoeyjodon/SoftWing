@@ -109,7 +109,7 @@ namespace SoftWing
             output.Add(stroke);
 
             // Add a callback to add more strokes for "continuous" behavior
-            new Android.OS.Handler().PostDelayed(delegate
+            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
             {
                 if (activeMotions.ContainsValue(motion))
                 {
