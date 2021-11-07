@@ -23,8 +23,6 @@ namespace SoftWing
         private int ignore_delayset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
-        private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
-        private bool promptInProgress = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -174,68 +172,12 @@ namespace SoftWing
             if (key == Keycode.Unknown)
             {
                 MotionConfigurationActivity.controls = GetAssociatedControls(selected_control);
-                PromptUserForMotionType();
+                StartActivity(typeof(MotionSelectionActivity));
             }
             else
             {
                 SwSettings.SetControlKeycode(selected_control, key);
             }
-        }
-
-        private void PromptUserForMotionType()
-        {
-            Log.Debug(TAG, "PromptUserForMotionType()");
-            // TODO: This should be unnecessary, but for some reason this is getting called multiple times
-            if (promptInProgress)
-            {
-                return;
-            }
-
-            promptInProgress = true;
-            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-            var alert = dialog.Create();
-            alert.SetTitle("Select a Touch Input Type");
-            var message = "Tap: Only a single point will be pressed in response to this control\n\n";
-            message += "Swipe: This control presses a starting point, then immediately drags to a finishing point where it will hold indefinitely\n\n";
-            message += "Continuous: This control presses a starting point, then drags to a finishing point before returning to the start and repeating the process\n\n";
-
-            alert.SetMessage(message);
-            alert.SetButton("Tap", (c, ev) =>
-            {
-                MotionConfigurationActivity.motionType = MotionType.Tap;
-                PromptUserForBackgroundImage();
-                promptInProgress = false;
-            });
-            alert.SetButton2("Swipe", (c, ev) =>
-            {
-                MotionConfigurationActivity.motionType = MotionType.Swipe;
-                PromptUserForBackgroundImage();
-                promptInProgress = false;
-            });
-            alert.SetButton3("Continuous", (c, ev) =>
-            {
-                MotionConfigurationActivity.motionType = MotionType.Continuous;
-                PromptUserForBackgroundImage();
-                promptInProgress = false;
-            });
-            alert.Show();
-        }
-
-        private void PromptUserForBackgroundImage()
-        {
-            Log.Debug(TAG, "PromptUserForBackgroundImage()");
-
-            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-            var alert = dialog.Create();
-            alert.SetTitle("Select a Background Image");
-            var message = "In order to properly map touch controls to a game, please select a screenshot from your game to be used as a background during the setup process\n";
-
-            alert.SetMessage(message);
-            alert.SetButton("Continue", (c, ev) =>
-            {
-                SelectImageFile();
-            });
-            alert.Show();
         }
 
         private void ConfigureControlLabel(SwSettings.ControlId control)
@@ -459,35 +401,6 @@ namespace SoftWing
                     break;
             }
 
-        }
-
-        private void SelectImageFile()
-        {
-            Intent intent = new Intent(Intent.ActionOpenDocument);
-            intent.AddCategory(Intent.CategoryOpenable);
-            intent.SetType("image/*");
-            StartActivityForResult(intent, REQUEST_IMAGE_FILE_CALLBACK);
-        }
-
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
-        {
-            if (data == null)
-            {
-                Log.Debug(TAG, "OnActivityResult received null");
-                return;
-            }
-            Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
-            base.OnActivityResult(requestCode, resultCode, data);
-            switch (requestCode)
-            {
-                case REQUEST_IMAGE_FILE_CALLBACK:
-                    MotionConfigurationActivity.BackgroundImageUri = data.Data;
-                    StartActivity(typeof(MotionConfigurationActivity));
-                    break;
-                default:
-                    Log.Debug(TAG, "Ignoring Activity Result");
-                    break;
-            }
         }
     }
 }

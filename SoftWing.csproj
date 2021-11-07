@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerHelpActivity.cs" />
+    <Compile Include="MotionSelectionActivity.cs" />
     <Compile Include="MotionConfigurationActivity.cs" />
     <Compile Include="DonationHandler.cs" />
     <Compile Include="ControllerSettingsActivity.cs" />
@@ -166,6 +167,12 @@
   <ItemGroup>
     <PackageReference Include="Google.Apis.Core">
       <Version>1.52.0</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Glide">
+      <Version>4.12.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Glide.GifDecoder">
+      <Version>4.12.0.2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Google.BillingClient">
       <Version>4.0.0</Version>
@@ -278,6 +285,15 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\motion_configuration.xml">
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\touch_actions.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\motion_selection.xml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>

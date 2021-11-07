@@ -93,7 +93,7 @@ namespace SoftWing
 
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
             var alert = dialog.Create();
-            alert.SetTitle("Select Starting Touch Point");
+            alert.SetTitle("Select Touch End");
             var message = "Tap the end point for the touch action.\nThis could be the outer edge of a joystick, or the end of a swpie motion\n";
 
             alert.SetMessage(message);

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/motionSelection"
+    android:columnCount="5"
+    android:rowCount="5">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:layout_columnSpan="5"
+        android:text="Select a Touch Input Type"
+        android:textSize="@dimen/std_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_row="1"
+        android:layout_column="0"
+        android:layout_columnSpan="5"
+        android:text="\n
+        Tap: Only a single point will be pressed in response to this control\n\n
+        Swipe: This control presses a starting point, then immediately drags to a finishing point where it will hold indefinitely\n\n
+        Continuous: This control presses a starting point, then drags to a finishing point before returning to the start and repeating the process\n\n"
+        android:textSize="@dimen/body_text_size"/>
+    <ImageView
+        android:id="@+id/touch_action_image"
+        android:src="@drawable/touch_actions"
+        android:layout_width="1080px"
+        android:layout_height="810px"
+        android:layout_row="2"
+        android:layout_column="0"
+        android:layout_columnSpan="5"/>
+    <Button
+        android:text="TAP"
+        android:textSize="50px"
+        android:id="@+id/touch_action_tap"
+        style="@style/ImageButtonStyle"
+        android:layout_width="350px"
+        android:layout_height="wrap_content"
+        android:layout_row="3"
+        android:layout_column="0"/>
+    <Button
+        android:text="SWIPE"
+        android:textSize="50px"
+        android:layout_marginLeft="15px"
+        android:layout_marginRight="15px"
+        android:id="@+id/touch_action_swipe"
+        style="@style/ImageButtonStyle"
+        android:layout_width="350px"
+        android:layout_height="wrap_content"
+        android:layout_row="3"
+        android:layout_column="2"/>
+    <Button
+        android:text="CONTINUOUS"
+        android:textSize="50px"
+        android:id="@+id/touch_action_continuous"
+        style="@style/ImageButtonStyle"
+        android:layout_width="350px"
+        android:layout_height="wrap_content"
+        android:layout_row="3"
+        android:layout_column="4"/>
+</GridLayout>
