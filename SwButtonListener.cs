@@ -15,17 +15,19 @@ namespace SoftWing
         private TimeSpan KEY_VIBRATION_TIME = TimeSpan.FromSeconds(0.01);
         private View button;
         private Keycode key = Keycode.Unknown;
+        private bool vibrate_enabled = SwSettings.Default_Vibration_Enable;
         private MotionDescription motion = MotionDescription.InvalidMotion();
         private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
 
-        public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in)
+        public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in, bool vibrate_enable_in)
         {
             Log.Info(TAG, "SwButtonListener - key");
             button = button_in;
             key = key_in;
             motion = motion_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
+            vibrate_enabled = vibrate_enable_in;
         }
 
         ~SwButtonListener()
@@ -40,13 +42,19 @@ namespace SoftWing
                 case MotionEventActions.Down:
                     Log.Info(TAG, "OnTouch - Down");
                     button.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
-                    Vibration.Vibrate(KEY_VIBRATION_TIME);
+                    if (vibrate_enabled)
+                    {
+                        Vibration.Vibrate(KEY_VIBRATION_TIME);
+                    }
                     ReportEvent(ControlUpdateMessage.UpdateType.Pressed);
                     break;
                 case MotionEventActions.Up:
                     Log.Info(TAG, "OnTouch - Up");
                     button.SetBackgroundColor(Android.Graphics.Color.Transparent);
-                    Vibration.Vibrate(KEY_VIBRATION_TIME);
+                    if (vibrate_enabled)
+                    {
+                        Vibration.Vibrate(KEY_VIBRATION_TIME);
+                    }
                     ReportEvent(ControlUpdateMessage.UpdateType.Released);
                     break;
                 default:

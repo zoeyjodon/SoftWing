@@ -19,6 +19,7 @@ namespace SoftWing
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
+        private View? keyboardView = null;
         private MessageDispatcher dispatcher;
 
         public static IBinder InputSessionToken;
@@ -51,8 +52,7 @@ namespace SoftWing
 
             SwDisplayManager.StartSwDisplayManager();
 
-            var keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
-            SetInputListeners((ViewGroup)keyboardView);
+            keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
             ImeIsOpen = true;
 
@@ -90,7 +90,8 @@ namespace SoftWing
         {
             var key = SwSettings.GetControlKeycode(cid);
             var motion = SwSettings.GetControlMotion(cid);
-            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion));
+            var vibrate = SwSettings.GetVibrationEnable();
+            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion, vibrate));
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
@@ -167,6 +168,7 @@ namespace SoftWing
             base.OnStartInputView(info, restarting);
             dispatcher = MessageDispatcher.GetInstance(new Activity());
             dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
+            SetInputListeners((ViewGroup)keyboardView);
         }
 
         public override AbstractInputMethodImpl OnCreateInputMethodInterface()

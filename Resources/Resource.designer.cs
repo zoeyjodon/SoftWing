@@ -6897,46 +6897,49 @@ namespace SoftWing
 			public const int useLogo = 2131231182;
 			
 			// aapt resource value: 0x7F0801CF
-			public const int view_offset_helper = 2131231183;
+			public const int vibrationEnable = 2131231183;
 			
 			// aapt resource value: 0x7F0801D0
-			public const int view_tree_lifecycle_owner = 2131231184;
+			public const int view_offset_helper = 2131231184;
 			
 			// aapt resource value: 0x7F0801D1
-			public const int view_tree_saved_state_registry_owner = 2131231185;
+			public const int view_tree_lifecycle_owner = 2131231185;
 			
 			// aapt resource value: 0x7F0801D2
-			public const int view_tree_view_model_store_owner = 2131231186;
+			public const int view_tree_saved_state_registry_owner = 2131231186;
 			
 			// aapt resource value: 0x7F0801D3
-			public const int visible = 2131231187;
+			public const int view_tree_view_model_store_owner = 2131231187;
 			
 			// aapt resource value: 0x7F0801D4
-			public const int visible_removing_fragment_view_tag = 2131231188;
+			public const int visible = 2131231188;
 			
 			// aapt resource value: 0x7F0801D5
-			public const int warningLinkText = 2131231189;
-			
-			// aapt resource value: 0x7F0801D7
-			public const int withinBounds = 2131231191;
+			public const int visible_removing_fragment_view_tag = 2131231189;
 			
 			// aapt resource value: 0x7F0801D6
-			public const int withText = 2131231190;
+			public const int warningLinkText = 2131231190;
 			
 			// aapt resource value: 0x7F0801D8
-			public const int wrap = 2131231192;
+			public const int withinBounds = 2131231192;
+			
+			// aapt resource value: 0x7F0801D7
+			public const int withText = 2131231191;
 			
 			// aapt resource value: 0x7F0801D9
-			public const int wrap_content = 2131231193;
+			public const int wrap = 2131231193;
 			
 			// aapt resource value: 0x7F0801DA
-			public const int x_button = 2131231194;
+			public const int wrap_content = 2131231194;
 			
 			// aapt resource value: 0x7F0801DB
-			public const int y_button = 2131231195;
+			public const int x_button = 2131231195;
 			
 			// aapt resource value: 0x7F0801DC
-			public const int zero_corner_chip = 2131231196;
+			public const int y_button = 2131231196;
+			
+			// aapt resource value: 0x7F0801DD
+			public const int zero_corner_chip = 2131231197;
 			
 			static Id()
 			{

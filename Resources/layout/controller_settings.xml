@@ -72,6 +72,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Vibration"
+                android:textSize="@dimen/std_text_size"
+                android:layout_column="0"
+                android:layout_row="0"/>
+            <Spinner
+                android:id="@+id/vibrationEnable"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                style="@style/ImageButtonStyle"
+                android:layout_column="2"
+                android:layout_row="0"/>
+        </GridLayout>
+        <GridLayout
+            android:padding="@dimen/std_grid_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:rowCount="1"
+            android:columnCount="3">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Transition Delay"
                 android:textSize="@dimen/std_text_size"
                 android:layout_column="0"

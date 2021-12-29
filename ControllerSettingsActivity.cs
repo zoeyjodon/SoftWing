@@ -21,6 +21,7 @@ namespace SoftWing
         private const String TAG = "ControllerSettingsActivity";
         private int ignore_keyset_count = 0;
         private int ignore_delayset_count = 0;
+        private int ignore_vibrationset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
 
@@ -40,6 +41,7 @@ namespace SoftWing
             ConfigureResetButton();
             ConfigureControlLabel(selected_control);
             ConfigureControlSpinner(selected_control);
+            ConfigureVibrationSpinner();
             ConfigureDelaySpinner();
             ConfigureProfileSpinner();
         }
@@ -73,7 +75,7 @@ namespace SoftWing
         private void SetInputListener(View vin, Keycode key)
         {
             var motion = MotionDescription.InvalidMotion();
-            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion));
+            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion, true));
         }
 
         private void SetJoystickListener(JoyStickView joystick, Keycode up, Keycode down, Keycode left, Keycode right)
@@ -217,6 +219,23 @@ namespace SoftWing
             spinner.Invalidate();
         }
 
+        private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "VibrationSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (ignore_delayset_count != 0)
+            {
+                ignore_delayset_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var enable = SwSettings.VIBRATION_TO_STRING_MAP[vibration_string];
+
+            SwSettings.SetVibrationEnable(enable);
+        }
+
         private void DelaySpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             Log.Debug(TAG, "DelaySpinnerItemSelected");
@@ -265,6 +284,36 @@ namespace SoftWing
             ignore_delayset_count++;
 
             int spinner_position = adapter.GetPosition(set_keymap);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void ConfigureVibrationSpinner()
+        {
+            Log.Debug(TAG, "ConfigureVibrationSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.vibrationEnable);
+            spinner.Prompt = "Enable/Disable vibration on button press";
+
+            var set_vibration = SwSettings.GetVibrationEnable();
+            var set_vibration_string = "";
+            List<string> inputNames = new List<string>();
+            foreach (var vib_str in SwSettings.VIBRATION_TO_STRING_MAP.Keys)
+            {
+                inputNames.Add(vib_str);
+                if (set_vibration == SwSettings.VIBRATION_TO_STRING_MAP[vib_str])
+                {
+                    set_vibration_string = vib_str;
+                }
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(VibrationSpinnerItemSelected);
+            ignore_delayset_count++;
+
+            int spinner_position = adapter.GetPosition(set_vibration_string);
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();

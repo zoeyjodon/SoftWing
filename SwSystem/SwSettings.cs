@@ -18,6 +18,8 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_FILENAME = "close_sound.txt";
         private static string OPEN_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, OPEN_SOUND_FILENAME);
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
+        private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
+        private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
         private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
         private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
@@ -43,6 +45,7 @@ namespace SoftWing.SwSystem
         public const Keycode Default_D_Pad_Left = Keycode.DpadLeft;
         public const Keycode Default_D_Pad_Right = Keycode.DpadRight;
         public const Keycode Default_D_Pad_Center = Keycode.DpadCenter;
+        public const bool Default_Vibration_Enable = true;
         public const int Default_Transition_Delay_Ms = 500;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public enum ControlId : int
@@ -68,6 +71,11 @@ namespace SoftWing.SwSystem
             D_Pad_Right,
             D_Pad_Center
         }
+        public static Dictionary<string, bool> VIBRATION_TO_STRING_MAP = new Dictionary<string, bool>
+        {
+            { "Enable" , true },
+            { "Disable", false}
+        };
         public static Dictionary<string, int> DELAY_TO_STRING_MAP = new Dictionary<string, int>
         {
             { "0"   , 0 },
@@ -314,6 +322,35 @@ namespace SoftWing.SwSystem
             using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
             {
                 writer.WriteLine(path.ToString());
+            }
+        }
+
+        public static bool GetVibrationEnable()
+        {
+            Log.Debug(TAG, "GetVibrationEnable");
+            if (!File.Exists(VIBRATION_ENABLE_PATH))
+            {
+                Log.Debug(TAG, "Vibration record not found");
+                return Default_Vibration_Enable;
+            }
+            var stream = File.OpenRead(VIBRATION_ENABLE_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var enableStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                if (bool.TryParse(enableStr, out bool enable))
+                {
+                    return enable;
+                }
+                return Default_Vibration_Enable;
+            }
+        }
+
+        public static void SetVibrationEnable(bool enable)
+        {
+            Log.Debug(TAG, "SetVibrationEnable");
+            using (var writer = File.CreateText(VIBRATION_ENABLE_PATH))
+            {
+                writer.WriteLine(enable.ToString());
             }
         }
 
