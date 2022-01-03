@@ -20,6 +20,7 @@ namespace SoftWing
     public class ControllerSettingsActivity : AppCompatActivity, MessageSubscriber
     {
         private const String TAG = "ControllerSettingsActivity";
+        private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
         private int ignore_delayset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
@@ -37,7 +38,7 @@ namespace SoftWing
             var inputKeyView = FindViewById<ViewGroup>(Resource.Id.imeKeyView);
             SetInputListeners(inputKeyView);
             ConfigureHelpButton();
-            ConfigureResetButton();
+            ConfigureBackgroundButton();
             ConfigureControlLabel(selected_control);
             ConfigureControlButton();
             ConfigureVibrationSpinner();
@@ -59,13 +60,37 @@ namespace SoftWing
             };
         }
 
-        private void ConfigureResetButton()
+        private void SelectImageFile()
         {
-            var reset_button = FindViewById<ImageButton>(Resource.Id.resetToDefaultButton);
-            reset_button.Click += delegate
+            Intent intent = new Intent(Intent.ActionOpenDocument);
+            intent.AddCategory(Intent.CategoryOpenable);
+            intent.SetType("image/*");
+            StartActivityForResult(intent, REQUEST_IMAGE_FILE_CALLBACK);
+        }
+
+        private void PromptUserForBackgroundImage()
+        {
+            Log.Debug(TAG, "PromptUserForBackgroundImage()");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Select a Background Image");
+            var message = "In order to properly map touch controls to a game, please select a screenshot from your game to be used as a background during the setup process\n";
+
+            alert.SetMessage(message);
+            alert.SetButton("Continue", (c, ev) =>
             {
-                MotionConfigurationActivity.control = ControlId.All;
-                StartActivity(typeof(MotionSelectionActivity));
+                SelectImageFile();
+            });
+            alert.Show();
+        }
+
+        private void ConfigureBackgroundButton()
+        {
+            var button = FindViewById<Button>(Resource.Id.setBackgroundButton);
+            button.Click += delegate
+            {
+                PromptUserForBackgroundImage();
             };
         }
 
@@ -334,6 +359,28 @@ namespace SoftWing
                     break;
             }
 
+        }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            if (data == null)
+            {
+                Log.Debug(TAG, "OnActivityResult received null");
+                return;
+            }
+            Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
+            base.OnActivityResult(requestCode, resultCode, data);
+            switch (requestCode)
+            {
+                case REQUEST_IMAGE_FILE_CALLBACK:
+                    MotionConfigurationActivity.BackgroundImageUri = data.Data;
+                    var background_text = FindViewById<TextView>(Resource.Id.backgroundName);
+                    background_text.Text = MotionConfigurationActivity.BackgroundImageUri.LastPathSegment;
+                    break;
+                default:
+                    Log.Debug(TAG, "Ignoring Activity Result");
+                    break;
+            }
         }
     }
 }

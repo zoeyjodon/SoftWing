@@ -13,7 +13,7 @@ using Android.Content.PM;
 
 namespace SoftWing
 {
-    [Activity(Label = "SoftWingInput", ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Label = "SoftWingInput", ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleTask)]
     public class SoftWingInput : Activity
     {
         private const String TAG = "SoftWingInput";

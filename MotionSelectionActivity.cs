@@ -20,7 +20,6 @@ namespace SoftWing
     public class MotionSelectionActivity : AppCompatActivity, IOnClickListener
     {
         private const String TAG = "MotionSelectionActivity";
-        private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -49,53 +48,6 @@ namespace SoftWing
             base.OnStart();
         }
 
-        private void PromptUserForBackgroundImage()
-        {
-            Log.Debug(TAG, "PromptUserForBackgroundImage()");
-
-            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-            var alert = dialog.Create();
-            alert.SetTitle("Select a Background Image");
-            var message = "In order to properly map touch controls to a game, please select a screenshot from your game to be used as a background during the setup process\n";
-
-            alert.SetMessage(message);
-            alert.SetButton("Continue", (c, ev) =>
-            {
-                SelectImageFile();
-            });
-            alert.Show();
-        }
-
-        private void SelectImageFile()
-        {
-            Intent intent = new Intent(Intent.ActionOpenDocument);
-            intent.AddCategory(Intent.CategoryOpenable);
-            intent.SetType("image/*");
-            StartActivityForResult(intent, REQUEST_IMAGE_FILE_CALLBACK);
-        }
-
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
-        {
-            if (data == null)
-            {
-                Log.Debug(TAG, "OnActivityResult received null");
-                return;
-            }
-            Log.Debug(TAG, "OnActivityResult " + data.Data.ToString());
-            base.OnActivityResult(requestCode, resultCode, data);
-            switch (requestCode)
-            {
-                case REQUEST_IMAGE_FILE_CALLBACK:
-                    MotionConfigurationActivity.BackgroundImageUri = data.Data;
-                    StartActivity(typeof(MotionConfigurationActivity));
-                    Finish();
-                    break;
-                default:
-                    Log.Debug(TAG, "Ignoring Activity Result");
-                    break;
-            }
-        }
-
         public void OnClick(View v)
         {
             switch (v.Id)
@@ -112,7 +64,8 @@ namespace SoftWing
                 default:
                     return;
             }
-            PromptUserForBackgroundImage();
+            StartActivity(typeof(MotionConfigurationActivity));
+            Finish();
         }
     }
 }

@@ -42,13 +42,17 @@ namespace SoftWing
 
         public void OnMove(double angle, float strength)
         {
-            if (id == ControlId.Unknown)
+            if (id != ControlId.Unknown)
+            {
+                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed));
+            }
+            else if (motion.type != MotionType.Invalid)
             {
                 HandleMotion(angle, strength);
             }
             else
             {
-                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed));
+                Log.Info(TAG, "Warning: Unhandled joystick action");
             }
         }
 

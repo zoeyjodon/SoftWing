@@ -161,21 +161,19 @@ namespace SoftWing
         {
             Log.Info(TAG, "CancelGesture");
 
-            if (activeMotions.Count == 1)
-            {
-                Path path = new Path();
-                path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
-                path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
-                var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
-                GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-                gestureBuilder.AddStroke(stroke);
-                DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
-                activeMotions.Remove(id);
-                return;
-            }
+            Path path = new Path();
+            path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
+            path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
+            var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
+            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+            gestureBuilder.AddStroke(stroke);
+            DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
             activeMotions.Remove(id);
-            RunActiveGestures();
 
+            if (activeMotions.Count > 0)
+            {
+                RunActiveGestures();
+            }
         }
 
         private void PerformGesture(int id, MotionDescription motion)

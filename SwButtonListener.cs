@@ -67,7 +67,6 @@ namespace SoftWing
                     ReportEvent(ControlUpdateMessage.UpdateType.Released);
                     break;
                 default:
-                    Log.Info(TAG, "OnTouch - Other");
                     break;
             }
             return true;
@@ -75,13 +74,17 @@ namespace SoftWing
 
         private void ReportEvent(ControlUpdateMessage.UpdateType update)
         {
-            if (id == ControlId.Unknown)
+            if (id != ControlId.Unknown)
+            {
+                dispatcher.Post(new ControlUpdateMessage(id, update));
+            }
+            else if (motion.type != MotionType.Invalid)
             {
                 dispatcher.Post(new MotionUpdateMessage(motionId, motion, update == ControlUpdateMessage.UpdateType.Released));
             }
             else
             {
-                dispatcher.Post(new ControlUpdateMessage(id, update));
+                Log.Info(TAG, "Warning: Unhandled button action");
             }
         }
     }
