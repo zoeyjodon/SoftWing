@@ -129,114 +129,14 @@ namespace SoftWing
             StartForeground(NOTIFICATION_ONGOING_ID, mBuilder.Build());
         }
 
-        private static void LockOrientation()
-        {
-            Log.Debug(TAG, "Locking phone orientation");
-            try
-            {
-                Settings.System.PutInt(Application.Context.ContentResolver, Settings.System.AccelerometerRotation, 0);
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(TAG, "Failed to lock phone orientation: " + ex.Message);
-            }
-        }
-
-        private static bool IsUsingSwKeyboard()
-        {
-            var current_ime = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.DefaultInputMethod);
-            return current_ime.Contains("SoftWingInput");
-        }
-
-        private static void SetInputMethod(string input_method_id)
-        {
-            Log.Debug(TAG, "Setting Input Method");
-            try
-            {
-                // Note, to be able to perform this action you need to grant this app secure settings permissions
-                // With debugging enabled on your device and adb installed on your PC, connect your phone and run the following command:
-                // adb shell pm grant com.jodonlucas.softwing android.permission.WRITE_SECURE_SETTINGS
-                Settings.Secure.PutString(Application.Context.ContentResolver, Settings.Secure.DefaultInputMethod, input_method_id);
-            }
-            catch (Exception ex)
-            {
-                // If we can't write the setting directly, try the old fashioned way.
-                // Note: This will only work if SoftWing is the current input method.
-                Log.Debug(TAG, "Failed to write secure setting, using IMM: " + ex.Message);
-                InputMethodManager imm = (InputMethodManager)
-                    Application.Context.GetSystemService(InputMethodService);
-                imm.SetInputMethod(SoftWingInput.InputSessionToken, input_method_id);
-            }
-        }
-
         private void ShowSwKeyboard()
         {
             Log.Debug(TAG, "ShowSwKeyboard");
-            InputMethodManager input_manager = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
-            if (input_manager != null)
-            {
-                input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
-            }
-            // Alert the system to the initial swivel state after the IME has opened
-            DisplayUpdateMessage msg = new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd);
-            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
-            {
-                msg = new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd);
-            }
-            Task.Factory.StartNew(() =>
-            {
-                Log.Debug(TAG, "Waiting for IME to open...");
-                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-                var end_time = start_time + IME_STARTUP_WAIT_MS;
-                while (!SoftWingInput.ImeIsOpen)
-                {
-                    // Make sure we aren't waiting forever
-                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
-                    {
-                        return;
-                    }
-                }
-                Log.Debug(TAG, "Launching switching task");
-                instance.dispatcher.Post(msg);
-            });
-        }
-
-        public static void UseLgKeyboard()
-        {
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
-
-            foreach (var InputMethod in imm.EnabledInputMethodList)
-            {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("LgeImeImpl"))
-                {
-                    SetInputMethod(InputMethod.Id);
-                    return;
-                }
-            }
-        }
-
-        public static void UseSwKeyboard()
-        {
-            if (IsUsingSwKeyboard())
-            {
-                Log.Debug(TAG, "Already using SW IME, skipping");
-                return;
-            }
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
-
-            foreach (var InputMethod in imm.EnabledInputMethodList)
-            {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("SoftWingInput"))
-                {
-                    SetInputMethod(InputMethod.Id);
-                    return;
-                }
-            }
+            Intent intent = new Intent(this, typeof(SoftWingInput));
+            ActivityOptions options = ActivityOptions.MakeBasic();
+            options.SetLaunchDisplayId(lg_display_manager.MultiDisplayId);
+            intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
+            StartActivity(intent, options.ToBundle());
         }
 
         private void StartSound(String audio_path)
@@ -285,12 +185,7 @@ namespace SoftWing
 
         private void HandleShowIme()
         {
-            UseSwKeyboard();
-            // Give the IME time to update
-            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
-            {
-                ShowSwKeyboard();
-            }, SHOW_IME_DELAY_MS);
+            ShowSwKeyboard();
         }
 
         private void HandleDisplayUpdate(DisplayUpdateMessage display_message)
@@ -304,19 +199,6 @@ namespace SoftWing
                 case DisplayManagerHelper.SwivelEnd:
                     Log.Debug(TAG, "DisplayManagerHelper.SwivelEnd");
                     // We don't want to impose this behavior unless we are displaying the SoftWing IME
-                    if (!IsUsingSwKeyboard() || !SoftWingInput.ImeIsOpen)
-                    {
-                        return;
-                    }
-                    // Lock the phone's orientation to prevent unexpected behavior.
-                    // Disabled for being more annoying than useful.
-                    //LockOrientation();
-                    UseLgKeyboard();
-                    // Give the LG keyboard time to perform the screen transition
-                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
-                    {
-                        UseSwKeyboard();
-                    }, SwSettings.GetTransitionDelayMs());
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");

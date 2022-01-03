@@ -1,4 +1,5 @@
 ﻿using Android.Views;
+using static SoftWing.SwSystem.SwSettings;
 
 namespace SoftWing.SwSystem.Messages
 {
@@ -12,12 +13,12 @@ namespace SoftWing.SwSystem.Messages
         }
 
         public UpdateType Update { get; }
-        public Keycode Key { get; }
+        public ControlId Id { get; }
 
-        public ControlUpdateMessage(Keycode key, UpdateType update)
+        public ControlUpdateMessage(ControlId id_in, UpdateType update)
         {
             Update = update;
-            Key = key;
+            Id = id_in;
         }
 
         public MessageType getMessageType()

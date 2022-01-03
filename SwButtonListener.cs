@@ -6,6 +6,7 @@ using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
 using Android.App;
 using Xamarin.Essentials;
+using static SoftWing.SwSystem.SwSettings;
 
 namespace SoftWing
 {
@@ -14,18 +15,26 @@ namespace SoftWing
         private const String TAG = "SwButtonListener";
         private TimeSpan KEY_VIBRATION_TIME = TimeSpan.FromSeconds(0.01);
         private View button;
-        private Keycode key = Keycode.Unknown;
         private bool vibrate_enabled = SwSettings.Default_Vibration_Enable;
+        private ControlId id = ControlId.Unknown;
         private MotionDescription motion = MotionDescription.InvalidMotion();
         private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
 
-        public SwButtonListener(View button_in, Keycode key_in, MotionDescription motion_in, bool vibrate_enable_in)
+        public SwButtonListener(View button_in, MotionDescription motion_in, bool vibrate_enable_in)
         {
             Log.Info(TAG, "SwButtonListener - key");
             button = button_in;
-            key = key_in;
             motion = motion_in;
+            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            vibrate_enabled = vibrate_enable_in;
+        }
+
+        public SwButtonListener(View button_in, ControlId id_in, bool vibrate_enable_in)
+        {
+            Log.Info(TAG, "SwButtonListener - key");
+            button = button_in;
+            id = id_in;
             dispatcher = MessageDispatcher.GetInstance(new Activity());
             vibrate_enabled = vibrate_enable_in;
         }
@@ -66,12 +75,14 @@ namespace SoftWing
 
         private void ReportEvent(ControlUpdateMessage.UpdateType update)
         {
-            if (key != Keycode.Unknown)
+            if (id == ControlId.Unknown)
             {
-                dispatcher.Post(new ControlUpdateMessage(key, update));
-                return;
+                dispatcher.Post(new MotionUpdateMessage(motionId, motion, update == ControlUpdateMessage.UpdateType.Released));
             }
-            dispatcher.Post(new MotionUpdateMessage(motionId, motion, update == ControlUpdateMessage.UpdateType.Released));
+            else
+            {
+                dispatcher.Post(new ControlUpdateMessage(id, update));
+            }
         }
     }
 }

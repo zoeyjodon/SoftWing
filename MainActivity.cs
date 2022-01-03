@@ -61,7 +61,7 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionUserUnlocked));
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
-            EnsureControllerEnabled();
+            EnsureSwAccessibility();
         }
 
         private void EnsureSwAccessibility()
@@ -69,7 +69,6 @@ namespace SoftWing
             Log.Info(TAG, "EnableSwAccessibility");
             try
             {
-                //en = "com.jodonlucas.softwing / crc64b8a8e0418bb06473.SoftWingAccessibility:" + en;
                 var enabledServices = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.EnabledAccessibilityServices);
                 if (!enabledServices.Contains("SoftWingAccessibility"))
                 {
@@ -117,41 +116,6 @@ namespace SoftWing
                 alert.Cancel();
             });
             alert.SetButton2("SKIP", (c, ev) => { });
-            alert.Show();
-        }
-
-        private void EnsureControllerEnabled()
-        {
-            Log.Debug(TAG, "EnsureControllerEnabled()");
-
-            var enabled_imes = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.EnabledInputMethods);
-            Log.Debug(TAG, enabled_imes);
-            if (enabled_imes.Contains("SoftWingInput") && enabled_imes.Contains("LgeImeImpl"))
-            {
-                EnsureSwAccessibility();
-                return;
-            }
-
-            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
-            var alert = dialog.Create();
-            alert.SetTitle("Enable Required Keyboards");
-            var message = "In order for the controller to work, the following must be enabled in your settings:\n";
-            message += "\t- LG Keyboard\n";
-            message += "\t- SoftWingInput\n";
-            message += "\t- Show icon for switching keyboards";
-            alert.SetMessage(message);
-            alert.SetButton("OK", (c, ev) =>
-            {
-                alert.Cancel();
-                var enableIntent = new Intent(Settings.ActionInputMethodSettings);
-                enableIntent.SetFlags(ActivityFlags.NewTask);
-                StartActivity(enableIntent);
-                EnsureSwAccessibility();
-            });
-            alert.SetButton2("SKIP", (c, ev) =>
-            {
-                EnsureSwAccessibility();
-            });
             alert.Show();
         }
 

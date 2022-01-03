@@ -26,7 +26,7 @@ namespace SoftWing
         private MotionDescription motion = MotionDescription.InvalidMotion();
 
         public static Android.Net.Uri BackgroundImageUri = null;
-        public static List<SwSettings.ControlId> controls;
+        public static SwSettings.ControlId control;
         public static MotionType motionType = MotionType.Invalid;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -70,7 +70,8 @@ namespace SoftWing
 
         private bool multiplePointsRequired()
         {
-            return (motionType != MotionType.Tap) || (controls.Count > 1);
+            bool isAnalogControl = (control == SwSettings.ControlId.L_Analog) || (control == SwSettings.ControlId.R_Analog);
+            return (motionType != MotionType.Tap) || isAnalogControl;
         }
 
         private void PromptUserForSwipeBegin()
@@ -139,10 +140,7 @@ namespace SoftWing
 
         private void CommitMotionAndFinish()
         {
-            foreach (var control in controls)
-            {
-                SwSettings.SetControlMotion(control, motion);
-            }
+            SwSettings.SetControlMotion(control, motion);
             Finish();
         }
 

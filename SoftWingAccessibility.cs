@@ -40,7 +40,7 @@ namespace SoftWing
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber
     {
         private const String TAG = "SoftWingAccessibility";
-        private const long GESTURE_START_DELAY_MS = 50;
+        private const long GESTURE_START_DELAY_MS = 0;
         private const long FIRST_STROKE_DURATION_MS = 10;
         private const long CONTINUOUS_STROKE_DURATION_MS = 500;
         private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration / 10;
@@ -70,6 +70,7 @@ namespace SoftWing
 
         private List<GestureDescription.StrokeDescription> GenerateTap(MotionDescription motion)
         {
+            Log.Info(TAG, "GenerateTap(" + motion.beginX.ToString() + ", " + motion.beginY.ToString() + ")");
             Path firstPath = new Path();
             firstPath.MoveTo(motion.beginX, motion.beginY);
             firstPath.LineTo(motion.endX, motion.endY);
@@ -84,6 +85,7 @@ namespace SoftWing
 
         private List<GestureDescription.StrokeDescription> GenerateSwipe(MotionDescription motion)
         {
+            Log.Info(TAG, "GenerateSwipe(" + motion.beginX.ToString() + ", " + motion.beginY.ToString() + ")");
             Path firstPath = new Path();
             firstPath.MoveTo(motion.beginX, motion.beginY);
             firstPath.LineTo(motion.endX, motion.endY);
@@ -99,6 +101,7 @@ namespace SoftWing
 
         private List<GestureDescription.StrokeDescription> GenerateContinuous(MotionDescription motion)
         {
+            Log.Info(TAG, "GenerateContinuous(" + motion.beginX.ToString() + ", " + motion.beginY.ToString() + ")");
             var output = new List<GestureDescription.StrokeDescription>();
 
             Path swipePath = new Path();

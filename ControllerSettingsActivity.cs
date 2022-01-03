@@ -12,6 +12,7 @@ using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem.Messages;
 using Android.Content;
 using Android.Runtime;
+using static SoftWing.SwSystem.SwSettings;
 
 namespace SoftWing
 {
@@ -19,9 +20,7 @@ namespace SoftWing
     public class ControllerSettingsActivity : AppCompatActivity, MessageSubscriber
     {
         private const String TAG = "ControllerSettingsActivity";
-        private int ignore_keyset_count = 0;
         private int ignore_delayset_count = 0;
-        private int ignore_vibrationset_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
 
@@ -40,7 +39,7 @@ namespace SoftWing
             ConfigureHelpButton();
             ConfigureResetButton();
             ConfigureControlLabel(selected_control);
-            ConfigureControlSpinner(selected_control);
+            ConfigureControlButton();
             ConfigureVibrationSpinner();
             ConfigureDelaySpinner();
             ConfigureProfileSpinner();
@@ -65,22 +64,20 @@ namespace SoftWing
             var reset_button = FindViewById<ImageButton>(Resource.Id.resetToDefaultButton);
             reset_button.Click += delegate
             {
-                SwSettings.SetDefaultKeycodes();
-                RefreshUISpinner();
-                var toast = Toast.MakeText(this, "The controller has been reset to default", ToastLength.Short);
-                toast.Show();
+                MotionConfigurationActivity.control = ControlId.All;
+                StartActivity(typeof(MotionSelectionActivity));
             };
         }
 
-        private void SetInputListener(View vin, Keycode key)
+        private void SetInputListener(View vin, ControlId id)
         {
             var motion = MotionDescription.InvalidMotion();
-            vin.SetOnTouchListener(new SwButtonListener(vin, key, motion, true));
+            vin.SetOnTouchListener(new SwButtonListener(vin, id, true));
         }
 
-        private void SetJoystickListener(JoyStickView joystick, Keycode up, Keycode down, Keycode left, Keycode right)
+        private void SetJoystickListener(JoyStickView joystick, ControlId id)
         {
-            var listener = new SwJoystickListener(up, down, left, right);
+            var listener = new SwJoystickListener(id);
             joystick.SetOnMoveListener(listener);
         }
 
@@ -94,91 +91,53 @@ namespace SoftWing
                 {
                     case (Resource.Id.left_joyStick):
                         {
-                            var up = SwSettings.Default_L_Analog_Up;
-                            var down = SwSettings.Default_L_Analog_Down;
-                            var left = SwSettings.Default_L_Analog_Left;
-                            var right = SwSettings.Default_L_Analog_Right;
-                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                            SetJoystickListener((JoyStickView)nextChild, SwSettings.ControlId.L_Analog);
                         }
                         break;
                     case (Resource.Id.right_joyStick):
                         {
-                            var up = SwSettings.Default_R_Analog_Up;
-                            var down = SwSettings.Default_R_Analog_Down;
-                            var left = SwSettings.Default_R_Analog_Left;
-                            var right = SwSettings.Default_R_Analog_Right;
-                            SetJoystickListener((JoyStickView)nextChild, up, down, left, right);
+                            SetJoystickListener((JoyStickView)nextChild, SwSettings.ControlId.R_Analog);
                         }
                         break;
                     case (Resource.Id.d_pad_up):
-                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Up);
+                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Up);
                         break;
                     case (Resource.Id.d_pad_down):
-                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Down);
+                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Down);
                         break;
                     case (Resource.Id.d_pad_left):
-                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Left);
+                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Left);
                         break;
                     case (Resource.Id.d_pad_right):
-                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Right);
+                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Right);
                         break;
                     case (Resource.Id.d_pad_center):
-                        SetInputListener(nextChild, SwSettings.Default_D_Pad_Center);
+                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Center);
                         break;
                     case (Resource.Id.a_button):
-                        SetInputListener(nextChild, SwSettings.Default_A_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.A_Button);
                         break;
                     case (Resource.Id.b_button):
-                        SetInputListener(nextChild, SwSettings.Default_B_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.B_Button);
                         break;
                     case (Resource.Id.y_button):
-                        SetInputListener(nextChild, SwSettings.Default_Y_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.Y_Button);
                         break;
                     case (Resource.Id.x_button):
-                        SetInputListener(nextChild, SwSettings.Default_X_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.X_Button);
                         break;
                     case (Resource.Id.l_button):
-                        SetInputListener(nextChild, SwSettings.Default_L_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.L_Button);
                         break;
                     case (Resource.Id.r_button):
-                        SetInputListener(nextChild, SwSettings.Default_R_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.R_Button);
                         break;
                     case (Resource.Id.start_button):
-                        SetInputListener(nextChild, SwSettings.Default_Start_Button);
+                        SetInputListener(nextChild, SwSettings.ControlId.Start_Button);
                         break;
                     default:
                         break;
                 }
-            }
-        }
-
-        private void ControlSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            Log.Debug(TAG, "ControlSpinnerItemSelected");
-            // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_keyset_count != 0)
-            {
-                ignore_keyset_count--;
-                return;
-            }
-            Spinner spinner = (Spinner)sender;
-            var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-
-            var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
-            if (SwSettings.GetControlKeycode(selected_control) == key)
-            {
-                Log.Debug(TAG, "Item already selected, ignoring");
-                return;
-            }
-            // Special case: Touch input
-            if (key == Keycode.Unknown)
-            {
-                MotionConfigurationActivity.controls = GetAssociatedControls(selected_control);
-                StartActivity(typeof(MotionSelectionActivity));
-            }
-            else
-            {
-                SwSettings.SetControlKeycode(selected_control, key);
             }
         }
 
@@ -189,34 +148,16 @@ namespace SoftWing
             label.Text = SwSettings.CONTROL_TO_STRING_MAP[control];
         }
 
-        private void ConfigureControlSpinner(SwSettings.ControlId control)
+        private void ConfigureControlButton()
         {
-            Log.Debug(TAG, "ConfigureControlSpinner");
-            var spinner = FindViewById<Spinner>(Resource.Id.inputKeycode);
-            spinner.Prompt = "Set " + SwSettings.CONTROL_TO_STRING_MAP[control] + " Keycode";
+            Log.Debug(TAG, "ConfigureControlButton");
+            var button = FindViewById<Button>(Resource.Id.inputKeycode);
 
-            var set_key_code = SwSettings.GetControlKeycode(control);
-            var set_key_string = "";
-            List<string> inputNames = new List<string>();
-            foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
+            button.Click += delegate
             {
-                inputNames.Add(key_string);
-                if (set_key_code == SwSettings.STRING_TO_KEYCODE_MAP[key_string])
-                {
-                    set_key_string = key_string;
-                }
-            }
-            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinner.Adapter = adapter;
-
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ControlSpinnerItemSelected);
-            ignore_keyset_count++;
-
-            int spinner_position = adapter.GetPosition(set_key_string);
-            spinner.SetSelection(spinner_position);
-
-            spinner.Invalidate();
+                Log.Debug(TAG, "MotionConfigurationActivity.control = " + MotionConfigurationActivity.control.ToString());
+                StartActivity(typeof(MotionSelectionActivity));
+            };
         }
 
         private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -265,8 +206,6 @@ namespace SoftWing
             Spinner spinner = (Spinner)sender;
             var profile_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
             SwSettings.SetSelectedKeymap(profile_string);
-
-            ConfigureControlSpinner(selected_control);
         }
 
         private void ConfigureProfileSpinner()
@@ -349,65 +288,12 @@ namespace SoftWing
             spinner.Invalidate();
         }
 
-        void RefreshUISpinner()
-        {
-            var spinner = FindViewById<Spinner>(Resource.Id.inputKeycode);
-            var set_key_code = SwSettings.GetControlKeycode(selected_control);
-            var set_key_string = "";
-            foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
-            {
-                if (set_key_code == SwSettings.STRING_TO_KEYCODE_MAP[key_string])
-                {
-                    set_key_string = key_string;
-                }
-            }
-
-            var adapter = (ArrayAdapter<string>)spinner.Adapter;
-            int spinner_position = adapter.GetPosition(set_key_string);
-            spinner.SetSelection(spinner_position);
-        }
-
-        private List<SwSettings.ControlId> GetAssociatedControls(SwSettings.ControlId id)
-        {
-            switch (id)
-            {
-                case SwSettings.ControlId.L_Analog_Up:
-                case SwSettings.ControlId.L_Analog_Down:
-                case SwSettings.ControlId.L_Analog_Left:
-                case SwSettings.ControlId.L_Analog_Right:
-                    return new List<SwSettings.ControlId> {
-                        SwSettings.ControlId.L_Analog_Up,
-                        SwSettings.ControlId.L_Analog_Down,
-                        SwSettings.ControlId.L_Analog_Left,
-                        SwSettings.ControlId.L_Analog_Right
-                    };
-                case SwSettings.ControlId.R_Analog_Up:
-                case SwSettings.ControlId.R_Analog_Down:
-                case SwSettings.ControlId.R_Analog_Left:
-                case SwSettings.ControlId.R_Analog_Right:
-                    return new List<SwSettings.ControlId> {
-                        SwSettings.ControlId.R_Analog_Up,
-                        SwSettings.ControlId.R_Analog_Down,
-                        SwSettings.ControlId.R_Analog_Left,
-                        SwSettings.ControlId.R_Analog_Right
-                    };
-                default:
-                    return new List<SwSettings.ControlId> { id };
-            }
-        }
-
         private bool IsAnalogControl(SwSettings.ControlId id)
         {
             switch (id)
             {
-                case SwSettings.ControlId.L_Analog_Up:
-                case SwSettings.ControlId.L_Analog_Down:
-                case SwSettings.ControlId.L_Analog_Left:
-                case SwSettings.ControlId.L_Analog_Right:
-                case SwSettings.ControlId.R_Analog_Up:
-                case SwSettings.ControlId.R_Analog_Down:
-                case SwSettings.ControlId.R_Analog_Left:
-                case SwSettings.ControlId.R_Analog_Right:
+                case SwSettings.ControlId.L_Analog:
+                case SwSettings.ControlId.R_Analog:
                     return true;
                 default:
                     return false;
@@ -421,28 +307,26 @@ namespace SoftWing
                 return;
             }
             var control_message = (ControlUpdateMessage)message;
-            var key_code = control_message.Key;
+            var selected_control = control_message.Id;
             switch (control_message.Update)
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
                     Log.Debug(TAG, "Accept(UpdateType.Pressed)");
                     {
-                        selected_control = SwSettings.DefaultKeycodeToControlId(key_code);
                         if (IsAnalogControl(selected_control))
                         {
                             ConfigureControlLabel(selected_control);
-                            ConfigureControlSpinner(selected_control);
+                            MotionConfigurationActivity.control = selected_control;
                         }
                     }
                     break;
                 case ControlUpdateMessage.UpdateType.Released:
                     Log.Debug(TAG, "Accept(UpdateType.Released)");
                     {
-                        selected_control = SwSettings.DefaultKeycodeToControlId(key_code);
                         if (!IsAnalogControl(selected_control))
                         {
                             ConfigureControlLabel(selected_control);
-                            ConfigureControlSpinner(selected_control);
+                            MotionConfigurationActivity.control = selected_control;
                         }
                     }
                     break;
