@@ -44,6 +44,7 @@ namespace SoftWing
         private const long FIRST_STROKE_DURATION_MS = 10;
         private const long CONTINUOUS_STROKE_DURATION_MS = 500;
         private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration / 10;
+        private int MAX_GESTURE_RETRIES = 10;
 
         private MessageDispatcher dispatcher;
         private Dictionary<int, MotionDescription> activeMotions = new Dictionary<int, MotionDescription>();
@@ -145,6 +146,18 @@ namespace SoftWing
             return output;
         }
 
+        private void TryDispatchGesture(GestureDescription gesture)
+        {
+            var retry_count = 1;
+            while (!DispatchGesture(gesture, new SwGestureCallback(), null))
+            {
+                if (retry_count++ == MAX_GESTURE_RETRIES)
+                {
+                    throw new AndroidRuntimeException("Failed to execute gesture");
+                }
+            }
+        }
+
         private void RunActiveGestures()
         {
             var strokes = GenerateActiveStrokeList();
@@ -154,7 +167,7 @@ namespace SoftWing
             {
                 gestureBuilder.AddStroke(stroke);
             }
-            DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
+            TryDispatchGesture(gestureBuilder.Build());
         }
 
         private void CancelGesture(int id)
@@ -167,7 +180,7 @@ namespace SoftWing
             var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
             gestureBuilder.AddStroke(stroke);
-            DispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
+            TryDispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
             activeMotions.Remove(id);
 
             if (activeMotions.Count > 0)
