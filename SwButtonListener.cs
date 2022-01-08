@@ -26,7 +26,7 @@ namespace SoftWing
             Log.Info(TAG, "SwButtonListener - key");
             button = button_in;
             motion = motion_in;
-            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher = MessageDispatcher.GetInstance();
             vibrate_enabled = vibrate_enable_in;
         }
 
@@ -35,7 +35,7 @@ namespace SoftWing
             Log.Info(TAG, "SwButtonListener - key");
             button = button_in;
             id = id_in;
-            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher = MessageDispatcher.GetInstance();
             vibrate_enabled = vibrate_enable_in;
         }
 

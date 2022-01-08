@@ -19,6 +19,22 @@ namespace SoftWing
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
         private View? keyboardView = null;
+        private static SoftWingInput instance;
+
+        public static void StartSoftWingInput(Context calling_context, int display_id)
+        {
+            Log.Debug(TAG, "StartSoftWingInput");
+            if (instance != null)
+            {
+                Log.Debug(TAG, "Input instance exists, skipping");
+                return;
+            }
+            Intent intent = new Intent(calling_context, typeof(SoftWingInput));
+            ActivityOptions options = ActivityOptions.MakeBasic();
+            options.SetLaunchDisplayId(display_id);
+            intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
+            calling_context.StartActivity(intent, options.ToBundle());
+        }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {

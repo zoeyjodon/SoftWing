@@ -25,14 +25,14 @@ namespace SoftWing
         {
             Log.Info(TAG, "SwJoystickListener");
             id = id_in;
-            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher = MessageDispatcher.GetInstance();
         }
 
         public SwJoystickListener(MotionDescription motion_in)
         {
             Log.Info(TAG, "SwJoystickListener");
             motion = motion_in;
-            dispatcher = MessageDispatcher.GetInstance(new Activity());
+            dispatcher = MessageDispatcher.GetInstance();
         }
 
         ~SwJoystickListener()

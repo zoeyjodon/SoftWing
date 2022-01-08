@@ -47,7 +47,7 @@ namespace SoftWing
             SetContentView(Resource.Layout.activity_main);
 
             donation = new DonationHandler(this);
-            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(MessageType.DonationUpdate, this);
             ConfigureNavigationButtons();
         }

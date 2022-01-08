@@ -132,11 +132,7 @@ namespace SoftWing
         private void ShowSwKeyboard()
         {
             Log.Debug(TAG, "ShowSwKeyboard");
-            Intent intent = new Intent(this, typeof(SoftWingInput));
-            ActivityOptions options = ActivityOptions.MakeBasic();
-            options.SetLaunchDisplayId(lg_display_manager.MultiDisplayId);
-            intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
-            StartActivity(intent, options.ToBundle());
+            SoftWingInput.StartSoftWingInput(this, lg_display_manager.MultiDisplayId);
         }
 
         private void StartSound(String audio_path)
@@ -198,11 +194,14 @@ namespace SoftWing
                     break;
                 case DisplayManagerHelper.SwivelEnd:
                     Log.Debug(TAG, "DisplayManagerHelper.SwivelEnd");
-                    // We don't want to impose this behavior unless we are displaying the SoftWing IME
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");
                     PlayWingSound(CLOSE_SOUND_PATH);
+                    break;
+                case DisplayManagerHelper.NonSwivelEnd:
+                    Log.Debug(TAG, "DisplayManagerHelper.NonSwivelEnd");
+                    StopService(new Intent(this, typeof(SoftWingInput)));
                     break;
                 default:
                     break;
@@ -250,7 +249,7 @@ namespace SoftWing
 
         public LgSwivelStateCallback()
         {
-            dispatcher = SwSystem.MessageDispatcher.GetInstance(new Activity());
+            dispatcher = SwSystem.MessageDispatcher.GetInstance();
         }
 
         public override void OnSwivelStateChanged(int state)

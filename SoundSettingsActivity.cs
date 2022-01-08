@@ -31,7 +31,7 @@ namespace SoftWing
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.sound_settings);
 
-            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher = MessageDispatcher.GetInstance();
             ConfigureAudioSelectButtons();
         }
 

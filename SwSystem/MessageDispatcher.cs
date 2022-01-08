@@ -6,6 +6,7 @@
  * \date   8/14/2020
 ***********************************************************************/
 using Android.App;
+using Android.OS;
 using System.Collections.Generic;
 
 namespace SoftWing.SwSystem
@@ -14,23 +15,9 @@ namespace SoftWing.SwSystem
     {
         /*------------------ Private member variables ------------------*/
         private Dictionary<MessageType, List<MessageSubscriber>> system_message_subs = new Dictionary<MessageType, List<MessageSubscriber>>();
-        private static Activity calling_activity = null;
         private static MessageDispatcher instance = null;
 
         /*------------------ Public member functions ------------------*/
-        public static MessageDispatcher GetInstance(Activity _calling_activity)
-        {
-            if (instance == null)
-            {
-                instance = new MessageDispatcher();
-            }
-            if (calling_activity == null)
-            {
-                calling_activity = _calling_activity;
-            }
-            return instance;
-        }
-
         public static MessageDispatcher GetInstance()
         {
             if (instance == null)
@@ -48,13 +35,7 @@ namespace SoftWing.SwSystem
          */
         public void Subscribe(MessageType t, MessageSubscriber sub)
         {
-            if (calling_activity == null)
-            {
-                AddSubscription(t, sub);
-                return;
-            }
-            // Make sure all dispatcher functions are synced with the main thread
-            calling_activity.RunOnUiThread(() =>
+            new Handler(Looper.MainLooper).Post(() =>
             {
                 AddSubscription(t, sub);
             });
@@ -89,13 +70,7 @@ namespace SoftWing.SwSystem
          */
         public void Unsubscribe(MessageType t, MessageSubscriber sub)
         {
-            if (calling_activity == null)
-            {
-                RemoveSubscription(t, sub);
-                return;
-            }
-            // Make sure all dispatcher functions are synced with the main thread
-            calling_activity.RunOnUiThread(() =>
+            new Handler(Looper.MainLooper).Post(() =>
             {
                 RemoveSubscription(t, sub);
             });
@@ -118,13 +93,7 @@ namespace SoftWing.SwSystem
          */
         public void Post(SystemMessage message)
         {
-            if (calling_activity == null)
-            {
-                Dispatch(message);
-                return;
-            }
-            // Make sure all dispatcher functions are synced with the main thread
-            calling_activity.RunOnUiThread(() =>
+            new Handler(Looper.MainLooper).Post(() =>
             {
                 Dispatch(message);
             });

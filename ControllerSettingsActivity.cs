@@ -33,7 +33,7 @@ namespace SoftWing
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.controller_settings);
 
-            dispatcher = MessageDispatcher.GetInstance(this);
+            dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(MessageType.ControlUpdate, this);
             var inputKeyView = FindViewById<ViewGroup>(Resource.Id.imeKeyView);
             SetInputListeners(inputKeyView);
