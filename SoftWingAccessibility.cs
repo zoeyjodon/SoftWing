@@ -197,6 +197,7 @@ namespace SoftWing
 
         public void Accept(SystemMessage message)
         {
+            Log.Info(TAG, "Accept");
             if (message.getMessageType() != MessageType.MotionUpdate)
             {
                 return;

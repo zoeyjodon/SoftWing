@@ -21,19 +21,30 @@ namespace SoftWing
         private View? keyboardView = null;
         private static SoftWingInput instance;
 
-        public static void StartSoftWingInput(Context calling_context, int display_id)
+        public static void StartSoftWingInput(int display_id)
         {
             Log.Debug(TAG, "StartSoftWingInput");
-            if (instance != null)
-            {
-                Log.Debug(TAG, "Input instance exists, skipping");
-                return;
-            }
-            Intent intent = new Intent(calling_context, typeof(SoftWingInput));
+            Intent intent = new Intent(Application.Context, typeof(SoftWingInput));
             ActivityOptions options = ActivityOptions.MakeBasic();
             options.SetLaunchDisplayId(display_id);
             intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
-            calling_context.StartActivity(intent, options.ToBundle());
+            if (instance != null)
+            {
+                Log.Debug(TAG, "Input instance exists, restarting");
+                instance.Finish();
+            }
+            Application.Context.StartActivity(intent, options.ToBundle());
+        }
+
+        public static void StopSoftWingInput()
+        {
+            Log.Debug(TAG, "StopSoftWingInput");
+            if (instance == null)
+            {
+                Log.Debug(TAG, "Input instance does not exist, ignoring");
+                return;
+            }
+            instance.Finish();
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -60,12 +71,14 @@ namespace SoftWing
 
             SwDisplayManager.StartSwDisplayManager();
             SetInputListeners((ViewGroup)keyboardView);
+            instance = this;
         }
 
         public override void Finish()
         {
             Log.Debug(TAG, "Finish()");
             base.Finish();
+            instance = null;
         }
 
         private void SetJoystickListener(JoyStickView joystick, SwSettings.ControlId cid)

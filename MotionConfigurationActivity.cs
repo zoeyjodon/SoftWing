@@ -18,11 +18,14 @@ namespace SoftWing
     public class MotionConfigurationActivity : AppCompatActivity, IOnTouchListener
     {
         private const String TAG = "MotionConfigurationActivity";
-        private const int SURFACE_RADIUS = 50;
-        private const int STROKE_WIDTH = 50;
+        private const int SURFACE_RADIUS_OUTER = 120;
+        private const int SURFACE_RADIUS_INNER = 100;
+        private const int STROKE_WIDTH_OUTER = 50;
+        private const int STROKE_WIDTH_INNER = 30;
 
         private ISurfaceHolder surfaceHolder = null;
-        private Paint surfacePaint = new Paint(PaintFlags.AntiAlias);
+        private Paint surfacePaintOuter = new Paint(PaintFlags.AntiAlias);
+        private Paint surfacePaintInner = new Paint(PaintFlags.AntiAlias);
         private MotionDescription motion = MotionDescription.InvalidMotion();
 
         public static Android.Net.Uri BackgroundImageUri = null;
@@ -45,7 +48,11 @@ namespace SoftWing
                  SystemUiFlags.ImmersiveSticky;
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
 
-            surfacePaint.StrokeWidth = STROKE_WIDTH;
+            surfacePaintOuter.StrokeWidth = STROKE_WIDTH_OUTER;
+            surfacePaintOuter.Color = Color.Black;
+
+            surfacePaintInner.StrokeWidth = STROKE_WIDTH_INNER;
+            surfacePaintInner.Color = Color.White;
 
             SetContentView(Resource.Layout.motion_configuration);
         }
@@ -129,11 +136,19 @@ namespace SoftWing
         {
             var canvas = surfaceHolder.LockCanvas();
             canvas.DrawColor(0, BlendMode.Clear);
-            canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS, surfacePaint);
+
             if (motion.beginX > -1)
             {
-                canvas.DrawLine(motion.beginX, motion.beginY, e.GetX(), e.GetY(), surfacePaint);
-                canvas.DrawCircle(motion.beginX, motion.beginY, SURFACE_RADIUS, surfacePaint);
+                canvas.DrawLine(motion.beginX, motion.beginY, e.GetX(), e.GetY(), surfacePaintOuter);
+                canvas.DrawLine(motion.beginX, motion.beginY, e.GetX(), e.GetY(), surfacePaintInner);
+
+                canvas.DrawCircle(motion.beginX, motion.beginY, SURFACE_RADIUS_OUTER / 2, surfacePaintOuter);
+                canvas.DrawCircle(motion.beginX, motion.beginY, SURFACE_RADIUS_INNER / 2, surfacePaintInner);
+            }
+            if (e.Action != MotionEventActions.Up)
+            {
+                canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS_OUTER, surfacePaintOuter);
+                canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS_INNER, surfacePaintInner);
             }
             surfaceHolder.UnlockCanvasAndPost(canvas);
         }
@@ -172,7 +187,6 @@ namespace SoftWing
 
         public bool OnTouch(View v, MotionEvent e)
         {
-            MovePointMarker(e);
             switch (e.Action)
             {
                 case MotionEventActions.Up:
@@ -183,6 +197,7 @@ namespace SoftWing
                     Log.Info(TAG, "OnTouch - Other");
                     break;
             }
+            MovePointMarker(e);
             return true;
         }
     }

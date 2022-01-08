@@ -132,7 +132,7 @@ namespace SoftWing
         private void ShowSwKeyboard()
         {
             Log.Debug(TAG, "ShowSwKeyboard");
-            SoftWingInput.StartSoftWingInput(this, lg_display_manager.MultiDisplayId);
+            SoftWingInput.StartSoftWingInput(lg_display_manager.MultiDisplayId);
         }
 
         private void StartSound(String audio_path)
@@ -201,7 +201,7 @@ namespace SoftWing
                     break;
                 case DisplayManagerHelper.NonSwivelEnd:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelEnd");
-                    StopService(new Intent(this, typeof(SoftWingInput)));
+                    SoftWingInput.StopSoftWingInput();
                     break;
                 default:
                     break;
