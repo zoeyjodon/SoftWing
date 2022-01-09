@@ -180,7 +180,7 @@ namespace SoftWing
             var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
             gestureBuilder.AddStroke(stroke);
-            TryDispatchGesture(gestureBuilder.Build(), new SwGestureCallback(), null);
+            TryDispatchGesture(gestureBuilder.Build());
             activeMotions.Remove(id);
 
             if (activeMotions.Count > 0)
