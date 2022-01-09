@@ -21,13 +21,10 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
         private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
-        private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
-        private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private const string MOTION_DELIMITER = ",";
         private static bool local_keymap_updated = false;
         public const bool Default_Vibration_Enable = true;
-        public const int Default_Transition_Delay_Ms = 500;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public enum ControlId : int
         {
@@ -52,16 +49,6 @@ namespace SoftWing.SwSystem
         {
             { "Enable" , true },
             { "Disable", false}
-        };
-        public static Dictionary<string, int> DELAY_TO_STRING_MAP = new Dictionary<string, int>
-        {
-            { "0"   , 0 },
-            { "0.5" , 500},
-            { "1"   , 1000},
-            { "1.5" , 1500},
-            { "2"   , 2000},
-            { "2.5" , 2500},
-            { "3"   , 3000}
         };
         public static Dictionary<ControlId, string> CONTROL_TO_STRING_MAP = new Dictionary<ControlId, string>
         {
@@ -167,35 +154,6 @@ namespace SoftWing.SwSystem
             using (var writer = File.CreateText(VIBRATION_ENABLE_PATH))
             {
                 writer.WriteLine(enable.ToString());
-            }
-        }
-
-        public static int GetTransitionDelayMs()
-        {
-            Log.Debug(TAG, "GetTransitionDelayMs");
-            if (!File.Exists(TRANSITION_DELAY_PATH))
-            {
-                Log.Debug(TAG, "Transition delay record not found");
-                return Default_Transition_Delay_Ms;
-            }
-            var stream = File.OpenRead(TRANSITION_DELAY_PATH);
-            using (var reader = new StreamReader(stream))
-            {
-                var delayStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
-                if (Int32.TryParse(delayStr, out int delay))
-                {
-                    return delay;
-                }
-                return Default_Transition_Delay_Ms;
-            }
-        }
-
-        public static void SetTransitionDelayMs(int delay)
-        {
-            Log.Debug(TAG, "SetTransitionDelayMs");
-            using (var writer = File.CreateText(TRANSITION_DELAY_PATH))
-            {
-                writer.WriteLine(delay.ToString());
             }
         }
 

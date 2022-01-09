@@ -27,10 +27,6 @@ namespace SoftWing
         private const int NOTIFICATION_ONGOING_ID = 1001;
         private static NotificationReceiver notification_receiver = null;
 
-        private const int SHOW_IME_DELAY_MS = 500;
-        private const int IME_STARTUP_WAIT_MS = 3000;
-
-        private const int PLAY_SOUND_MAX_DELAY_MS = 1000;
         private static String OPEN_SOUND_PATH;
         private static String CLOSE_SOUND_PATH;
         private int media_volume = 0;

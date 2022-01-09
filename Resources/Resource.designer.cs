@@ -6855,94 +6855,91 @@ namespace SoftWing
 			public const int touch_outside = 2131231168;
 			
 			// aapt resource value: 0x7F0801C1
-			public const int transitionDelay = 2131231169;
+			public const int transitionToEnd = 2131231169;
 			
 			// aapt resource value: 0x7F0801C2
-			public const int transitionToEnd = 2131231170;
+			public const int transitionToStart = 2131231170;
 			
 			// aapt resource value: 0x7F0801C3
-			public const int transitionToStart = 2131231171;
+			public const int transition_current_scene = 2131231171;
 			
 			// aapt resource value: 0x7F0801C4
-			public const int transition_current_scene = 2131231172;
+			public const int transition_layout_save = 2131231172;
 			
 			// aapt resource value: 0x7F0801C5
-			public const int transition_layout_save = 2131231173;
+			public const int transition_position = 2131231173;
 			
 			// aapt resource value: 0x7F0801C6
-			public const int transition_position = 2131231174;
+			public const int transition_scene_layoutid_cache = 2131231174;
 			
 			// aapt resource value: 0x7F0801C7
-			public const int transition_scene_layoutid_cache = 2131231175;
+			public const int transition_transform = 2131231175;
 			
 			// aapt resource value: 0x7F0801C8
-			public const int transition_transform = 2131231176;
+			public const int triangle = 2131231176;
 			
 			// aapt resource value: 0x7F0801C9
-			public const int triangle = 2131231177;
+			public const int tutorialLinkText = 2131231177;
 			
 			// aapt resource value: 0x7F0801CA
-			public const int tutorialLinkText = 2131231178;
+			public const int @unchecked = 2131231178;
 			
 			// aapt resource value: 0x7F0801CB
-			public const int @unchecked = 2131231179;
+			public const int uniform = 2131231179;
 			
 			// aapt resource value: 0x7F0801CC
-			public const int uniform = 2131231180;
+			public const int unlabeled = 2131231180;
 			
 			// aapt resource value: 0x7F0801CD
-			public const int unlabeled = 2131231181;
+			public const int up = 2131231181;
 			
 			// aapt resource value: 0x7F0801CE
-			public const int up = 2131231182;
+			public const int useLogo = 2131231182;
 			
 			// aapt resource value: 0x7F0801CF
-			public const int useLogo = 2131231183;
+			public const int vibrationEnable = 2131231183;
 			
 			// aapt resource value: 0x7F0801D0
-			public const int vibrationEnable = 2131231184;
+			public const int view_offset_helper = 2131231184;
 			
 			// aapt resource value: 0x7F0801D1
-			public const int view_offset_helper = 2131231185;
+			public const int view_tree_lifecycle_owner = 2131231185;
 			
 			// aapt resource value: 0x7F0801D2
-			public const int view_tree_lifecycle_owner = 2131231186;
+			public const int view_tree_saved_state_registry_owner = 2131231186;
 			
 			// aapt resource value: 0x7F0801D3
-			public const int view_tree_saved_state_registry_owner = 2131231187;
+			public const int view_tree_view_model_store_owner = 2131231187;
 			
 			// aapt resource value: 0x7F0801D4
-			public const int view_tree_view_model_store_owner = 2131231188;
+			public const int visible = 2131231188;
 			
 			// aapt resource value: 0x7F0801D5
-			public const int visible = 2131231189;
+			public const int visible_removing_fragment_view_tag = 2131231189;
 			
 			// aapt resource value: 0x7F0801D6
-			public const int visible_removing_fragment_view_tag = 2131231190;
-			
-			// aapt resource value: 0x7F0801D7
-			public const int warningLinkText = 2131231191;
-			
-			// aapt resource value: 0x7F0801D9
-			public const int withinBounds = 2131231193;
+			public const int warningLinkText = 2131231190;
 			
 			// aapt resource value: 0x7F0801D8
-			public const int withText = 2131231192;
+			public const int withinBounds = 2131231192;
+			
+			// aapt resource value: 0x7F0801D7
+			public const int withText = 2131231191;
+			
+			// aapt resource value: 0x7F0801D9
+			public const int wrap = 2131231193;
 			
 			// aapt resource value: 0x7F0801DA
-			public const int wrap = 2131231194;
+			public const int wrap_content = 2131231194;
 			
 			// aapt resource value: 0x7F0801DB
-			public const int wrap_content = 2131231195;
+			public const int x_button = 2131231195;
 			
 			// aapt resource value: 0x7F0801DC
-			public const int x_button = 2131231196;
+			public const int y_button = 2131231196;
 			
 			// aapt resource value: 0x7F0801DD
-			public const int y_button = 2131231197;
-			
-			// aapt resource value: 0x7F0801DE
-			public const int zero_corner_chip = 2131231198;
+			public const int zero_corner_chip = 2131231197;
 			
 			static Id()
 			{

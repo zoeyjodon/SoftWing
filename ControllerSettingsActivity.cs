@@ -21,7 +21,7 @@ namespace SoftWing
     {
         private const String TAG = "ControllerSettingsActivity";
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
-        private int ignore_delayset_count = 0;
+        private int ignore_spinner_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
 
@@ -42,7 +42,6 @@ namespace SoftWing
             ConfigureControlLabel(selected_control);
             ConfigureControlButton();
             ConfigureVibrationSpinner();
-            ConfigureDelaySpinner();
             ConfigureProfileSpinner();
         }
 
@@ -189,9 +188,9 @@ namespace SoftWing
         {
             Log.Debug(TAG, "VibrationSpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_delayset_count != 0)
+            if (ignore_spinner_count != 0)
             {
-                ignore_delayset_count--;
+                ignore_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -202,30 +201,13 @@ namespace SoftWing
             SwSettings.SetVibrationEnable(enable);
         }
 
-        private void DelaySpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            Log.Debug(TAG, "DelaySpinnerItemSelected");
-            // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_delayset_count != 0)
-            {
-                ignore_delayset_count--;
-                return;
-            }
-            Spinner spinner = (Spinner)sender;
-            var delay_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-
-            var delay = SwSettings.DELAY_TO_STRING_MAP[delay_string];
-
-            SwSettings.SetTransitionDelayMs(delay);
-        }
-
         private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             Log.Debug(TAG, "ProfileSpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_delayset_count != 0)
+            if (ignore_spinner_count != 0)
             {
-                ignore_delayset_count--;
+                ignore_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -245,7 +227,7 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ProfileSpinnerItemSelected);
-            ignore_delayset_count++;
+            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_keymap);
             spinner.SetSelection(spinner_position);
@@ -275,39 +257,9 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(VibrationSpinnerItemSelected);
-            ignore_delayset_count++;
+            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_vibration_string);
-            spinner.SetSelection(spinner_position);
-
-            spinner.Invalidate();
-        }
-
-        private void ConfigureDelaySpinner()
-        {
-            Log.Debug(TAG, "ConfigureDelaySpinner");
-            var spinner = FindViewById<Spinner>(Resource.Id.transitionDelay);
-            spinner.Prompt = "Select transition delay (seconds)";
-
-            var set_delay = SwSettings.GetTransitionDelayMs();
-            var set_delay_string = "";
-            List<string> inputNames = new List<string>();
-            foreach (var delay_str in SwSettings.DELAY_TO_STRING_MAP.Keys)
-            {
-                inputNames.Add(delay_str);
-                if (set_delay == SwSettings.DELAY_TO_STRING_MAP[delay_str])
-                {
-                    set_delay_string = delay_str;
-                }
-            }
-            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinner.Adapter = adapter;
-
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DelaySpinnerItemSelected);
-            ignore_delayset_count++;
-
-            int spinner_position = adapter.GetPosition(set_delay_string);
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
