@@ -12,12 +12,12 @@ namespace SoftWing
     {
         private const String TAG = "SwJoystickListener";
 
-        private const int MOTION_ANGLE_INCREMENT_DEGREES = 30;
         private const int MOTION_FORCE_INCREMENT_PERCENT = 33;
 
         private ControlId id = ControlId.Unknown;
         private MotionDescription motion = MotionDescription.InvalidMotion();
         private MotionDescription lastMotion = MotionDescription.InvalidMotion();
+        private int motionAngleIncrementDegrees = 90;
         private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
 
@@ -32,6 +32,7 @@ namespace SoftWing
         {
             Log.Info(TAG, "SwJoystickListener");
             motion = motion_in;
+            motionAngleIncrementDegrees = 360 / motion.directionCount;
             dispatcher = MessageDispatcher.GetInstance();
         }
 
@@ -58,8 +59,8 @@ namespace SoftWing
 
         private double ClipAngle(double angle)
         {
-            angle = (angle + (MOTION_ANGLE_INCREMENT_DEGREES / 2)) % 360;
-            angle = (int)(angle / MOTION_ANGLE_INCREMENT_DEGREES) * MOTION_ANGLE_INCREMENT_DEGREES;
+            angle = (angle + (motionAngleIncrementDegrees / 2)) % 360;
+            angle = (int)(angle / motionAngleIncrementDegrees) * motionAngleIncrementDegrees;
             return angle;
         }
 
@@ -86,7 +87,7 @@ namespace SoftWing
             double angleRad = Math.PI * angle / 180.0;
             float endX = motion.beginX + (float)(strengthMod * Math.Cos(angleRad));
             float endY = motion.beginY - (float)(strengthMod * Math.Sin(angleRad));
-            return new MotionDescription(motion.type, motion.beginX, motion.beginY, endX, endY);
+            return new MotionDescription(motion.type, motion.beginX, motion.beginY, endX, endY, motion.directionCount);
         }
 
         private bool MotionHasChanged(MotionDescription motion)

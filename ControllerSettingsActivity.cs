@@ -43,6 +43,7 @@ namespace SoftWing
             MotionConfigurationActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
+            ConfigureAnalogSpinner();
             ConfigureProfileSpinner();
             RefreshInputHighlighting();
         }
@@ -98,7 +99,7 @@ namespace SoftWing
         private void SetInputBackground(View vin, ControlId id)
         {
             Log.Debug(TAG, "SetInputBackground");
-            if (id == MotionConfigurationActivity.control)
+            if (id == selected_control)
             {
                 vin.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
             }
@@ -142,15 +143,13 @@ namespace SoftWing
             {
                 View control = FindViewById<View>(key);
                 var control_id = RESOURCE_TO_CONTROL_MAP[key];
-                switch (key)
+                if (IsAnalogControl(control_id))
                 {
-                    case (Resource.Id.left_joyStick):
-                    case (Resource.Id.right_joyStick):
-                        SetJoystickListener((JoyStickView)control, control_id);
-                        break;
-                    default:
-                        SetInputListener(control, control_id);
-                        break;
+                    SetJoystickListener((JoyStickView)control, control_id);
+                }
+                else
+                {
+                    SetInputListener(control, control_id);
                 }
             }
         }
@@ -189,6 +188,25 @@ namespace SoftWing
             var enable = SwSettings.VIBRATION_TO_STRING_MAP[vibration_string];
 
             SwSettings.SetVibrationEnable(enable);
+        }
+
+        private void DirectionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "DirectionSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (ignore_spinner_count != 0)
+            {
+                ignore_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var direction_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var direction = SwSettings.DIRECTION_TO_STRING_MAP[direction_string];
+
+            var motion = SwSettings.GetControlMotion(selected_control);
+            motion.directionCount = direction;
+            SwSettings.SetControlMotion(selected_control, motion);
         }
 
         private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -256,6 +274,62 @@ namespace SoftWing
             spinner.Invalidate();
         }
 
+        private void RefreshAnalogSpinner()
+        {
+            Log.Debug(TAG, "RefreshAnalogSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.analogDirections);
+
+            var set_direction = SwSettings.GetControlMotion(selected_control).directionCount;
+
+            Log.Debug(TAG, "Control = " + CONTROL_TO_STRING_MAP[selected_control] + " directions = " + set_direction.ToString());
+
+            if (!IsAnalogControl(selected_control))
+            {
+                spinner.Visibility = ViewStates.Invisible;
+                spinner.Invalidate();
+                return;
+            }
+
+            spinner.Visibility = ViewStates.Visible;
+            var set_direction_string = "";
+            foreach (var key in SwSettings.DIRECTION_TO_STRING_MAP.Keys)
+            {
+                if (SwSettings.DIRECTION_TO_STRING_MAP[key] == set_direction)
+                {
+                    set_direction_string = key;
+                }
+            }
+
+            var adapter = (ArrayAdapter)spinner.Adapter;
+            int spinner_position = adapter.GetPosition(set_direction_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void ConfigureAnalogSpinner()
+        {
+            Log.Debug(TAG, "ConfigureAnalogSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.analogDirections);
+            spinner.Prompt = "Select the number of analog directions";
+
+            List<string> inputNames = new List<string>();
+            foreach (var dir_str in SwSettings.DIRECTION_TO_STRING_MAP.Keys)
+            {
+                inputNames.Add(dir_str);
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
+
+            ignore_spinner_count++;
+            RefreshAnalogSpinner();
+        }
+
         private bool IsAnalogControl(SwSettings.ControlId id)
         {
             switch (id)
@@ -275,7 +349,7 @@ namespace SoftWing
                 return;
             }
             var control_message = (ControlUpdateMessage)message;
-            var selected_control = control_message.Id;
+            selected_control = control_message.Id;
             switch (control_message.Update)
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
@@ -285,6 +359,8 @@ namespace SoftWing
                         {
                             ConfigureControlLabel(selected_control);
                             MotionConfigurationActivity.control = selected_control;
+                            RefreshAnalogSpinner();
+                            RefreshInputHighlighting();
                         }
                     }
                     break;
@@ -295,9 +371,10 @@ namespace SoftWing
                         {
                             ConfigureControlLabel(selected_control);
                             MotionConfigurationActivity.control = selected_control;
+                            RefreshAnalogSpinner();
+                            RefreshInputHighlighting();
                         }
                     }
-                    RefreshInputHighlighting();
                     break;
                 default:
                     break;

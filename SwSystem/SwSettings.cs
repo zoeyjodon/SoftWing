@@ -44,6 +44,15 @@ namespace SoftWing.SwSystem
             D_Pad_Right,
             D_Pad_Center
         }
+        public static Dictionary<string, int> DIRECTION_TO_STRING_MAP = new Dictionary<string, int>
+        {
+            { "4-way", 4 },
+            { "8-way", 8 },
+            { "12-way", 12 },
+            { "16-way", 16 },
+            { "24-way", 24 },
+            { "360 degrees", 360 },
+        };
         public static Dictionary<string, bool> VIBRATION_TO_STRING_MAP = new Dictionary<string, bool>
         {
             { "Enable" , true },
@@ -250,18 +259,27 @@ namespace SoftWing.SwSystem
                 Log.Debug(TAG, "Keymap not found");
                 return;
             }
-            var stream = File.OpenRead(keymapPath);
-            using (var reader = new StreamReader(stream))
+            try
             {
-                string line = reader.ReadLine();
-                while (line != null)
+                var stream = File.OpenRead(keymapPath);
+                using (var reader = new StreamReader(stream))
                 {
-                    var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
-                    var control = GetControlFromString(control_key_str[0]);
-                    CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[1]);
+                    string line = reader.ReadLine();
+                    while (line != null)
+                    {
+                        Log.Debug(TAG, line);
+                        var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
+                        var control = GetControlFromString(control_key_str[0]);
+                        CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[1]);
 
-                    line = reader.ReadLine();
+                        line = reader.ReadLine();
+                    }
                 }
+            }
+            catch
+            {
+                Log.Debug(TAG, "File format invalid! Deleting...");
+                File.Delete(keymapPath);
             }
         }
 
@@ -293,25 +311,20 @@ namespace SoftWing.SwSystem
                 motion.beginY.ToString() + MOTION_DELIMITER +
                 motion.endX.ToString() + MOTION_DELIMITER +
                 motion.endY.ToString() + MOTION_DELIMITER +
-                ((Int32)(motion.type)).ToString();
+                ((Int32)motion.directionCount).ToString() + MOTION_DELIMITER +
+                ((Int32)motion.type).ToString();
         }
 
         private static MotionDescription GetMotionFromString(string motionString)
         {
             MotionDescription output = MotionDescription.InvalidMotion();
-            try
-            {
-                var motions = motionString.Split(MOTION_DELIMITER);
-                output.beginX = float.Parse(motions[0]);
-                output.beginY = float.Parse(motions[1]);
-                output.endX = float.Parse(motions[2]);
-                output.endY = float.Parse(motions[3]);
-                output.type = (MotionType)Int32.Parse(motions[4]);
-            }
-            catch (Exception e)
-            {
-                Log.Error(TAG, e.Message);
-            }
+            var motions = motionString.Split(MOTION_DELIMITER);
+            output.beginX = float.Parse(motions[0]);
+            output.beginY = float.Parse(motions[1]);
+            output.endX = float.Parse(motions[2]);
+            output.endY = float.Parse(motions[3]);
+            output.directionCount = Int32.Parse(motions[4]);
+            output.type = (MotionType)Int32.Parse(motions[5]);
 
             return output;
         }
