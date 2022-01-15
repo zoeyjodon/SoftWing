@@ -40,9 +40,11 @@ namespace SoftWing
             ConfigureHelpButton();
             ConfigureBackgroundButton();
             ConfigureControlLabel(selected_control);
+            MotionConfigurationActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
             ConfigureProfileSpinner();
+            RefreshInputHighlighting();
         }
 
         protected override void OnStart()
@@ -93,9 +95,36 @@ namespace SoftWing
             };
         }
 
+        private void SetInputBackground(View vin, ControlId id)
+        {
+            Log.Debug(TAG, "SetInputBackground");
+            if (id == MotionConfigurationActivity.control)
+            {
+                vin.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
+            }
+            else if (SwSettings.GetControlMotion(id).type == MotionType.Invalid)
+            {
+                vin.SetBackgroundColor(Android.Graphics.Color.Red);
+            }
+            else
+            {
+                vin.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            }
+        }
+
+        private void RefreshInputHighlighting()
+        {
+            Log.Debug(TAG, "RefreshInputHighlighting");
+            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
+            {
+                View control = FindViewById<View>(key);
+                var control_id = RESOURCE_TO_CONTROL_MAP[key];
+                SetInputBackground(control, control_id);
+            }
+        }
+
         private void SetInputListener(View vin, ControlId id)
         {
-            var motion = MotionDescription.InvalidMotion();
             vin.SetOnTouchListener(new SwButtonListener(vin, id, true));
         }
 
@@ -108,58 +137,19 @@ namespace SoftWing
         private void SetInputListeners(ViewGroup keyboard_view_group)
         {
             Log.Debug(TAG, "SetInputListeners");
-            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
+
+            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View nextChild = keyboard_view_group.GetChildAt(index);
-                switch (nextChild.Id)
+                View control = FindViewById<View>(key);
+                var control_id = RESOURCE_TO_CONTROL_MAP[key];
+                switch (key)
                 {
                     case (Resource.Id.left_joyStick):
-                        {
-                            SetJoystickListener((JoyStickView)nextChild, SwSettings.ControlId.L_Analog);
-                        }
-                        break;
                     case (Resource.Id.right_joyStick):
-                        {
-                            SetJoystickListener((JoyStickView)nextChild, SwSettings.ControlId.R_Analog);
-                        }
-                        break;
-                    case (Resource.Id.d_pad_up):
-                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Up);
-                        break;
-                    case (Resource.Id.d_pad_down):
-                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Down);
-                        break;
-                    case (Resource.Id.d_pad_left):
-                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Left);
-                        break;
-                    case (Resource.Id.d_pad_right):
-                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Right);
-                        break;
-                    case (Resource.Id.d_pad_center):
-                        SetInputListener(nextChild, SwSettings.ControlId.D_Pad_Center);
-                        break;
-                    case (Resource.Id.a_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.A_Button);
-                        break;
-                    case (Resource.Id.b_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.B_Button);
-                        break;
-                    case (Resource.Id.y_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.Y_Button);
-                        break;
-                    case (Resource.Id.x_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.X_Button);
-                        break;
-                    case (Resource.Id.l_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.L_Button);
-                        break;
-                    case (Resource.Id.r_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.R_Button);
-                        break;
-                    case (Resource.Id.start_button):
-                        SetInputListener(nextChild, SwSettings.ControlId.Start_Button);
+                        SetJoystickListener((JoyStickView)control, control_id);
                         break;
                     default:
+                        SetInputListener(control, control_id);
                         break;
                 }
             }
@@ -213,6 +203,7 @@ namespace SoftWing
             Spinner spinner = (Spinner)sender;
             var profile_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
             SwSettings.SetSelectedKeymap(profile_string);
+            RefreshInputHighlighting();
         }
 
         private void ConfigureProfileSpinner()
@@ -306,11 +297,11 @@ namespace SoftWing
                             MotionConfigurationActivity.control = selected_control;
                         }
                     }
+                    RefreshInputHighlighting();
                     break;
                 default:
                     break;
             }
-
         }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)

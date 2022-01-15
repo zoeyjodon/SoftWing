@@ -80,7 +80,7 @@ namespace SoftWing
             holdPath.MoveTo(motion.endX, motion.endY);
             holdPath.LineTo(motion.endX, motion.endY);
 
-            var stroke = new GestureDescription.StrokeDescription(holdPath, 0, HOLD_STROKE_DURATION_MS, false);
+            var stroke = new GestureDescription.StrokeDescription(holdPath, GESTURE_START_DELAY_MS, HOLD_STROKE_DURATION_MS, false);
             return new List<GestureDescription.StrokeDescription> { stroke };
         }
 
@@ -109,7 +109,7 @@ namespace SoftWing
             swipePath.MoveTo(motion.beginX, motion.beginY);
             swipePath.LineTo(motion.endX, motion.endY);
 
-            var stroke = new GestureDescription.StrokeDescription(swipePath, 0, CONTINUOUS_STROKE_DURATION_MS, false);
+            var stroke = new GestureDescription.StrokeDescription(swipePath, GESTURE_START_DELAY_MS, CONTINUOUS_STROKE_DURATION_MS, false);
             output.Add(stroke);
 
             // Add a callback to add more strokes for "continuous" behavior

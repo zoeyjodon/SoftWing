@@ -1,5 +1,4 @@
 ﻿using Android.Util;
-using Android.Views;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -83,6 +82,23 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Left      , Default_Motion},
             { ControlId.D_Pad_Right     , Default_Motion},
             { ControlId.D_Pad_Center    , Default_Motion}
+        };
+        public static Dictionary<int, ControlId> RESOURCE_TO_CONTROL_MAP = new Dictionary<int, ControlId>
+        {
+            {Resource.Id.l_button,          ControlId.L_Button    },
+            {Resource.Id.r_button,          ControlId.R_Button    },
+            {Resource.Id.left_joyStick,     ControlId.L_Analog    },
+            {Resource.Id.right_joyStick,    ControlId.R_Analog    },
+            {Resource.Id.x_button,          ControlId.X_Button    },
+            {Resource.Id.y_button,          ControlId.Y_Button    },
+            {Resource.Id.a_button,          ControlId.A_Button    },
+            {Resource.Id.b_button,          ControlId.B_Button    },
+            {Resource.Id.start_button,      ControlId.Start_Button},
+            {Resource.Id.d_pad_up,          ControlId.D_Pad_Up    },
+            {Resource.Id.d_pad_down,        ControlId.D_Pad_Down  },
+            {Resource.Id.d_pad_left,        ControlId.D_Pad_Left  },
+            {Resource.Id.d_pad_right,       ControlId.D_Pad_Right },
+            {Resource.Id.d_pad_center,      ControlId.D_Pad_Center}
         };
 
         public static string GetOpenSoundPath()
@@ -186,12 +202,8 @@ namespace SoftWing.SwSystem
             {
                 Directory.CreateDirectory(KEYMAP_DIRECTORY);
             }
-            var keymapPath = Path.Combine(KEYMAP_DIRECTORY, keymapName);
-            if (File.Exists(keymapPath))
-            {
-                local_keymap_updated = false;
-                UpdateLocalKeymap();
-            }
+            local_keymap_updated = false;
+            UpdateLocalKeymap();
         }
 
         public static void SetControlMotion(ControlId control, MotionDescription motion)
@@ -206,6 +218,15 @@ namespace SoftWing.SwSystem
             return CONTROL_TO_MOTION_MAP[control];
         }
 
+        private static void ResetLocalKeymap()
+        {
+            var control_keys = CONTROL_TO_STRING_MAP.Keys;
+            foreach (var control in control_keys)
+            {
+                CONTROL_TO_MOTION_MAP[control] = Default_Motion;
+            }
+        }
+
         private static void UpdateLocalKeymap()
         {
             Log.Debug(TAG, "UpdateLocalKeymap");
@@ -217,6 +238,7 @@ namespace SoftWing.SwSystem
             }
             local_keymap_updated = true;
 
+            ResetLocalKeymap();
             var keymapName = GetSelectedKeymap();
             if (!Directory.Exists(KEYMAP_DIRECTORY))
             {
