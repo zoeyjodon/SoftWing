@@ -9,7 +9,7 @@
     android:rowCount="10"
     android:background="@android:color/black"
     android:id="@+id/input">
-    <!----> Adding a transparent background imageview prevents weird foreground switching behavior
+    <!---->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

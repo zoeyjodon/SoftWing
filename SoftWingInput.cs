@@ -65,7 +65,7 @@ namespace SoftWing
                  SystemUiFlags.ImmersiveSticky;
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
 
-            keyboardView = LayoutInflater.Inflate(Resource.Layout.input, null);
+            keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
             SetContentView(keyboardView);
 

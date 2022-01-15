@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="9"
+    android:rowCount="10"
+    android:background="@android:color/black"
+    android:id="@+id/input">
+    <!----> Adding a transparent background imageview prevents weird foreground switching behavior
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:background="@android:color/transparent"
+        android:layout_columnSpan="9"
+        android:layout_rowSpan="10"
+        android:clickable="true"
+        android:layout_gravity="fill"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30px"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:layout_columnSpan="9"/>
+    <ImageView
+        android:layout_row="1"
+        android:layout_column="6"
+        android:layout_columnSpan="3"
+        android:layout_width="450px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_rounded_rectangle"
+        android:background="@android:color/transparent"
+        android:id="@+id/r_button" />
+    <ImageView
+        android:layout_row="1"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_width="450px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_rounded_rectangle"
+        android:background="@android:color/transparent"
+        android:id="@+id/l_button" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30px"
+        android:layout_row="2"
+        android:layout_column="0"
+        android:layout_columnSpan="9"
+        android:id="@+id/relativeLayout2" />
+    <com.jackandphantom.joystickview.JoyStickView
+        android:layout_row="7"
+        android:layout_column="0"
+        android:layout_rowSpan="3"
+        android:layout_columnSpan="3"
+        android:layout_width="450px"
+        android:layout_height="450px"
+        android:background="@android:color/transparent"
+        android:id="@+id/left_joyStick" />
+    <ImageView
+        android:layout_row="4"
+        android:layout_column="8"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_empty_circle"
+        android:background="@android:color/transparent"
+        android:id="@+id/a_button" />
+    <ImageView
+        android:layout_row="5"
+        android:layout_column="7"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_empty_circle"
+        android:background="@android:color/transparent"
+        android:id="@+id/b_button" />
+    <ImageView
+        android:layout_row="4"
+        android:layout_column="6"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_empty_circle"
+        android:background="@android:color/transparent"
+        android:id="@+id/y_button" />
+    <ImageView
+        android:layout_row="3"
+        android:layout_column="7"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_empty_circle"
+        android:background="@android:color/transparent"
+        android:id="@+id/x_button" />
+    <RelativeLayout
+        android:layout_width="490px"
+        android:layout_height="30px"
+        android:layout_row="6"
+        android:layout_column="0"
+        android:layout_columnSpan="4"
+        android:id="@+id/relativeLayout3" />
+    <ImageView
+        android:layout_row="5"
+        android:layout_rowSpan="3"
+        android:layout_column="4"
+        android:layout_width="100px"
+        android:layout_height="100px"
+        android:src="@drawable/ic_rounded_rectangle"
+        android:background="@android:color/transparent"
+        android:id="@+id/start_button"
+        android:layout_gravity="center" />
+    <RelativeLayout
+        android:layout_width="490px"
+        android:layout_height="30px"
+        android:layout_row="6"
+        android:layout_column="5"
+        android:layout_columnSpan="4"
+        android:id="@+id/relativeLayout4" />
+    <ImageView
+        android:layout_row="5"
+        android:layout_column="1"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_dpad_down"
+        android:background="@android:color/transparent"
+        android:id="@+id/d_pad_down" />
+    <ImageView
+        android:layout_row="3"
+        android:layout_column="1"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_dpad_up"
+        android:background="@android:color/transparent"
+        android:id="@+id/d_pad_up" />
+    <ImageView
+        android:layout_row="4"
+        android:layout_column="0"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_dpad_left"
+        android:background="@android:color/transparent"
+        android:id="@+id/d_pad_left" />
+    <ImageView
+        android:layout_row="4"
+        android:layout_column="2"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_dpad_right"
+        android:background="@android:color/transparent"
+        android:id="@+id/d_pad_right" />
+    <ImageView
+        android:layout_row="4"
+        android:layout_column="1"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:src="@drawable/ic_dpad_center"
+        android:background="@android:color/transparent"
+        android:id="@+id/d_pad_center" />
+    <com.jackandphantom.joystickview.JoyStickView
+        android:layout_row="7"
+        android:layout_column="6"
+        android:layout_rowSpan="3"
+        android:layout_columnSpan="3"
+        android:layout_width="450px"
+        android:layout_height="450px"
+        android:background="@android:color/transparent"
+        android:id="@+id/right_joyStick" />
+</GridLayout>

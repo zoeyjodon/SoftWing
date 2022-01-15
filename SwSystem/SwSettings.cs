@@ -20,11 +20,14 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
         private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
+        private static string LAYOUT_SELECTION_FILENAME = "SelectedLayout.txt";
+        private static string LAYOUT_SELECTION_PATH = Path.Combine(FileSystem.AppDataDirectory, LAYOUT_SELECTION_FILENAME);
         private const string CONTROL_KEY_DELIMITER = "=";
         private const string MOTION_DELIMITER = ",";
         private static bool local_keymap_updated = false;
         public const bool Default_Vibration_Enable = true;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
+        public static int Default_Layout = Resource.Layout.input_a;
         public enum ControlId : int
         {
             Unknown,
@@ -44,6 +47,12 @@ namespace SoftWing.SwSystem
             D_Pad_Right,
             D_Pad_Center
         }
+        public static Dictionary<string, int> LAYOUT_TO_STRING_MAP = new Dictionary<string, int>
+        {
+            { "Layout A", Resource.Layout.input_a },
+            { "Layout B", Resource.Layout.input_b },
+            { "Layout C", Resource.Layout.input_c },
+        };
         public static Dictionary<string, int> DIRECTION_TO_STRING_MAP = new Dictionary<string, int>
         {
             { "4-way", 4 },
@@ -213,6 +222,31 @@ namespace SoftWing.SwSystem
             }
             local_keymap_updated = false;
             UpdateLocalKeymap();
+        }
+
+        public static int GetSelectedLayout()
+        {
+            Log.Debug(TAG, "GetSelectedLayout");
+            if (!File.Exists(LAYOUT_SELECTION_PATH))
+            {
+                Log.Debug(TAG, "Selected layout record not found");
+                return Default_Layout;
+            }
+            var stream = File.OpenRead(LAYOUT_SELECTION_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var layoutStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                return int.Parse(layoutStr);
+            }
+        }
+
+        public static void SetSelectedLayout(int layoutId)
+        {
+            Log.Debug(TAG, "SetSelectedLayout");
+            using (var writer = File.CreateText(LAYOUT_SELECTION_PATH))
+            {
+                writer.WriteLine(layoutId.ToString());
+            }
         }
 
         public static void SetControlMotion(ControlId control, MotionDescription motion)

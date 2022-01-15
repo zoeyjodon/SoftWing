@@ -24,6 +24,7 @@ namespace SoftWing
         private int ignore_spinner_count = 0;
         private MessageDispatcher dispatcher;
         private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
+        private ViewGroup selected_layout = null;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -35,8 +36,7 @@ namespace SoftWing
 
             dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(MessageType.ControlUpdate, this);
-            var inputKeyView = FindViewById<ViewGroup>(Resource.Id.imeKeyView);
-            SetInputListeners(inputKeyView);
+            UpdateLayoutVisibility();
             ConfigureHelpButton();
             ConfigureBackgroundButton();
             ConfigureControlLabel(selected_control);
@@ -45,6 +45,7 @@ namespace SoftWing
             ConfigureVibrationSpinner();
             ConfigureAnalogSpinner();
             ConfigureProfileSpinner();
+            ConfigureLayoutSpinner();
             RefreshInputHighlighting();
         }
 
@@ -116,11 +117,14 @@ namespace SoftWing
         private void RefreshInputHighlighting()
         {
             Log.Debug(TAG, "RefreshInputHighlighting");
-            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
+            for (int index = 0; index < selected_layout.ChildCount; index++)
             {
-                View control = FindViewById<View>(key);
-                var control_id = RESOURCE_TO_CONTROL_MAP[key];
-                SetInputBackground(control, control_id);
+                View nextChild = selected_layout.GetChildAt(index);
+                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
+                {
+                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
+                    SetInputBackground(nextChild, control_id);
+                }
             }
         }
 
@@ -139,17 +143,20 @@ namespace SoftWing
         {
             Log.Debug(TAG, "SetInputListeners");
 
-            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
+            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
             {
-                View control = FindViewById<View>(key);
-                var control_id = RESOURCE_TO_CONTROL_MAP[key];
-                if (IsAnalogControl(control_id))
+                View nextChild = keyboard_view_group.GetChildAt(index);
+                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
                 {
-                    SetJoystickListener((JoyStickView)control, control_id);
-                }
-                else
-                {
-                    SetInputListener(control, control_id);
+                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
+                    if (IsAnalogControl(control_id))
+                    {
+                        SetJoystickListener((JoyStickView)nextChild, control_id);
+                    }
+                    else
+                    {
+                        SetInputListener(nextChild, control_id);
+                    }
                 }
             }
         }
@@ -239,6 +246,84 @@ namespace SoftWing
             ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_keymap);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void UpdateLayoutVisibility()
+        {
+            var inputViewA = FindViewById<ViewGroup>(Resource.Id.imeKeyViewA);
+            var inputViewB = FindViewById<ViewGroup>(Resource.Id.imeKeyViewB);
+            var inputViewC = FindViewById<ViewGroup>(Resource.Id.imeKeyViewC);
+
+            inputViewA.Visibility = ViewStates.Gone;
+            inputViewB.Visibility = ViewStates.Gone;
+            inputViewC.Visibility = ViewStates.Gone;
+
+            var layout = SwSettings.GetSelectedLayout();
+            switch (layout)
+            {
+                case (Resource.Layout.input_b):
+                    inputViewB.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewB);
+                    selected_layout = inputViewB;
+                    break;
+                case (Resource.Layout.input_c):
+                    inputViewC.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewC);
+                    selected_layout = inputViewC;
+                    break;
+                default:
+                    inputViewA.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewA);
+                    selected_layout = inputViewA;
+                    break;
+            }
+            RefreshInputHighlighting();
+        }
+
+        private void LayoutSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "LayoutSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (ignore_spinner_count != 0)
+            {
+                ignore_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var layout_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+            var layout = SwSettings.LAYOUT_TO_STRING_MAP[layout_string];
+            SwSettings.SetSelectedLayout(layout);
+            UpdateLayoutVisibility();
+        }
+
+        private void ConfigureLayoutSpinner()
+        {
+            Log.Debug(TAG, "ConfigureLayoutSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerLayout);
+            spinner.Prompt = "Select Controller Layout";
+
+            var set_layout = SwSettings.GetSelectedLayout();
+            var set_layout_string = "";
+            List<string> inputNames = new List<string>();
+            foreach (var layout_str in SwSettings.LAYOUT_TO_STRING_MAP.Keys)
+            {
+                inputNames.Add(layout_str);
+                if (set_layout == SwSettings.LAYOUT_TO_STRING_MAP[layout_str])
+                {
+                    set_layout_string = layout_str;
+                }
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
+            ignore_spinner_count++;
+
+            int spinner_position = adapter.GetPosition(set_layout_string);
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
