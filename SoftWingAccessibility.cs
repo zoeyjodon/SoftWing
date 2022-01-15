@@ -43,11 +43,13 @@ namespace SoftWing
         private const long GESTURE_START_DELAY_MS = 0;
         private const long FIRST_STROKE_DURATION_MS = 10;
         private const long CONTINUOUS_STROKE_DURATION_MS = 500;
-        private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration / 10;
+        private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration - FIRST_STROKE_DURATION_MS;
         private int MAX_GESTURE_RETRIES = 10;
 
         private MessageDispatcher dispatcher;
         private Dictionary<int, MotionDescription> activeMotions = new Dictionary<int, MotionDescription>();
+        private Android.OS.Handler extendedMotionHandler = null;
+        private System.Action extendedMotionCallback = null;
 
         public override void OnCreate()
         {
@@ -55,6 +57,11 @@ namespace SoftWing
             base.OnCreate();
             dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(MessageType.MotionUpdate, this);
+            extendedMotionHandler = new Android.OS.Handler(Android.OS.Looper.MainLooper);
+            extendedMotionCallback = delegate
+            {
+                RunActiveGestures();
+            };
         }
 
         protected override void OnServiceConnected()
@@ -113,13 +120,7 @@ namespace SoftWing
             output.Add(stroke);
 
             // Add a callback to add more strokes for "continuous" behavior
-            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
-            {
-                if (activeMotions.ContainsValue(motion))
-                {
-                    RunActiveGestures();
-                }
-            }, CONTINUOUS_STROKE_DURATION_MS);
+            extendedMotionHandler.PostDelayed(extendedMotionCallback, CONTINUOUS_STROKE_DURATION_MS);
             return output;
         }
 
@@ -161,6 +162,15 @@ namespace SoftWing
         private void RunActiveGestures()
         {
             var strokes = GenerateActiveStrokeList();
+            if (strokes.Count == 0)
+            {
+                Log.Info(TAG, "Warning: Tried to run empty gesture set");
+                return;
+            }
+
+            // Add a callback in case the gesture lasts more than the max duration
+            extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
+            extendedMotionHandler.PostDelayed(extendedMotionCallback, HOLD_STROKE_DURATION_MS);
 
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
             foreach (var stroke in strokes)
@@ -174,6 +184,7 @@ namespace SoftWing
         {
             Log.Info(TAG, "CancelGesture");
 
+            extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
             Path path = new Path();
             path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
             path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
