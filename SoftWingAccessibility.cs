@@ -169,8 +169,8 @@ namespace SoftWing
             }
 
             // Add a callback in case the gesture lasts more than the max duration
-            extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
-            extendedMotionHandler.PostDelayed(extendedMotionCallback, HOLD_STROKE_DURATION_MS);
+            //extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
+            //extendedMotionHandler.PostDelayed(extendedMotionCallback, HOLD_STROKE_DURATION_MS);
 
             GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
             foreach (var stroke in strokes)
@@ -184,7 +184,7 @@ namespace SoftWing
         {
             Log.Info(TAG, "CancelGesture");
 
-            extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
+            //extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
             Path path = new Path();
             path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
             path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
