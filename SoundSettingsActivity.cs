@@ -263,7 +263,7 @@ namespace SoftWing
                 case REQUEST_OPEN_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        File.Copy(GetActualPathFromFile(data.Data), OPEN_LOCAL_PATH);
+                        File.Copy(GetActualPathFromFile(data.Data), OPEN_LOCAL_PATH, true);
 
                         SwSettings.SetOpenSoundPath(OPEN_LOCAL_PATH);
                         dispatcher.Post(new AudioUpdateMessage(OPEN_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingOpen));
@@ -272,7 +272,7 @@ namespace SoftWing
                 case REQUEST_CLOSE_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        File.Copy(GetActualPathFromFile(data.Data), CLOSE_LOCAL_PATH);
+                        File.Copy(GetActualPathFromFile(data.Data), CLOSE_LOCAL_PATH, true);
 
                         SwSettings.SetCloseSoundPath(CLOSE_LOCAL_PATH);
                         dispatcher.Post(new AudioUpdateMessage(CLOSE_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingClose));
