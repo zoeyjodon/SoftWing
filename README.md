@@ -7,4 +7,4 @@ Additionally, I have some legacy builds available in this repository.
 
 For instructions on how to setup and use SoftWing, please see the help instructions in the app (Controller Settings -> Help).
 
-
+A quick demo of the controller is available here: https://www.youtube.com/watch?v=5OY26rFnDjQ
