@@ -22,6 +22,8 @@ namespace SoftWing
         private const String TAG = "SoundSettingsActivity";
         private const int REQUEST_OPEN_FILE_CALLBACK = 300;
         private const int REQUEST_CLOSE_FILE_CALLBACK = 301;
+        private readonly string OPEN_LOCAL_PATH = Path.Combine(FileSystem.AppDataDirectory, "swivel_open");
+        private readonly string CLOSE_LOCAL_PATH = Path.Combine(FileSystem.AppDataDirectory, "swivel_closed");
         private bool soundDisablePromptComplete = false;
         private MessageDispatcher dispatcher;
 
@@ -82,6 +84,21 @@ namespace SoftWing
             close_button.Click += delegate
             {
                 SelectAudioFile(REQUEST_CLOSE_FILE_CALLBACK);
+            };
+
+            var reset_button = FindViewById<ImageButton>(Resource.Id.audioResetButton);
+            reset_button.Click += delegate
+            {
+                File.Delete(OPEN_LOCAL_PATH);
+                SwSettings.SetOpenSoundPath("");
+                dispatcher.Post(new AudioUpdateMessage("", AudioUpdateMessage.AudioType.SwingOpen));
+
+                File.Delete(CLOSE_LOCAL_PATH);
+                SwSettings.SetCloseSoundPath("");
+                dispatcher.Post(new AudioUpdateMessage("", AudioUpdateMessage.AudioType.SwingClose));
+
+                var toast = Toast.MakeText(this, "Swivel Sounds have been reset!", ToastLength.Short);
+                toast.Show();
             };
         }
 
@@ -246,21 +263,19 @@ namespace SoftWing
                 case REQUEST_OPEN_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        var local_path = Path.Combine(FileSystem.AppDataDirectory, "swivel_open");
-                        File.Copy(GetActualPathFromFile(data.Data), local_path);
+                        File.Copy(GetActualPathFromFile(data.Data), OPEN_LOCAL_PATH);
 
-                        SwSettings.SetOpenSoundPath(local_path);
-                        dispatcher.Post(new AudioUpdateMessage(local_path, AudioUpdateMessage.AudioType.SwingOpen));
+                        SwSettings.SetOpenSoundPath(OPEN_LOCAL_PATH);
+                        dispatcher.Post(new AudioUpdateMessage(OPEN_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingOpen));
                     }
                     break;
                 case REQUEST_CLOSE_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        var local_path = Path.Combine(FileSystem.AppDataDirectory, "swivel_closed");
-                        File.Copy(GetActualPathFromFile(data.Data), local_path);
+                        File.Copy(GetActualPathFromFile(data.Data), CLOSE_LOCAL_PATH);
 
-                        SwSettings.SetCloseSoundPath(local_path);
-                        dispatcher.Post(new AudioUpdateMessage(local_path, AudioUpdateMessage.AudioType.SwingClose));
+                        SwSettings.SetCloseSoundPath(CLOSE_LOCAL_PATH);
+                        dispatcher.Post(new AudioUpdateMessage(CLOSE_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingClose));
                     }
                     break;
                 default:
