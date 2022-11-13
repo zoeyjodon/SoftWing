@@ -13,6 +13,7 @@ using Android;
 using Android.Support.Design.Widget;
 using Android.Content;
 using SoftWing.SwSystem;
+using Android.Views.Accessibility;
 
 namespace SoftWing
 {
@@ -67,22 +68,22 @@ namespace SoftWing
         private void EnsureSwAccessibility()
         {
             Log.Info(TAG, "EnableSwAccessibility");
-            try
+            AccessibilityManager manager = (AccessibilityManager)GetSystemService(Context.AccessibilityService);
+            var enabledServices = manager.GetEnabledAccessibilityServiceList(Android.AccessibilityServices.FeedbackFlags.Generic);
+            foreach (var service in enabledServices)
             {
-                var enabledServices = Settings.Secure.GetString(Application.Context.ContentResolver, Settings.Secure.EnabledAccessibilityServices);
-                if (!enabledServices.Contains("SoftWingAccessibility"))
+                Log.Info(TAG, "Service: " + service.Id);
+                if (service.Id.Contains("SoftWingAccessibility"))
                 {
-                    PromptAccessibilityEnable();
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Info(TAG, "Failed to read secure setting: " + ex.Message);
-            }
+            PromptAccessibilityEnable();
         }
 
         private void PromptAccessibilityEnable()
         {
+            Log.Info(TAG, "PromptAccessibilityEnable");
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
             var alert = dialog.Create();
             alert.SetTitle("Enable Accessibility Service");

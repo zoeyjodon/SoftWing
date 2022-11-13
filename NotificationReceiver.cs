@@ -4,6 +4,7 @@ using System;
 
 namespace SoftWing
 {
+    [BroadcastReceiver(Enabled = true, Exported = true)]
     class NotificationReceiver : BroadcastReceiver
     {
         private const String TAG = "NotificationReceiver";

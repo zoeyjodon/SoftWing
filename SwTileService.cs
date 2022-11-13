@@ -6,7 +6,7 @@ using Android.Service.QuickSettings;
 
 namespace SoftWing
 {
-    [Service(Label = "SoftWingTile", Permission = Android.Manifest.Permission.BindQuickSettingsTile, Icon = "@mipmap/ic_launcher_foreground")]
+    [Service(Label = "SoftWingTile", Permission = Android.Manifest.Permission.BindQuickSettingsTile, Icon = "@mipmap/ic_launcher_foreground", Exported = true)]
     [IntentFilter(new[] { ActionQsTile })]
     class SwTileService : TileService
     {

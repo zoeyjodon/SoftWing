@@ -34,7 +34,7 @@ namespace SoftWing
         }
     }
 
-    [Service(Label = "SoftWingAccessibility", Permission = "android.permission.BIND_ACCESSIBILITY_SERVICE")]
+    [Service(Label = "SoftWingAccessibility", Permission = "android.permission.BIND_ACCESSIBILITY_SERVICE", Exported = true)]
     [IntentFilter(new[] { "android.accessibilityservice.AccessibilityService" })]
     [MetaData("android.accessibilityservice", Resource = "@xml/accessibility_service_config")]
     class SoftWingAccessibility : AccessibilityService, MessageSubscriber

@@ -104,7 +104,7 @@ namespace SoftWing
             RegisterReceiver(notification_receiver, pFilter);
 
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
-            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, 0);
+            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
 
             String title = "Show SoftWing Controller";
             String body = "Select this to open the controller.";
