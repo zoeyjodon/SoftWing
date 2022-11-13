@@ -140,25 +140,26 @@ namespace SoftWing.SwSystem
             var stream = File.OpenRead(file_path);
             using (var reader = new StreamReader(stream))
             {
-                return reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                var sound_file = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                return File.Exists(sound_file) ? sound_file : "";
             }
         }
 
-        public static void SetOpenSoundPath(Android.Net.Uri path)
+        public static void SetOpenSoundPath(string path)
         {
             Log.Debug(TAG, "SetOpenSoundPath");
             using (var writer = File.CreateText(OPEN_SOUND_RECORD_PATH))
             {
-                writer.WriteLine(path.ToString());
+                writer.WriteLine(path);
             }
         }
 
-        public static void SetCloseSoundPath(Android.Net.Uri path)
+        public static void SetCloseSoundPath(string path)
         {
             Log.Debug(TAG, "SetCloseSoundPath");
             using (var writer = File.CreateText(CLOSE_SOUND_RECORD_PATH))
             {
-                writer.WriteLine(path.ToString());
+                writer.WriteLine(path);
             }
         }
 

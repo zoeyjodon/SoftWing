@@ -1,6 +1,4 @@
-﻿using Android.Net;
-
-namespace SoftWing.SwSystem.Messages
+﻿namespace SoftWing.SwSystem.Messages
 {
     class AudioUpdateMessage : SystemMessage
     {
@@ -9,10 +7,10 @@ namespace SoftWing.SwSystem.Messages
             SwingOpen,
             SwingClose
         }
-        public Uri AudioPath { get; }
+        public string AudioPath { get; }
         public AudioType Type { get; }
 
-        public AudioUpdateMessage(Uri path, AudioType type)
+        public AudioUpdateMessage(string path, AudioType type)
         {
             AudioPath = path;
             Type = type;
