@@ -24,6 +24,7 @@ namespace SoftWing
         private const int REQUEST_CLOSE_FILE_CALLBACK = 301;
         private readonly string OPEN_LOCAL_PATH = Path.Combine(FileSystem.AppDataDirectory, "swivel_open");
         private readonly string CLOSE_LOCAL_PATH = Path.Combine(FileSystem.AppDataDirectory, "swivel_closed");
+        private const int COPY_BUFFER_SIZE = 32768;
         private bool soundDisablePromptComplete = false;
         private MessageDispatcher dispatcher;
 
@@ -116,138 +117,25 @@ namespace SoftWing
             StartActivityForResult(intent, requestCode);
         }
 
-        private string GetActualPathFromFile(Android.Net.Uri uri)
+        private void CopyURIToFile(Android.Net.Uri input, string output)
         {
-            bool isKitKat = Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat;
-
-            if (isKitKat && DocumentsContract.IsDocumentUri(this, uri))
+            using (var inputStream = ContentResolver.OpenInputStream(input))
             {
-                // ExternalStorageProvider
-                if (isExternalStorageDocument(uri))
+                using (var outputStream = File.Create(output))
                 {
-                    string docId = DocumentsContract.GetDocumentId(uri);
-
-                    char[] chars = { ':' };
-                    string[] split = docId.Split(chars);
-                    string type = split[0];
-
-                    if ("primary".Equals(type, StringComparison.OrdinalIgnoreCase))
+                    var buffer = new byte[COPY_BUFFER_SIZE];
+                    while (true)
                     {
-                        return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
+                        var count = inputStream.Read(buffer, 0, COPY_BUFFER_SIZE);
+                        if (count > 0)
+                        {
+                            outputStream.Write(buffer, 0, count);
+                        }
+
+                        if (count < COPY_BUFFER_SIZE) break;
                     }
                 }
-                // DownloadsProvider
-                else if (isDownloadsDocument(uri))
-                {
-                    string id = DocumentsContract.GetDocumentId(uri);
-
-                    Android.Net.Uri contentUri = ContentUris.WithAppendedId(
-                                    Android.Net.Uri.Parse("content://downloads/public_downloads"), long.Parse(id));
-
-                    //System.Diagnostics.Debug.WriteLine(contentUri.ToString());
-
-                    return getDataColumn(this, contentUri, null, null);
-                }
-                // MediaProvider
-                else if (isMediaDocument(uri))
-                {
-                    String docId = DocumentsContract.GetDocumentId(uri);
-
-                    char[] chars = { ':' };
-                    String[] split = docId.Split(chars);
-
-                    String type = split[0];
-
-                    Android.Net.Uri contentUri = null;
-                    if ("image".Equals(type))
-                    {
-                        contentUri = MediaStore.Images.Media.ExternalContentUri;
-                    }
-                    else if ("video".Equals(type))
-                    {
-                        contentUri = MediaStore.Video.Media.ExternalContentUri;
-                    }
-                    else if ("audio".Equals(type))
-                    {
-                        contentUri = MediaStore.Audio.Media.ExternalContentUri;
-                    }
-
-                    String selection = "_id=?";
-                    String[] selectionArgs = new String[]
-                    {
-                split[1]
-                    };
-
-                    return getDataColumn(this, contentUri, selection, selectionArgs);
-                }
             }
-            // MediaStore (and general)
-            else if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
-            {
-
-                // Return the remote address
-                if (isGooglePhotosUri(uri))
-                    return uri.LastPathSegment;
-
-                return getDataColumn(this, uri, null, null);
-            }
-            // File
-            else if ("file".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
-            {
-                return uri.Path;
-            }
-
-            return null;
-        }
-
-        public static String getDataColumn(Context context, Android.Net.Uri uri, String selection, String[] selectionArgs)
-        {
-            ICursor cursor = null;
-            String column = "_data";
-            String[] projection =
-            {
-        column
-        };
-
-            try
-            {
-                cursor = context.ContentResolver.Query(uri, projection, selection, selectionArgs, null);
-                if (cursor != null && cursor.MoveToFirst())
-                {
-                    int index = cursor.GetColumnIndexOrThrow(column);
-                    return cursor.GetString(index);
-                }
-            }
-            finally
-            {
-                if (cursor != null)
-                    cursor.Close();
-            }
-            return null;
-        }
-
-        //Whether the Uri authority is ExternalStorageProvider.
-        public static bool isExternalStorageDocument(Android.Net.Uri uri)
-        {
-            return "com.android.externalstorage.documents".Equals(uri.Authority);
-        }
-
-        //Whether the Uri authority is DownloadsProvider.
-        public static bool isDownloadsDocument(Android.Net.Uri uri)
-        {
-            return "com.android.providers.downloads.documents".Equals(uri.Authority);
-        }
-
-        //Whether the Uri authority is MediaProvider.
-        public static bool isMediaDocument(Android.Net.Uri uri)
-        {
-            return "com.android.providers.media.documents".Equals(uri.Authority);
-        }
-
-        //Whether the Uri authority is Google Photos.
-        public static bool isGooglePhotosUri(Android.Net.Uri uri)
-        {
-            return "com.google.android.apps.photos.content".Equals(uri.Authority);
         }
 
         protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
@@ -263,8 +151,7 @@ namespace SoftWing
                 case REQUEST_OPEN_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        File.Copy(GetActualPathFromFile(data.Data), OPEN_LOCAL_PATH, true);
-
+                        CopyURIToFile(data.Data, OPEN_LOCAL_PATH);
                         SwSettings.SetOpenSoundPath(OPEN_LOCAL_PATH);
                         dispatcher.Post(new AudioUpdateMessage(OPEN_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingOpen));
                     }
@@ -272,8 +159,7 @@ namespace SoftWing
                 case REQUEST_CLOSE_FILE_CALLBACK:
                     {
                         // Copy the file to app data to ensure persistent access
-                        File.Copy(GetActualPathFromFile(data.Data), CLOSE_LOCAL_PATH, true);
-
+                        CopyURIToFile(data.Data, CLOSE_LOCAL_PATH);
                         SwSettings.SetCloseSoundPath(CLOSE_LOCAL_PATH);
                         dispatcher.Post(new AudioUpdateMessage(CLOSE_LOCAL_PATH, AudioUpdateMessage.AudioType.SwingClose));
                     }
