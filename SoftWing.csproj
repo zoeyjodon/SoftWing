@@ -93,11 +93,6 @@
     <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LgKeyboardLib">
-      <HintPath>..\LgKeyboardLib\bin\Debug\LgKeyboardLib.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="LGMultiScreenSDK">
       <HintPath>.\LGMultiScreenSDK.dll</HintPath>
       <Private>False</Private>

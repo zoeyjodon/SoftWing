@@ -3,12 +3,12 @@ using System;
 using SoftWing.SwSystem;
 using SoftWing.SwSystem.Messages;
 using Android.App;
-using Com.Jackandphantom.Joystickview;
+//using Com.Jackandphantom.Joystickview;
 using static SoftWing.SwSystem.SwSettings;
 
 namespace SoftWing
 {
-    public class SwJoystickListener : Java.Lang.Object, JoyStickView.IOnMoveListener
+    public class SwJoystickListener : Java.Lang.Object//, JoyStickView.IOnMoveListener
     {
         private const String TAG = "SwJoystickListener";
 

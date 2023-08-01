@@ -7,7 +7,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using System;
 using SoftWing.SwSystem.Messages;
-using Com.Jackandphantom.Joystickview;
+//using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem;
 using Android.Content.PM;
 
@@ -81,11 +81,11 @@ namespace SoftWing
             instance = null;
         }
 
-        private void SetJoystickListener(JoyStickView joystick, SwSettings.ControlId cid)
-        {
-            var motion = SwSettings.GetControlMotion(cid);
-            joystick.SetOnMoveListener(new SwJoystickListener(motion));
-        }
+        //private void SetJoystickListener(JoyStickView joystick, SwSettings.ControlId cid)
+        //{
+        //    var motion = SwSettings.GetControlMotion(cid);
+        //    joystick.SetOnMoveListener(new SwJoystickListener(motion));
+        //}
 
         private void SetInputListener(View vin, SwSettings.ControlId cid)
         {
@@ -103,10 +103,10 @@ namespace SoftWing
                 var control_id = SwSettings.RESOURCE_TO_CONTROL_MAP[key];
                 switch (key)
                 {
-                    case (Resource.Id.left_joyStick):
-                    case (Resource.Id.right_joyStick):
-                        SetJoystickListener((JoyStickView)control, control_id);
-                        break;
+                    //case (Resource.Id.left_joyStick):
+                    //case (Resource.Id.right_joyStick):
+                    //    SetJoystickListener((JoyStickView)control, control_id);
+                    //    break;
                     default:
                         SetInputListener(control, control_id);
                         break;

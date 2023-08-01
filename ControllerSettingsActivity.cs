@@ -8,7 +8,6 @@ using Android.Widget;
 using Android.Views;
 using System.Collections.Generic;
 using Android.Content.PM;
-using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem.Messages;
 using Android.Content;
 using Android.Runtime;
@@ -133,11 +132,11 @@ namespace SoftWing
             vin.SetOnTouchListener(new SwButtonListener(vin, id, true));
         }
 
-        private void SetJoystickListener(JoyStickView joystick, ControlId id)
-        {
-            var listener = new SwJoystickListener(id);
-            joystick.SetOnMoveListener(listener);
-        }
+        //private void SetJoystickListener(JoyStickView joystick, ControlId id)
+        //{
+        //    var listener = new SwJoystickListener(id);
+        //    joystick.SetOnMoveListener(listener);
+        //}
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
         {
@@ -151,7 +150,7 @@ namespace SoftWing
                     var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
                     if (IsAnalogControl(control_id))
                     {
-                        SetJoystickListener((JoyStickView)nextChild, control_id);
+                        //SetJoystickListener((JoyStickView)nextChild, control_id);
                     }
                     else
                     {
