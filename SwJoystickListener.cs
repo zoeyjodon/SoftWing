@@ -15,13 +15,12 @@ namespace SoftWing
     {
         private const String TAG = "SwJoystickListener";
 
-        private const int SURFACE_RADIUS_OUTER = 60;
         private const int SURFACE_RADIUS_INNER = 50;
-        private const int STROKE_WIDTH_OUTER = 20;
-        private const int STROKE_WIDTH_INNER = 15;
+        private const int STROKE_WIDTH = 15;
         private const int MOTION_FORCE_INCREMENT_PERCENT = 33;
 
         private Paint surfacePaintOuter = new Paint(PaintFlags.AntiAlias);
+        private Paint surfacePaintMiddle= new Paint(PaintFlags.AntiAlias);
         private Paint surfacePaintInner = new Paint(PaintFlags.AntiAlias);
 
         private ControlId id = ControlId.Unknown;
@@ -50,10 +49,13 @@ namespace SoftWing
 
         private void InitJoystickView()
         {
-            surfacePaintOuter.StrokeWidth = STROKE_WIDTH_OUTER;
-            surfacePaintOuter.Color = Color.Black;
+            surfacePaintOuter.StrokeWidth = STROKE_WIDTH;
+            surfacePaintOuter.Color = Color.White;
 
-            surfacePaintInner.StrokeWidth = STROKE_WIDTH_INNER;
+            surfacePaintMiddle.StrokeWidth = STROKE_WIDTH;
+            surfacePaintMiddle.Color = Color.Black;
+
+            surfacePaintInner.StrokeWidth = STROKE_WIDTH;
             surfacePaintInner.Color = Color.White;
         }
 
@@ -129,14 +131,23 @@ namespace SoftWing
             }
         }
 
+        private void JoystickBackground(SurfaceView surface, Canvas canvas)
+        {
+            Log.Info(TAG, "JoystickBackground");
+
+            canvas.DrawColor(0, BlendMode.Clear);
+            var surface_radius = Math.Min(surface.Width / 2, surface.Height / 2);
+            canvas.DrawCircle(surface_radius, surface_radius, surface_radius, surfacePaintOuter);
+            canvas.DrawCircle(surface_radius, surface_radius, surface_radius - 10, surfacePaintMiddle);
+        }
+
         private void ResetJoystick(SurfaceView surface)
         {
             Log.Info(TAG, "ResetJoystick");
             var surfaceHolder = surface.Holder;
             var canvas = surfaceHolder.LockCanvas();
 
-            canvas.DrawColor(0, BlendMode.Clear);
-            canvas.DrawCircle(surface.Width / 2, surface.Height / 2, SURFACE_RADIUS_OUTER, surfacePaintOuter);
+            JoystickBackground(surface, canvas);
             canvas.DrawCircle(surface.Width / 2, surface.Height / 2, SURFACE_RADIUS_INNER, surfacePaintInner);
 
             surfaceHolder.UnlockCanvasAndPost(canvas);
@@ -148,8 +159,7 @@ namespace SoftWing
             var surfaceHolder = surface.Holder;
             var canvas = surfaceHolder.LockCanvas();
 
-            canvas.DrawColor(0, BlendMode.Clear);
-            canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS_OUTER, surfacePaintOuter);
+            JoystickBackground(surface, canvas);
             canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS_INNER, surfacePaintInner);
 
             surfaceHolder.UnlockCanvasAndPost(canvas);
