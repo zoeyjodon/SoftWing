@@ -76,7 +76,7 @@ namespace SoftWing
         {
             if (id != ControlId.Unknown)
             {
-                dispatcher.Post(new ControlUpdateMessage(id, update));
+                dispatcher.Post(new ControlUpdateMessage(id, update, null));
             }
             else if (motion.type != MotionType.Invalid)
             {

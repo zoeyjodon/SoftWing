@@ -8,7 +8,7 @@ namespace SoftWing
     class NotificationReceiver : BroadcastReceiver
     {
         private const String TAG = "NotificationReceiver";
-        public const String ACTION_SHOW = "org.pocketworkstation.pckeyboard.SHOW";
+        public const String ACTION_SHOW = "com.jodonlucas.softwing.SHOW";
         private SwSystem.MessageDispatcher dispatcher;
 
         public NotificationReceiver()

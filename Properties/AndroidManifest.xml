@@ -9,6 +9,8 @@
 		<service android:exported="true" android:name="com.tenor.android.core.service.AaidServiceApi26" android:permission="android.permission.BIND_JOB_SERVICE" />
 		<service android:exported="true" android:name="com.tenor.android.core.service.AaidServiceCompat" android:permission="android.permission.BIND_JOB_SERVICE" />
 	</application>
+	<uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.WRITE_SETTINGS" />

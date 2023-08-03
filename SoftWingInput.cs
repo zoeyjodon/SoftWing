@@ -7,78 +7,72 @@ using Android.Views;
 using Android.Views.InputMethods;
 using System;
 using SoftWing.SwSystem.Messages;
-//using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem;
-using Android.Content.PM;
 
 namespace SoftWing
 {
-    [Activity(Label = "SoftWingInput", ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleTask)]
-    public class SoftWingInput : Activity
+    [Service(Label = "SoftWingInput", Permission = "android.permission.BIND_INPUT_METHOD", Exported = true)]
+    [IntentFilter(new[] { "android.view.InputMethod" })]
+    [MetaData("android.view.im", Resource = "@xml/input_method_config")]
+    public class SoftWingInput : InputMethodService, MessageSubscriber
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
         private View? keyboardView = null;
-        private static SoftWingInput instance;
+        private MessageDispatcher dispatcher;
 
-        public static void StartSoftWingInput(int display_id)
+        public static IBinder InputSessionToken;
+        public static bool ImeIsOpen = false;
+
+        public class SwInputMethodImpl : InputMethodImpl
         {
-            Log.Debug(TAG, "StartSoftWingInput");
-            Intent intent = new Intent(Application.Context, typeof(SoftWingInput));
-            ActivityOptions options = ActivityOptions.MakeBasic();
-            options.SetLaunchDisplayId(display_id);
-            intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
-            if (instance != null)
+            public SwInputMethodImpl(SoftWingInput _owner)
+                : base(_owner)
             {
-                Log.Debug(TAG, "Input instance exists, restarting");
-                instance.Finish();
             }
-            Application.Context.StartActivity(intent, options.ToBundle());
+
+            public override void AttachToken(IBinder token)
+            {
+                Log.Info(TAG, "attachToken " + token);
+                base.AttachToken(token);
+                InputSessionToken = token;
+            }
         }
 
-        public static void StopSoftWingInput()
-        {
-            Log.Debug(TAG, "StopSoftWingInput");
-            if (instance == null)
-            {
-                Log.Debug(TAG, "Input instance does not exist, ignoring");
-                return;
-            }
-            instance.Finish();
-        }
-
-        protected override void OnCreate(Bundle savedInstanceState)
+        public override void OnCreate()
         {
             Log.Debug(TAG, "onCreate()");
-            base.OnCreate(savedInstanceState);
-
-            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-
-            // Force the controller into a full screen view
-            Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            RequestWindowFeature(WindowFeatures.NoTitle);
-            var uiOptions = SystemUiFlags.HideNavigation |
-                 SystemUiFlags.LayoutHideNavigation |
-                 SystemUiFlags.LayoutFullscreen |
-                 SystemUiFlags.Fullscreen |
-                 SystemUiFlags.LayoutStable |
-                 SystemUiFlags.ImmersiveSticky;
-            Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-
-            keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
-            keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
-            SetContentView(keyboardView);
-
-            SwDisplayManager.StartSwDisplayManager();
-            SetInputListeners((ViewGroup)keyboardView);
-            instance = this;
+            base.OnCreate();
         }
 
-        public override void Finish()
+        public override View OnCreateInputView()
         {
-            Log.Debug(TAG, "Finish()");
-            base.Finish();
-            instance = null;
+            Log.Debug(TAG, "onCreateInputView()");
+
+            SwDisplayManager.StartSwDisplayManager();
+
+            // Force the controller into a full screen view
+            //Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
+            //RequestWindowFeature(WindowFeatures.NoTitle);
+            //var uiOptions = SystemUiFlags.HideNavigation |
+            //     SystemUiFlags.LayoutHideNavigation |
+            //     SystemUiFlags.LayoutFullscreen |
+            //     SystemUiFlags.Fullscreen |
+            //     SystemUiFlags.LayoutStable |
+            //     SystemUiFlags.ImmersiveSticky;
+            //Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
+
+            keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
+            SetInputListeners((ViewGroup)keyboardView);
+            keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
+            ImeIsOpen = true;
+
+            return keyboardView;
+        }
+
+        public override bool OnEvaluateFullscreenMode()
+        {
+            return false;
         }
 
         //private void SetJoystickListener(JoyStickView joystick, SwSettings.ControlId cid)
@@ -99,7 +93,7 @@ namespace SoftWing
             Log.Debug(TAG, "SetInputListeners");
             foreach (var key in SwSettings.RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View control = FindViewById<View>(key);
+                View control = keyboardView.FindViewById<View>(key);
                 var control_id = SwSettings.RESOURCE_TO_CONTROL_MAP[key];
                 switch (key)
                 {
@@ -111,6 +105,58 @@ namespace SoftWing
                         SetInputListener(control, control_id);
                         break;
                 }
+            }
+        }
+
+        public override void OnStartInputView(EditorInfo info, bool restarting)
+        {
+            Log.Debug(TAG, "OnStartInputView()");
+            base.OnStartInputView(info, restarting);
+            dispatcher = MessageDispatcher.GetInstance();
+            dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
+            ImeIsOpen = true;
+        }
+
+        public override void OnFinishInputView(bool finishingInput)
+        {
+            Log.Debug(TAG, "OnFinishInputView()");
+            base.OnFinishInputView(finishingInput);
+            dispatcher.Unsubscribe(SwSystem.MessageType.ControlUpdate, this);
+            ImeIsOpen = false;
+        }
+
+        public override AbstractInputMethodImpl OnCreateInputMethodInterface()
+        {
+            Log.Debug(TAG, "OnCreateInputMethodInterface()");
+            return new SwInputMethodImpl(this);
+        }
+
+        public void Accept(SystemMessage message)
+        {
+            if (message.getMessageType() != MessageType.ControlUpdate)
+            {
+                return;
+            }
+            if (CurrentInputConnection == null)
+            {
+                Log.Debug(TAG, "Connection is null, ignoring key update");
+                return;
+            }
+            var control_message = (ControlUpdateMessage)message;
+            if (control_message.Key == null) { return; }
+            var key_code = (Android.Views.Keycode) control_message.Key;
+            switch (control_message.Update)
+            {
+                case ControlUpdateMessage.UpdateType.Pressed:
+                    Log.Debug(TAG, "Accept(UpdateType.Pressed)");
+                    CurrentInputConnection.SendKeyEvent(new KeyEvent(KeyEventActions.Down, key_code));
+                    break;
+                case ControlUpdateMessage.UpdateType.Released:
+                    Log.Debug(TAG, "Accept(UpdateType.Released)");
+                    CurrentInputConnection.SendKeyEvent(new KeyEvent(KeyEventActions.Up, key_code));
+                    break;
+                default:
+                    break;
             }
         }
     }
