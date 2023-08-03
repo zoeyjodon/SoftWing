@@ -105,8 +105,8 @@ namespace SoftWing.SwSystem
         {
             {Resource.Id.l_button,          ControlId.L_Button    },
             {Resource.Id.r_button,          ControlId.R_Button    },
-            //{Resource.Id.left_joyStick,     ControlId.L_Analog    },
-            //{Resource.Id.right_joyStick,    ControlId.R_Analog    },
+            {Resource.Id.left_joyStick,     ControlId.L_Analog    },
+            {Resource.Id.right_joyStick,    ControlId.R_Analog    },
             {Resource.Id.x_button,          ControlId.X_Button    },
             {Resource.Id.y_button,          ControlId.Y_Button    },
             {Resource.Id.a_button,          ControlId.A_Button    },

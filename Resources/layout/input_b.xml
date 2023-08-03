@@ -51,7 +51,7 @@
         android:layout_column="0"
         android:layout_columnSpan="9"
         android:id="@+id/relativeLayout2" />
-    <!--<com.jackandphantom.joystickview.JoyStickView
+    <SurfaceView
         android:layout_row="7"
         android:layout_column="0"
         android:layout_rowSpan="3"
@@ -59,7 +59,7 @@
         android:layout_width="450px"
         android:layout_height="450px"
         android:background="@android:color/transparent"
-        android:id="@+id/left_joyStick" />-->
+        android:id="@+id/left_joyStick" />
     <ImageView
         android:layout_row="4"
         android:layout_column="8"
@@ -156,7 +156,7 @@
         android:src="@drawable/ic_dpad_center"
         android:background="@android:color/transparent"
         android:id="@+id/d_pad_center" />
-    <!--<com.jackandphantom.joystickview.JoyStickView
+    <SurfaceView
         android:layout_row="7"
         android:layout_column="6"
         android:layout_rowSpan="3"
@@ -164,5 +164,5 @@
         android:layout_width="450px"
         android:layout_height="450px"
         android:background="@android:color/transparent"
-        android:id="@+id/right_joyStick" />-->
+        android:id="@+id/right_joyStick" />
 </GridLayout>

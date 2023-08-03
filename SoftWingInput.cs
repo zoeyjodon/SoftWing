@@ -51,18 +51,16 @@ namespace SoftWing
 
             SwDisplayManager.StartSwDisplayManager();
 
-            // Force the controller into a full screen view
-            //Window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-            //RequestWindowFeature(WindowFeatures.NoTitle);
-            //var uiOptions = SystemUiFlags.HideNavigation |
-            //     SystemUiFlags.LayoutHideNavigation |
-            //     SystemUiFlags.LayoutFullscreen |
-            //     SystemUiFlags.Fullscreen |
-            //     SystemUiFlags.LayoutStable |
-            //     SystemUiFlags.ImmersiveSticky;
-            //Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-
             keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
+
+            // Force the controller to hide navigation buttons
+            var uiOptions = SystemUiFlags.HideNavigation |
+                 SystemUiFlags.LayoutHideNavigation |
+                 SystemUiFlags.LayoutFullscreen |
+                 SystemUiFlags.Fullscreen |
+                 SystemUiFlags.LayoutStable |
+                 SystemUiFlags.ImmersiveSticky;
+            keyboardView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
             SetInputListeners((ViewGroup)keyboardView);
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
             ImeIsOpen = true;
@@ -75,14 +73,16 @@ namespace SoftWing
             return false;
         }
 
-        //private void SetJoystickListener(JoyStickView joystick, SwSettings.ControlId cid)
-        //{
-        //    var motion = SwSettings.GetControlMotion(cid);
-        //    joystick.SetOnMoveListener(new SwJoystickListener(motion));
-        //}
+        private void SetJoystickListener(View joystick, SwSettings.ControlId cid)
+        {
+            Log.Debug(TAG, "SetJoystickListener()");
+            var motion = SwSettings.GetControlMotion(cid);
+            joystick.SetOnTouchListener(new SwJoystickListener(motion));
+        }
 
         private void SetInputListener(View vin, SwSettings.ControlId cid)
         {
+            Log.Debug(TAG, "SetInputListener()");
             var motion = SwSettings.GetControlMotion(cid);
             var vibrate = SwSettings.GetVibrationEnable();
             vin.SetOnTouchListener(new SwButtonListener(vin, motion, vibrate));
@@ -97,10 +97,10 @@ namespace SoftWing
                 var control_id = SwSettings.RESOURCE_TO_CONTROL_MAP[key];
                 switch (key)
                 {
-                    //case (Resource.Id.left_joyStick):
-                    //case (Resource.Id.right_joyStick):
-                    //    SetJoystickListener((JoyStickView)control, control_id);
-                    //    break;
+                    case (Resource.Id.left_joyStick):
+                    case (Resource.Id.right_joyStick):
+                        SetJoystickListener(control, control_id);
+                        break;
                     default:
                         SetInputListener(control, control_id);
                         break;
