@@ -26,24 +26,48 @@
         android:layout_row="0"
         android:layout_column="0"
         android:layout_columnSpan="9"/>
-    <ImageView
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="450px"
+        android:layout_height="150px"
         android:layout_row="1"
         android:layout_column="6"
-        android:layout_columnSpan="3"
+        android:layout_columnSpan="3">
+        <ImageView
+            android:layout_width="220px"
+            android:paddingRight="10px"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_rounded_rectangle"
+            android:background="@android:color/transparent"
+            android:id="@+id/r2_button" />
+        <ImageView
+            android:layout_width="220px"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_rounded_rectangle"
+            android:background="@android:color/transparent"
+            android:id="@+id/r1_button" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="450px"
         android:layout_height="150px"
-        android:src="@drawable/ic_rounded_rectangle"
-        android:background="@android:color/transparent"
-        android:id="@+id/r_button" />
-    <ImageView
         android:layout_row="1"
         android:layout_column="0"
-        android:layout_columnSpan="3"
-        android:layout_width="450px"
-        android:layout_height="150px"
-        android:src="@drawable/ic_rounded_rectangle"
-        android:background="@android:color/transparent"
-        android:id="@+id/l_button" />
+        android:layout_columnSpan="3">
+        <ImageView
+            android:layout_width="220px"
+            android:layout_height="match_parent"
+            android:paddingRight="10px"
+            android:src="@drawable/ic_rounded_rectangle"
+            android:background="@android:color/transparent"
+            android:id="@+id/l1_button" />
+        <ImageView
+            android:layout_width="220px"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_rounded_rectangle"
+            android:background="@android:color/transparent"
+            android:id="@+id/l2_button" />
+    </LinearLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="30px"

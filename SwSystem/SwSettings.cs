@@ -32,8 +32,10 @@ namespace SoftWing.SwSystem
         {
             Unknown,
             All,
-            L_Button,
-            R_Button,
+            L1_Button,
+            L2_Button,
+            R1_Button,
+            R2_Button,
             L_Analog,
             R_Analog,
             X_Button,
@@ -69,8 +71,10 @@ namespace SoftWing.SwSystem
         };
         public static Dictionary<ControlId, string> CONTROL_TO_STRING_MAP = new Dictionary<ControlId, string>
         {
-            { ControlId.L_Button        , "Left Shoulder Button" },
-            { ControlId.R_Button        , "Right Shoulder Button"},
+            { ControlId.L1_Button       , "L1 Shoulder Button"   },
+            { ControlId.L2_Button       , "L2 Shoulder Button"   },
+            { ControlId.R1_Button       , "R1 Shoulder Button"   },
+            { ControlId.R2_Button       , "R2 Shoulder Button"   },
             { ControlId.L_Analog        , "Left Analog"          },
             { ControlId.R_Analog        , "Right Analog"         },
             { ControlId.X_Button        , "X Button (Top)"       },
@@ -86,8 +90,10 @@ namespace SoftWing.SwSystem
         };
         private static Dictionary<ControlId, MotionDescription> CONTROL_TO_MOTION_MAP = new Dictionary<ControlId, MotionDescription>
         {
-            { ControlId.L_Button        , Default_Motion},
-            { ControlId.R_Button        , Default_Motion},
+            { ControlId.L1_Button       , Default_Motion},
+            { ControlId.L2_Button       , Default_Motion},
+            { ControlId.R1_Button       , Default_Motion},
+            { ControlId.R2_Button       , Default_Motion},
             { ControlId.L_Analog        , Default_Motion},
             { ControlId.R_Analog        , Default_Motion},
             { ControlId.X_Button        , Default_Motion},
@@ -103,8 +109,10 @@ namespace SoftWing.SwSystem
         };
         public static Dictionary<int, ControlId> RESOURCE_TO_CONTROL_MAP = new Dictionary<int, ControlId>
         {
-            {Resource.Id.l_button,          ControlId.L_Button    },
-            {Resource.Id.r_button,          ControlId.R_Button    },
+            {Resource.Id.l1_button,         ControlId.L1_Button   },
+            {Resource.Id.l2_button,         ControlId.L2_Button   },
+            {Resource.Id.r1_button,         ControlId.R1_Button   },
+            {Resource.Id.r2_button,         ControlId.R2_Button   },
             {Resource.Id.left_joyStick,     ControlId.L_Analog    },
             {Resource.Id.right_joyStick,    ControlId.R_Analog    },
             {Resource.Id.x_button,          ControlId.X_Button    },

@@ -116,14 +116,15 @@ namespace SoftWing
         private void RefreshInputHighlighting()
         {
             Log.Debug(TAG, "RefreshInputHighlighting");
-            for (int index = 0; index < selected_layout.ChildCount; index++)
+            
+            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View nextChild = selected_layout.GetChildAt(index);
-                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
-                {
-                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
-                    SetInputBackground(nextChild, control_id);
+                View control = selected_layout.FindViewById<View>(key);
+                if (control == null) {
+                    continue;
                 }
+                var control_id = RESOURCE_TO_CONTROL_MAP[control.Id];
+                SetInputBackground(control, control_id);
             }
         }
 
@@ -142,20 +143,21 @@ namespace SoftWing
         {
             Log.Debug(TAG, "SetInputListeners");
 
-            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
+            
+            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View nextChild = keyboard_view_group.GetChildAt(index);
-                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
+                View control = keyboard_view_group.FindViewById<View>(key);
+                if (control == null) {
+                    continue;
+                }
+                var control_id = RESOURCE_TO_CONTROL_MAP[control.Id];
+                if (IsAnalogControl(control_id))
                 {
-                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
-                    if (IsAnalogControl(control_id))
-                    {
-                        SetJoystickListener(nextChild, control_id);
-                    }
-                    else
-                    {
-                        SetInputListener(nextChild, control_id);
-                    }
+                    SetJoystickListener(control, control_id);
+                }
+                else
+                {
+                    SetInputListener(control, control_id);
                 }
             }
         }
