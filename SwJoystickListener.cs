@@ -66,6 +66,7 @@ namespace SoftWing
 
         public void OnMove(double angle, float strength)
         {
+            Log.Info(TAG, "OnMove: " + angle.ToString() + ", " + strength.ToString());
             if (id != ControlId.Unknown)
             {
                 dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed, null));
@@ -151,6 +152,8 @@ namespace SoftWing
             canvas.DrawCircle(surface.Width / 2, surface.Height / 2, SURFACE_RADIUS_INNER, surfacePaintInner);
 
             surfaceHolder.UnlockCanvasAndPost(canvas);
+
+            OnMove(0, 0);
         }
 
         private void MoveJoystick(SurfaceView surface, MotionEvent e)
@@ -160,9 +163,29 @@ namespace SoftWing
             var canvas = surfaceHolder.LockCanvas();
 
             JoystickBackground(surface, canvas);
-            canvas.DrawCircle(e.GetX(), e.GetY(), SURFACE_RADIUS_INNER, surfacePaintInner);
+
+            var center_x = surface.Width / 2;
+            var center_y = surface.Height / 2;
+            var current_x = e.GetX();
+            var current_y = e.GetY();
+            var adjusted_x = current_x - center_x;
+            var adjusted_y = current_y - center_y;
+
+            var surface_radius = Math.Min(center_x, center_y) - SURFACE_RADIUS_INNER;
+            var current_radius = Math.Sqrt((adjusted_x * adjusted_x) + (adjusted_y * adjusted_y));
+            var angle = Math.Atan2(adjusted_y, adjusted_x);
+            if (current_radius > surface_radius)
+            {
+                current_radius = surface_radius;
+                current_x = (surface_radius * (float)Math.Cos(angle)) + center_x;
+                current_y = (surface_radius * (float)Math.Sin(angle)) + center_y;
+            }
+
+            canvas.DrawCircle(current_x, current_y, SURFACE_RADIUS_INNER, surfacePaintInner);
 
             surfaceHolder.UnlockCanvasAndPost(canvas);
+
+            OnMove(angle * (-180 / Math.PI), 100 * (float)current_radius / surface_radius);
         }
 
         public bool OnTouch(View v, MotionEvent e)

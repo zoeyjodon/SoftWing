@@ -56,8 +56,9 @@
         android:layout_column="0"
         android:layout_rowSpan="3"
         android:layout_columnSpan="3"
-        android:layout_width="450px"
-        android:layout_height="450px"
+        android:layout_margin="25px"
+        android:layout_width="400px"
+        android:layout_height="400px"
         android:background="@android:color/transparent"
         android:id="@+id/left_joyStick" />
     <ImageView
@@ -161,8 +162,9 @@
         android:layout_column="6"
         android:layout_rowSpan="3"
         android:layout_columnSpan="3"
-        android:layout_width="450px"
-        android:layout_height="450px"
+        android:layout_margin="25px"
+        android:layout_width="400px"
+        android:layout_height="400px"
         android:background="@android:color/transparent"
         android:id="@+id/right_joyStick" />
 </GridLayout>
