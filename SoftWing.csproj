@@ -107,7 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerHelpActivity.cs" />
-    <Compile Include="MotionSelectionActivity.cs" />
+    <Compile Include="ControlSelectionActivity.cs" />
     <Compile Include="MotionConfigurationActivity.cs" />
     <Compile Include="DonationHandler.cs" />
     <Compile Include="ControllerSettingsActivity.cs" />
@@ -285,7 +285,7 @@
     <AndroidResource Include="Resources\drawable\touch_actions.gif" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\motion_selection.xml">
+    <AndroidResource Include="Resources\layout\control_selection.xml">
       <Generator>MSBuild:UpdateGeneratedFiles</Generator>
       <SubType>Designer</SubType>
     </AndroidResource>

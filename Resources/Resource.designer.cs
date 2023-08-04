@@ -7166,119 +7166,119 @@ namespace SoftWing
 			// aapt resource value: 0x7F0B001E
 			public const int browser_actions_context_menu_row = 2131427358;
 			
-			// aapt resource value: 0x7F0B001F
-			public const int controller_help = 2131427359;
-			
 			// aapt resource value: 0x7F0B0020
-			public const int controller_help_standard = 2131427360;
+			public const int controller_help = 2131427360;
 			
 			// aapt resource value: 0x7F0B0021
-			public const int controller_settings = 2131427361;
+			public const int controller_help_standard = 2131427361;
 			
 			// aapt resource value: 0x7F0B0022
-			public const int custom_dialog = 2131427362;
+			public const int controller_settings = 2131427362;
+			
+			// aapt resource value: 0x7F0B001F
+			public const int control_selection = 2131427359;
 			
 			// aapt resource value: 0x7F0B0023
-			public const int design_bottom_navigation_item = 2131427363;
+			public const int custom_dialog = 2131427363;
 			
 			// aapt resource value: 0x7F0B0024
-			public const int design_bottom_sheet_dialog = 2131427364;
+			public const int design_bottom_navigation_item = 2131427364;
 			
 			// aapt resource value: 0x7F0B0025
-			public const int design_layout_snackbar = 2131427365;
+			public const int design_bottom_sheet_dialog = 2131427365;
 			
 			// aapt resource value: 0x7F0B0026
-			public const int design_layout_snackbar_include = 2131427366;
+			public const int design_layout_snackbar = 2131427366;
 			
 			// aapt resource value: 0x7F0B0027
-			public const int design_layout_tab_icon = 2131427367;
+			public const int design_layout_snackbar_include = 2131427367;
 			
 			// aapt resource value: 0x7F0B0028
-			public const int design_layout_tab_text = 2131427368;
+			public const int design_layout_tab_icon = 2131427368;
 			
 			// aapt resource value: 0x7F0B0029
-			public const int design_menu_item_action_area = 2131427369;
+			public const int design_layout_tab_text = 2131427369;
 			
 			// aapt resource value: 0x7F0B002A
-			public const int design_navigation_item = 2131427370;
+			public const int design_menu_item_action_area = 2131427370;
 			
 			// aapt resource value: 0x7F0B002B
-			public const int design_navigation_item_header = 2131427371;
+			public const int design_navigation_item = 2131427371;
 			
 			// aapt resource value: 0x7F0B002C
-			public const int design_navigation_item_separator = 2131427372;
+			public const int design_navigation_item_header = 2131427372;
 			
 			// aapt resource value: 0x7F0B002D
-			public const int design_navigation_item_subheader = 2131427373;
+			public const int design_navigation_item_separator = 2131427373;
 			
 			// aapt resource value: 0x7F0B002E
-			public const int design_navigation_menu = 2131427374;
+			public const int design_navigation_item_subheader = 2131427374;
 			
 			// aapt resource value: 0x7F0B002F
-			public const int design_navigation_menu_item = 2131427375;
+			public const int design_navigation_menu = 2131427375;
 			
 			// aapt resource value: 0x7F0B0030
-			public const int design_text_input_end_icon = 2131427376;
+			public const int design_navigation_menu_item = 2131427376;
 			
 			// aapt resource value: 0x7F0B0031
-			public const int design_text_input_start_icon = 2131427377;
+			public const int design_text_input_end_icon = 2131427377;
 			
 			// aapt resource value: 0x7F0B0032
-			public const int input_a = 2131427378;
+			public const int design_text_input_start_icon = 2131427378;
 			
 			// aapt resource value: 0x7F0B0033
-			public const int input_b = 2131427379;
+			public const int input_a = 2131427379;
 			
 			// aapt resource value: 0x7F0B0034
-			public const int input_c = 2131427380;
+			public const int input_b = 2131427380;
 			
 			// aapt resource value: 0x7F0B0035
-			public const int material_chip_input_combo = 2131427381;
-			
-			// aapt resource value: 0x7F0B003A
-			public const int material_clockface_textview = 2131427386;
-			
-			// aapt resource value: 0x7F0B003B
-			public const int material_clockface_view = 2131427387;
+			public const int input_c = 2131427381;
 			
 			// aapt resource value: 0x7F0B0036
-			public const int material_clock_display = 2131427382;
+			public const int material_chip_input_combo = 2131427382;
 			
-			// aapt resource value: 0x7F0B0037
-			public const int material_clock_display_divider = 2131427383;
-			
-			// aapt resource value: 0x7F0B0038
-			public const int material_clock_period_toggle = 2131427384;
-			
-			// aapt resource value: 0x7F0B0039
-			public const int material_clock_period_toggle_land = 2131427385;
+			// aapt resource value: 0x7F0B003B
+			public const int material_clockface_textview = 2131427387;
 			
 			// aapt resource value: 0x7F0B003C
-			public const int material_radial_view_group = 2131427388;
+			public const int material_clockface_view = 2131427388;
+			
+			// aapt resource value: 0x7F0B0037
+			public const int material_clock_display = 2131427383;
+			
+			// aapt resource value: 0x7F0B0038
+			public const int material_clock_display_divider = 2131427384;
+			
+			// aapt resource value: 0x7F0B0039
+			public const int material_clock_period_toggle = 2131427385;
+			
+			// aapt resource value: 0x7F0B003A
+			public const int material_clock_period_toggle_land = 2131427386;
 			
 			// aapt resource value: 0x7F0B003D
-			public const int material_textinput_timepicker = 2131427389;
-			
-			// aapt resource value: 0x7F0B0040
-			public const int material_timepicker = 2131427392;
-			
-			// aapt resource value: 0x7F0B0041
-			public const int material_timepicker_dialog = 2131427393;
-			
-			// aapt resource value: 0x7F0B0042
-			public const int material_timepicker_textinput_display = 2131427394;
+			public const int material_radial_view_group = 2131427389;
 			
 			// aapt resource value: 0x7F0B003E
-			public const int material_time_chip = 2131427390;
+			public const int material_textinput_timepicker = 2131427390;
 			
-			// aapt resource value: 0x7F0B003F
-			public const int material_time_input = 2131427391;
+			// aapt resource value: 0x7F0B0041
+			public const int material_timepicker = 2131427393;
+			
+			// aapt resource value: 0x7F0B0042
+			public const int material_timepicker_dialog = 2131427394;
 			
 			// aapt resource value: 0x7F0B0043
-			public const int motion_configuration = 2131427395;
+			public const int material_timepicker_textinput_display = 2131427395;
+			
+			// aapt resource value: 0x7F0B003F
+			public const int material_time_chip = 2131427391;
+			
+			// aapt resource value: 0x7F0B0040
+			public const int material_time_input = 2131427392;
 			
 			// aapt resource value: 0x7F0B0044
-			public const int motion_selection = 2131427396;
+			public const int motion_configuration = 2131427396;
 			
 			// aapt resource value: 0x7F0B0045
 			public const int mtrl_alert_dialog = 2131427397;

@@ -96,23 +96,6 @@ namespace SoftWing
             };
         }
 
-        private void SetInputBackground(View vin, ControlId id)
-        {
-            Log.Debug(TAG, "SetInputBackground");
-            if (id == selected_control)
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
-            }
-            else if (SwSettings.GetControlMotion(id).type == MotionType.Invalid)
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.Red);
-            }
-            else
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.Transparent);
-            }
-        }
-
         private void RefreshInputHighlighting()
         {
             Log.Debug(TAG, "RefreshInputHighlighting");
@@ -124,7 +107,6 @@ namespace SoftWing
                     continue;
                 }
                 var control_id = RESOURCE_TO_CONTROL_MAP[control.Id];
-                SetInputBackground(control, control_id);
             }
         }
 
@@ -135,7 +117,7 @@ namespace SoftWing
 
         private void SetJoystickListener(View joystick, ControlId id)
         {
-           var listener = new SwJoystickListener(id);
+           var listener = new SwJoystickListener(id, true);
            joystick.SetOnTouchListener(listener);
         }
 
@@ -177,7 +159,7 @@ namespace SoftWing
             button.Click += delegate
             {
                 Log.Debug(TAG, "MotionConfigurationActivity.control = " + MotionConfigurationActivity.control.ToString());
-                StartActivity(typeof(MotionSelectionActivity));
+                StartActivity(typeof(ControlSelectionActivity));
             };
         }
 
@@ -421,7 +403,15 @@ namespace SoftWing
             switch (id)
             {
                 case SwSettings.ControlId.L_Analog:
+                case SwSettings.ControlId.L_Analog_Up:
+                case SwSettings.ControlId.L_Analog_Down:
+                case SwSettings.ControlId.L_Analog_Left:
+                case SwSettings.ControlId.L_Analog_Right:
                 case SwSettings.ControlId.R_Analog:
+                case SwSettings.ControlId.R_Analog_Up:
+                case SwSettings.ControlId.R_Analog_Down:
+                case SwSettings.ControlId.R_Analog_Left:
+                case SwSettings.ControlId.R_Analog_Right:
                     return true;
                 default:
                     return false;
@@ -443,6 +433,7 @@ namespace SoftWing
                     {
                         if (IsAnalogControl(selected_control))
                         {
+                            Log.Debug(TAG, "IsAnalogControl");
                             ConfigureControlLabel(selected_control);
                             MotionConfigurationActivity.control = selected_control;
                             RefreshAnalogSpinner();

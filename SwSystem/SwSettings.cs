@@ -1,4 +1,5 @@
 ﻿using Android.Util;
+using Android.Views;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +38,15 @@ namespace SoftWing.SwSystem
             R1_Button,
             R2_Button,
             L_Analog,
+            L_Analog_Up,
+            L_Analog_Down,
+            L_Analog_Left,
+            L_Analog_Right,
             R_Analog,
+            R_Analog_Up,
+            R_Analog_Down,
+            R_Analog_Left,
+            R_Analog_Right,
             X_Button,
             Y_Button,
             A_Button,
@@ -76,7 +85,15 @@ namespace SoftWing.SwSystem
             { ControlId.R1_Button       , "R1 Shoulder Button"   },
             { ControlId.R2_Button       , "R2 Shoulder Button"   },
             { ControlId.L_Analog        , "Left Analog"          },
+            { ControlId.L_Analog_Up     , "Left Analog Up"       },
+            { ControlId.L_Analog_Down   , "Left Analog Down"     },
+            { ControlId.L_Analog_Left   , "Left Analog Left"     },
+            { ControlId.L_Analog_Right  , "Left Analog Right"    },
             { ControlId.R_Analog        , "Right Analog"         },
+            { ControlId.R_Analog_Up     , "Right Analog Up"      },
+            { ControlId.R_Analog_Down   , "Right Analog Down"    },
+            { ControlId.R_Analog_Left   , "Right Analog Left"    },
+            { ControlId.R_Analog_Right  , "Right Analog Right"   },
             { ControlId.X_Button        , "X Button (Top)"       },
             { ControlId.Y_Button        , "Y Button (Left)"      },
             { ControlId.A_Button        , "A Button (Right)"     },
@@ -87,6 +104,87 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Left      , "D-Pad Left"           },
             { ControlId.D_Pad_Right     , "D-Pad Right"          },
             { ControlId.D_Pad_Center    , "D-Pad Center"         }
+        };
+        public static Dictionary<string, Keycode> STRING_TO_KEYCODE_MAP = new Dictionary<string, Keycode>
+        {
+            { "A", Keycode.A },
+            { "B", Keycode.B },
+            { "C", Keycode.C },
+            { "D", Keycode.D },
+            { "E", Keycode.E },
+            { "F", Keycode.F },
+            { "G", Keycode.G },
+            { "H", Keycode.H },
+            { "I", Keycode.I },
+            { "J", Keycode.J },
+            { "K", Keycode.K },
+            { "L", Keycode.L },
+            { "M", Keycode.M },
+            { "N", Keycode.N },
+            { "O", Keycode.O },
+            { "P", Keycode.P },
+            { "Q", Keycode.Q },
+            { "R", Keycode.R },
+            { "S", Keycode.S },
+            { "T", Keycode.T },
+            { "U", Keycode.U },
+            { "V", Keycode.V },
+            { "W", Keycode.W },
+            { "X", Keycode.X },
+            { "Y", Keycode.Y },
+            { "Z", Keycode.Z },
+            { "Escape", Keycode.Escape },
+            { "Tab", Keycode.Tab },
+            { "Enter", Keycode.Enter},
+            { "Space", Keycode.Space },
+            { "D-Pad Up", Keycode.DpadUp },
+            { "D-Pad Down", Keycode.DpadDown },
+            { "D-Pad Left", Keycode.DpadLeft },
+            { "D-Pad Right", Keycode.DpadRight },
+            { "D-Pad Center", Keycode.DpadCenter },
+            { "Button 1", Keycode.Button1 },
+            { "Button 2", Keycode.Button2 },
+            { "Button 3", Keycode.Button3 },
+            { "Button 4", Keycode.Button4 },
+            { "Button A", Keycode.ButtonA },
+            { "Button B", Keycode.ButtonB },
+            { "Button X", Keycode.ButtonX },
+            { "Button Y", Keycode.ButtonY },
+            { "Button Z", Keycode.ButtonZ },
+            { "Button L1", Keycode.ButtonL1 },
+            { "Button L2", Keycode.ButtonL2 },
+            { "Button R1", Keycode.ButtonR1 },
+            { "Button R2", Keycode.ButtonR2 },
+            { "Button SELECT", Keycode.ButtonSelect },
+            { "Button START", Keycode.ButtonStart },
+            { "Touch Control", Keycode.Unknown }
+        };
+        private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
+        {
+            { ControlId.L1_Button       , Keycode.ButtonL1       },
+            { ControlId.L2_Button       , Keycode.ButtonL2       },
+            { ControlId.R1_Button       , Keycode.ButtonR1       },
+            { ControlId.R2_Button       , Keycode.ButtonR2       },
+            { ControlId.L_Analog        , Keycode.Unknown        },
+            { ControlId.L_Analog_Up     , Keycode.W              },
+            { ControlId.L_Analog_Down   , Keycode.S              },
+            { ControlId.L_Analog_Left   , Keycode.A              },
+            { ControlId.L_Analog_Right  , Keycode.D              },
+            { ControlId.R_Analog        , Keycode.Unknown        },
+            { ControlId.R_Analog_Up     , Keycode.Button1        },
+            { ControlId.R_Analog_Down   , Keycode.Button2        },
+            { ControlId.R_Analog_Left   , Keycode.Button3        },
+            { ControlId.R_Analog_Right  , Keycode.Button4        },
+            { ControlId.X_Button        , Keycode.ButtonX        },
+            { ControlId.Y_Button        , Keycode.ButtonY        },
+            { ControlId.A_Button        , Keycode.ButtonA        },
+            { ControlId.B_Button        , Keycode.ButtonB        },
+            { ControlId.Start_Button    , Keycode.ButtonStart    },
+            { ControlId.D_Pad_Up        , Keycode.DpadUp         },
+            { ControlId.D_Pad_Down      , Keycode.DpadDown       },
+            { ControlId.D_Pad_Left      , Keycode.DpadLeft       },
+            { ControlId.D_Pad_Right     , Keycode.DpadRight      },
+            { ControlId.D_Pad_Center    , Keycode.DpadCenter     }
         };
         private static Dictionary<ControlId, MotionDescription> CONTROL_TO_MOTION_MAP = new Dictionary<ControlId, MotionDescription>
         {
@@ -258,8 +356,22 @@ namespace SoftWing.SwSystem
             }
         }
 
+        public static void SetControlKeycode(ControlId control, Keycode key)
+        {
+            CONTROL_TO_MOTION_MAP[control] = Default_Motion;
+            CONTROL_TO_KEY_MAP[control] = key;
+            UpdateStoredKeymap();
+        }
+
+        public static Keycode GetControlKeycode(ControlId control)
+        {
+            UpdateLocalKeymap();
+            return CONTROL_TO_KEY_MAP[control];
+        }
+
         public static void SetControlMotion(ControlId control, MotionDescription motion)
         {
+            CONTROL_TO_KEY_MAP[control] = Keycode.Unknown;
             CONTROL_TO_MOTION_MAP[control] = motion;
             UpdateStoredKeymap();
         }
@@ -313,7 +425,12 @@ namespace SoftWing.SwSystem
                         Log.Debug(TAG, line);
                         var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
                         var control = GetControlFromString(control_key_str[0]);
-                        CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[1]);
+                        var key = STRING_TO_KEYCODE_MAP[control_key_str[1]];
+                        CONTROL_TO_KEY_MAP[control] = key;
+                        if (control_key_str.Length > 2)
+                        {
+                            CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[2]);
+                        }
 
                         line = reader.ReadLine();
                     }
@@ -330,26 +447,39 @@ namespace SoftWing.SwSystem
         {
             Log.Debug(TAG, "UpdateStoredKeymap");
             var keymapName = GetSelectedKeymap();
-            if (!Directory.Exists(KEYMAP_DIRECTORY))
-            {
-                Directory.CreateDirectory(KEYMAP_DIRECTORY);
-            }
-            var keymapPath = Path.Combine(KEYMAP_DIRECTORY, keymapName);
+            Log.Debug(TAG, "Got keymap: " + keymapName);
+            var keymapPath = Path.Combine(FileSystem.AppDataDirectory, keymapName);
             using (var writer = File.CreateText(keymapPath))
             {
-                foreach (var control in CONTROL_TO_STRING_MAP.Keys)
+                foreach (var control in CONTROL_TO_KEY_MAP.Keys)
                 {
+                    Keycode key;
+                    CONTROL_TO_KEY_MAP.TryGetValue(control, out key);
                     MotionDescription motion;
                     CONTROL_TO_MOTION_MAP.TryGetValue(control, out motion);
 
-                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
+                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromKeycode(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
                     writer.WriteLine(writetext);
                 }
             }
         }
 
+        private static string GetStringFromKeycode(Keycode key)
+        {
+            Log.Debug(TAG, "GetStringFromKeycode: " + key.ToString());
+            foreach (var key_string in STRING_TO_KEYCODE_MAP.Keys)
+            {
+                if (STRING_TO_KEYCODE_MAP[key_string] == key)
+                {
+                    return key_string;
+                }
+            }
+            return "";
+        }
+
         private static string GetStringFromMotion(MotionDescription motion)
         {
+            Log.Debug(TAG, "GetStringFromMotion");
             return motion.beginX.ToString() + MOTION_DELIMITER +
                 motion.beginY.ToString() + MOTION_DELIMITER +
                 motion.endX.ToString() + MOTION_DELIMITER +
@@ -360,6 +490,7 @@ namespace SoftWing.SwSystem
 
         private static MotionDescription GetMotionFromString(string motionString)
         {
+            Log.Debug(TAG, "GetMotionFromString");
             MotionDescription output = MotionDescription.InvalidMotion();
             var motions = motionString.Split(MOTION_DELIMITER);
             output.beginX = float.Parse(motions[0]);
@@ -374,6 +505,7 @@ namespace SoftWing.SwSystem
 
         private static ControlId GetControlFromString(string control_string)
         {
+            Log.Debug(TAG, "GetControlFromString");
             foreach (var control in CONTROL_TO_STRING_MAP.Keys)
             {
                 if (CONTROL_TO_STRING_MAP[control] == control_string)

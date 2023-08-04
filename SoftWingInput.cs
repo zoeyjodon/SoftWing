@@ -76,16 +76,13 @@ namespace SoftWing
         private void SetJoystickListener(View joystick, SwSettings.ControlId cid)
         {
             Log.Debug(TAG, "SetJoystickListener()");
-            var motion = SwSettings.GetControlMotion(cid);
-            joystick.SetOnTouchListener(new SwJoystickListener(motion));
+            joystick.SetOnTouchListener(new SwJoystickListener(cid));
         }
 
         private void SetInputListener(View vin, SwSettings.ControlId cid)
         {
             Log.Debug(TAG, "SetInputListener()");
-            var motion = SwSettings.GetControlMotion(cid);
-            var vibrate = SwSettings.GetVibrationEnable();
-            vin.SetOnTouchListener(new SwButtonListener(vin, motion, vibrate));
+            vin.SetOnTouchListener(new SwButtonListener(vin, cid));
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
