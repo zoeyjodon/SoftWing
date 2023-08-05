@@ -15,10 +15,6 @@ namespace SoftWing
     {
         private const String TAG = "SwJoystickListener";
 
-        private const int STRENGTH_THRESHOLD = 25;
-
-        private double ANGLE_TOLERANCE = 67.5;
-
         private const int ANGLE_RIGHT = 0;
         private double ANGLE_RIGHT_MAX;
         private double ANGLE_RIGHT_MIN;
@@ -67,42 +63,37 @@ namespace SoftWing
         {
             Log.Info(TAG, "SwJoystickListener");
             id = id_in;
-            if (id_in == ControlId.L_Analog)
+            id_up = ANALOG_TO_DIRECTION_MAP[id_in][AnalogDirection.Up];
+            id_down = ANALOG_TO_DIRECTION_MAP[id_in][AnalogDirection.Down];
+            id_left = ANALOG_TO_DIRECTION_MAP[id_in][AnalogDirection.Left];
+            id_right = ANALOG_TO_DIRECTION_MAP[id_in][AnalogDirection.Right];
+            motion = GetControlMotion(id);
+            dispatcher = MessageDispatcher.GetInstance();
+            this.setup_mode = setup_mode;
+            if (setup_mode)
             {
-                id_up = ControlId.L_Analog_Up;
-                id_down = ControlId.L_Analog_Down;
-                id_left = ControlId.L_Analog_Left;
-                id_right = ControlId.L_Analog_Right;
-            }
-            else
-            {
-                id_up = ControlId.R_Analog_Up;
-                id_down = ControlId.R_Analog_Down;
-                id_left = ControlId.R_Analog_Left;
-                id_right = ControlId.R_Analog_Right;
-            }
-            up_keycode = SwSettings.GetControlKeycode(id_up);
-            down_keycode = SwSettings.GetControlKeycode(id_down);
-            left_keycode = SwSettings.GetControlKeycode(id_left);
-            right_keycode = SwSettings.GetControlKeycode(id_right);
-
-            motion = SwSettings.GetControlMotion(id);
-            if (setup_mode) 
-            {
-                motionAngleIncrementDegrees = 45;
+                motion.directionCount = 8;
+                motion.beginX = 100;
+                motion.endX = 200;
+                motion.beginY = 100;
+                motion.endY = 200;
             }
             else if (motion.type == MotionType.Invalid)
             {
-                motionAngleIncrementDegrees = 68;
+                up_keycode = GetControlKeycode(id_up);
+                down_keycode = GetControlKeycode(id_down);
+                left_keycode = GetControlKeycode(id_left);
+                right_keycode = GetControlKeycode(id_right);
+                motion.directionCount = 8;
+                motion.beginX = 100;
+                motion.endX = 200;
+                motion.beginY = 100;
+                motion.endY = 200;
             }
-            else
-            {
-                motionAngleIncrementDegrees = 360 / motion.directionCount;
-            }
-            dispatcher = MessageDispatcher.GetInstance();
+            motionAngleIncrementDegrees = 360 / motion.directionCount;
+
             InitJoystickView();
             InitJoystickTolerance();
-            this.setup_mode = setup_mode;
         }
 
         private void InitJoystickTolerance()
@@ -165,14 +156,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Right Pressed");
                     right_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed, right_keycode));
+                    dispatcher.Post(new ControlUpdateMessage(id_right, ControlUpdateMessage.UpdateType.Pressed, right_keycode));
                 }
             }
             else if (right_pressed)
             {
                 Log.Info(TAG, "Right Released");
                 right_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Released, right_keycode));
+                dispatcher.Post(new ControlUpdateMessage(id_right, ControlUpdateMessage.UpdateType.Released, right_keycode));
             }
         }
 
@@ -184,14 +175,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Left Pressed");
                     left_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed, left_keycode));
+                    dispatcher.Post(new ControlUpdateMessage(id_left, ControlUpdateMessage.UpdateType.Pressed, left_keycode));
                 }
             }
             else if (left_pressed)
             {
                 Log.Info(TAG, "Left Released");
                 left_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Released, left_keycode));
+                dispatcher.Post(new ControlUpdateMessage(id_left, ControlUpdateMessage.UpdateType.Released, left_keycode));
             }
         }
 
@@ -203,14 +194,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Up Pressed");
                     up_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed, up_keycode));
+                    dispatcher.Post(new ControlUpdateMessage(id_up, ControlUpdateMessage.UpdateType.Pressed, up_keycode));
                 }
             }
             else if (up_pressed)
             {
                 Log.Info(TAG, "Up Released");
                 up_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Released, up_keycode));
+                dispatcher.Post(new ControlUpdateMessage(id_up, ControlUpdateMessage.UpdateType.Released, up_keycode));
             }
         }
 
@@ -222,14 +213,14 @@ namespace SoftWing
                 {
                     Log.Info(TAG, "Down Pressed");
                     down_pressed = true;
-                    dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Pressed, down_keycode));
+                    dispatcher.Post(new ControlUpdateMessage(id_down, ControlUpdateMessage.UpdateType.Pressed, down_keycode));
                 }
             }
             else if (down_pressed)
             {
                 Log.Info(TAG, "Down Released");
                 down_pressed = false;
-                dispatcher.Post(new ControlUpdateMessage(id, ControlUpdateMessage.UpdateType.Released, down_keycode));
+                dispatcher.Post(new ControlUpdateMessage(id_down, ControlUpdateMessage.UpdateType.Released, down_keycode));
             }
         }
 
@@ -264,34 +255,23 @@ namespace SoftWing
         public void OnMove(double angle, float strength)
         {
             Log.Info(TAG, "OnMove: " + angle.ToString() + ", " + strength.ToString());
-            if (setup_mode)
+            bool motionComplete = strength == 0;
+            var angleMotion = CalculateMotion(angle, strength);
+
+            if (!MotionHasChanged(angleMotion))
             {
-                if (TopRegionActive(angle))
-                {
-                    dispatcher.Post(new ControlUpdateMessage(id_up, ControlUpdateMessage.UpdateType.Pressed, null));
-                }
-                else if (BottomRegionActive(angle))
-                {
-                    dispatcher.Post(new ControlUpdateMessage(id_down, ControlUpdateMessage.UpdateType.Pressed, null));
-                }
-                else if (LeftRegionActive(angle))
-                {
-                    dispatcher.Post(new ControlUpdateMessage(id_left, ControlUpdateMessage.UpdateType.Pressed, null));
-                }
-                else if (RightRegionActive(angle))
-                {
-                    dispatcher.Post(new ControlUpdateMessage(id_right, ControlUpdateMessage.UpdateType.Pressed, null));
-                }
                 return;
             }
-            else if (motion.type != MotionType.Invalid)
+            lastMotion = angleMotion;
+
+            if ((motion.type != MotionType.Invalid) && (!setup_mode))
             {
-                HandleMotion(angle, strength);
+                dispatcher.Post(new MotionUpdateMessage(motionId, angleMotion, motionComplete));
                 return;
             }
 
-
-            if (strength < STRENGTH_THRESHOLD)
+            // Handle key inputs
+            if (strength < MOTION_FORCE_INCREMENT_PERCENT)
             {
                 DisableRunningInputs();
                 return;
@@ -339,35 +319,6 @@ namespace SoftWing
         {
             return (motion.endX != lastMotion.endX) ||
                    (motion.endY != lastMotion.endY);
-        }
-
-        private void HandleMotion(double angle, float strength)
-        {
-            bool motionComplete = strength == 0;
-            var angleMotion = CalculateMotion(angle, strength);
-
-            if (!MotionHasChanged(angleMotion))
-            {
-                return;
-            }
-            lastMotion = angleMotion;
-
-            if (motion.type != MotionType.Invalid)
-            {
-                dispatcher.Post(new MotionUpdateMessage(motionId, angleMotion, motionComplete));
-                return;
-            }
-
-            // Handle key inputs
-            if (strength < STRENGTH_THRESHOLD)
-            {
-                DisableRunningInputs();
-                return;
-            }
-            HandleRightPress(angle);
-            HandleLeftPress(angle);
-            HandleUpPress(angle);
-            HandleDownPress(angle);
         }
 
         private void JoystickBackground(SurfaceView surface, Canvas canvas)

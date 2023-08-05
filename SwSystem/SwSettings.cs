@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using Xamarin.Essentials;
 using SoftWing.SwSystem.Messages;
+using System.Linq;
 
 namespace SoftWing.SwSystem
 {
@@ -58,6 +59,32 @@ namespace SoftWing.SwSystem
             D_Pad_Right,
             D_Pad_Center
         }
+        public enum AnalogDirection : int
+        {
+            Up, Down, Left, Right
+        }
+        public static Dictionary<ControlId, Dictionary<AnalogDirection, ControlId>> ANALOG_TO_DIRECTION_MAP = 
+            new Dictionary<ControlId, Dictionary<AnalogDirection, ControlId>>
+        {
+            {
+                ControlId.L_Analog,
+                new Dictionary<AnalogDirection, ControlId>{
+                    { AnalogDirection.Up,    ControlId.L_Analog_Up    },
+                    { AnalogDirection.Down,  ControlId.L_Analog_Down  },
+                    { AnalogDirection.Left,  ControlId.L_Analog_Left  },
+                    { AnalogDirection.Right, ControlId.L_Analog_Right },
+                }
+            },
+            {
+                ControlId.R_Analog,
+                new Dictionary<AnalogDirection, ControlId>{
+                    { AnalogDirection.Up,    ControlId.R_Analog_Up    },
+                    { AnalogDirection.Down,  ControlId.R_Analog_Down  },
+                    { AnalogDirection.Left,  ControlId.R_Analog_Left  },
+                    { AnalogDirection.Right, ControlId.R_Analog_Right },
+                }
+            },
+        };
         public static Dictionary<string, int> LAYOUT_TO_STRING_MAP = new Dictionary<string, int>
         {
             { "Layout A", Resource.Layout.input_a },
@@ -165,12 +192,10 @@ namespace SoftWing.SwSystem
             { ControlId.L2_Button       , Keycode.ButtonL2       },
             { ControlId.R1_Button       , Keycode.ButtonR1       },
             { ControlId.R2_Button       , Keycode.ButtonR2       },
-            { ControlId.L_Analog        , Keycode.Unknown        },
             { ControlId.L_Analog_Up     , Keycode.W              },
             { ControlId.L_Analog_Down   , Keycode.S              },
             { ControlId.L_Analog_Left   , Keycode.A              },
             { ControlId.L_Analog_Right  , Keycode.D              },
-            { ControlId.R_Analog        , Keycode.Unknown        },
             { ControlId.R_Analog_Up     , Keycode.Button1        },
             { ControlId.R_Analog_Down   , Keycode.Button2        },
             { ControlId.R_Analog_Left   , Keycode.Button3        },
@@ -298,6 +323,23 @@ namespace SoftWing.SwSystem
             }
         }
 
+        public static bool IsAnalogControl(ControlId id)
+        {
+            return GetAnalogFromDirection(id) != null;
+        }
+
+        public static ControlId? GetAnalogFromDirection(ControlId id)
+        {
+            foreach (var root_control in ANALOG_TO_DIRECTION_MAP.Keys)
+            {
+                if ((id == root_control) || (ANALOG_TO_DIRECTION_MAP[root_control].Values.Contains(id)))
+                {
+                    return root_control;
+                }
+            }
+            return null;
+        }
+
         public static string GetSelectedKeymap()
         {
             Log.Debug(TAG, "GetSelectedKeymap");
@@ -358,27 +400,53 @@ namespace SoftWing.SwSystem
 
         public static void SetControlKeycode(ControlId control, Keycode key)
         {
-            CONTROL_TO_MOTION_MAP[control] = Default_Motion;
+            Log.Debug(TAG, "SetControlKeycode");
+            if (IsAnalogControl(control))
+            {
+                CONTROL_TO_MOTION_MAP[(ControlId)GetAnalogFromDirection(control)] = Default_Motion;
+            }
+            else
+            {
+                CONTROL_TO_MOTION_MAP[control] = Default_Motion;
+            }
             CONTROL_TO_KEY_MAP[control] = key;
             UpdateStoredKeymap();
         }
 
         public static Keycode GetControlKeycode(ControlId control)
         {
+            Log.Debug(TAG, "GetControlKeycode");
             UpdateLocalKeymap();
             return CONTROL_TO_KEY_MAP[control];
         }
 
         public static void SetControlMotion(ControlId control, MotionDescription motion)
         {
-            CONTROL_TO_KEY_MAP[control] = Keycode.Unknown;
+            Log.Debug(TAG, "SetControlMotion");
+            if (IsAnalogControl(control))
+            {
+                var analog_control = (ControlId)GetAnalogFromDirection(control);
+                foreach (var dir_control in ANALOG_TO_DIRECTION_MAP[analog_control].Values)
+                {
+                    CONTROL_TO_KEY_MAP[dir_control] = Keycode.Unknown;
+                }
+            }
+            else
+            {
+                CONTROL_TO_KEY_MAP[control] = Keycode.Unknown;
+            }
             CONTROL_TO_MOTION_MAP[control] = motion;
             UpdateStoredKeymap();
         }
 
         public static MotionDescription GetControlMotion(ControlId control)
         {
+            Log.Debug(TAG, "GetControlMotion");
             UpdateLocalKeymap();
+            if (IsAnalogControl(control))
+            {
+                control = (ControlId)GetAnalogFromDirection(control);
+            }
             return CONTROL_TO_MOTION_MAP[control];
         }
 

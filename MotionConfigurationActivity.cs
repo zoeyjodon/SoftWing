@@ -77,8 +77,7 @@ namespace SoftWing
 
         private bool multiplePointsRequired()
         {
-            bool isAnalogControl = (control == SwSettings.ControlId.L_Analog) || (control == SwSettings.ControlId.R_Analog);
-            return (motionType != MotionType.Tap) || isAnalogControl;
+            return (motionType != MotionType.Tap) || SwSettings.IsAnalogControl(control);
         }
 
         private void PromptUserForSwipeBegin()

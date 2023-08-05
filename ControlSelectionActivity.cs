@@ -24,7 +24,7 @@ namespace SoftWing
     {
         private const String TAG = "MotionSelectionActivity";
         private int ignore_keyset_count = 0;
-        private SwSettings.ControlId control;
+        public static ControlId control;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,8 +39,6 @@ namespace SoftWing
            .Load(Resource.Drawable.touch_actions)
            .Apply(new RequestOptions())
            .Into(new DrawableImageViewTarget(actionImage));
-
-            control = MotionConfigurationActivity.control;
 
             Button tapButton = (Button)FindViewById(Resource.Id.touch_action_tap);
             tapButton.SetOnClickListener(this);
@@ -80,15 +78,15 @@ namespace SoftWing
         {
             Log.Debug(TAG, "ConfigureControlSpinner");
             var spinner = FindViewById<Spinner>(Resource.Id.inputKeycode);
-            spinner.Prompt = "Set " + SwSettings.CONTROL_TO_STRING_MAP[control] + " Keycode";
+            spinner.Prompt = "Set " + CONTROL_TO_STRING_MAP[control] + " Keycode";
 
-            var set_key_code = SwSettings.GetControlKeycode(control);
+            var set_key_code = GetControlKeycode(control);
             var set_key_string = "";
             List<string> inputNames = new List<string>();
-            foreach (var key_string in SwSettings.STRING_TO_KEYCODE_MAP.Keys)
+            foreach (var key_string in STRING_TO_KEYCODE_MAP.Keys)
             {
                 inputNames.Add(key_string);
-                if (set_key_code == SwSettings.STRING_TO_KEYCODE_MAP[key_string])
+                if (set_key_code == STRING_TO_KEYCODE_MAP[key_string])
                 {
                     set_key_string = key_string;
                 }
@@ -118,13 +116,13 @@ namespace SoftWing
             Spinner spinner = (Spinner)sender;
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            var key = SwSettings.STRING_TO_KEYCODE_MAP[key_string];
-            if (SwSettings.GetControlKeycode(control) == key)
+            var key = STRING_TO_KEYCODE_MAP[key_string];
+            if (GetControlKeycode(control) == key)
             {
                 Log.Debug(TAG, "Item already selected, ignoring");
                 return;
             }
-            SwSettings.SetControlKeycode(control, key);
+            SetControlKeycode(control, key);
             Finish();
         }
     }
