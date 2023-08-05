@@ -101,7 +101,7 @@ namespace SoftWing
 
         private void SetJoystickListener(View joystick, ControlId id)
         {
-           var listener = new SwJoystickListener(id, true);
+           var listener = new SwJoystickListener((SurfaceView)joystick, id, true);
            joystick.SetOnTouchListener(listener);
         }
 

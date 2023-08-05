@@ -63,7 +63,6 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
             EnsureControllerEnabled();
-            EnsureSwAccessibility();
         }
 
         private void EnsureSwAccessibility()

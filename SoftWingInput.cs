@@ -76,7 +76,7 @@ namespace SoftWing
         private void SetJoystickListener(View joystick, SwSettings.ControlId cid)
         {
             Log.Debug(TAG, "SetJoystickListener()");
-            joystick.SetOnTouchListener(new SwJoystickListener(cid));
+            joystick.SetOnTouchListener(new SwJoystickListener((SurfaceView)joystick, cid));
         }
 
         private void SetInputListener(View vin, SwSettings.ControlId cid)

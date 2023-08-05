@@ -8,10 +8,11 @@ using static Android.Views.View;
 using Android.Views;
 using Android.Graphics;
 using static AndroidX.Core.Content.PM.ShortcutInfoCompat;
+using Android.Runtime;
 
 namespace SoftWing
 {
-    public class SwJoystickListener : Java.Lang.Object, IOnTouchListener
+    public class SwJoystickListener : Java.Lang.Object, IOnTouchListener, ISurfaceHolderCallback
     {
         private const String TAG = "SwJoystickListener";
 
@@ -58,8 +59,10 @@ namespace SoftWing
         private bool down_pressed = false;
         private bool left_pressed = false;
         private bool right_pressed = false;
+        private int surface_width;
+        private int surface_height;
 
-        public SwJoystickListener(ControlId id_in, bool setup_mode = false)
+        public SwJoystickListener(SurfaceView surface, ControlId id_in, bool setup_mode = false)
         {
             Log.Info(TAG, "SwJoystickListener");
             id = id_in;
@@ -92,7 +95,7 @@ namespace SoftWing
             }
             motionAngleIncrementDegrees = 360 / motion.directionCount;
 
-            InitJoystickView();
+            InitJoystickView(surface);
             InitJoystickTolerance();
         }
 
@@ -111,7 +114,7 @@ namespace SoftWing
             ANGLE_DOWN_MIN = ANGLE_DOWN - motionAngleIncrementDegrees;
         }
 
-        private void InitJoystickView()
+        private void InitJoystickView(SurfaceView surface)
         {
             surfacePaintOuter.StrokeWidth = STROKE_WIDTH;
             surfacePaintOuter.Color = Color.White;
@@ -121,6 +124,8 @@ namespace SoftWing
 
             surfacePaintInner.StrokeWidth = STROKE_WIDTH;
             surfacePaintInner.Color = Color.White;
+
+            surface.Holder.AddCallback(this);
         }
 
         ~SwJoystickListener()
@@ -321,40 +326,38 @@ namespace SoftWing
                    (motion.endY != lastMotion.endY);
         }
 
-        private void JoystickBackground(SurfaceView surface, Canvas canvas)
+        private void JoystickBackground(Canvas canvas)
         {
             Log.Info(TAG, "JoystickBackground");
 
             canvas.DrawColor(0, BlendMode.Clear);
-            var surface_radius = Math.Min(surface.Width / 2, surface.Height / 2);
+            var surface_radius = Math.Min(surface_width / 2, surface_height / 2);
             canvas.DrawCircle(surface_radius, surface_radius, surface_radius, surfacePaintOuter);
             canvas.DrawCircle(surface_radius, surface_radius, surface_radius - 10, surfacePaintMiddle);
         }
 
-        private void ResetJoystick(SurfaceView surface)
+        private void ResetJoystick(ISurfaceHolder surfaceHolder)
         {
             Log.Info(TAG, "ResetJoystick");
-            var surfaceHolder = surface.Holder;
             var canvas = surfaceHolder.LockCanvas();
 
-            JoystickBackground(surface, canvas);
-            canvas.DrawCircle(surface.Width / 2, surface.Height / 2, SURFACE_RADIUS_INNER, surfacePaintInner);
+            JoystickBackground(canvas);
+            canvas.DrawCircle(surface_width / 2, surface_height / 2, SURFACE_RADIUS_INNER, surfacePaintInner);
 
             surfaceHolder.UnlockCanvasAndPost(canvas);
 
             OnMove(0, 0);
         }
 
-        private void MoveJoystick(SurfaceView surface, MotionEvent e)
+        private void MoveJoystick(ISurfaceHolder surfaceHolder, MotionEvent e)
         {
             Log.Info(TAG, "MoveJoystick");
-            var surfaceHolder = surface.Holder;
             var canvas = surfaceHolder.LockCanvas();
 
-            JoystickBackground(surface, canvas);
+            JoystickBackground(canvas);
 
-            var center_x = surface.Width / 2;
-            var center_y = surface.Height / 2;
+            var center_x = surface_width / 2;
+            var center_y = surface_height / 2;
             var current_x = e.GetX();
             var current_y = e.GetY();
             var adjusted_x = current_x - center_x;
@@ -390,13 +393,28 @@ namespace SoftWing
             switch (e.Action)
             {
                 case MotionEventActions.Up:
-                    ResetJoystick(surface);
+                    ResetJoystick(surface.Holder);
                     break;
                 default:
-                    MoveJoystick(surface, e);
+                    MoveJoystick(surface.Holder, e);
                     break;
             }
             return true;
+        }
+
+        public void SurfaceChanged(ISurfaceHolder holder, [GeneratedEnum] Format format, int width, int height)
+        {
+        }
+
+        public void SurfaceCreated(ISurfaceHolder holder)
+        {
+            surface_width = holder.SurfaceFrame.Width();
+            surface_height = holder.SurfaceFrame.Height();
+            ResetJoystick(holder);
+        }
+
+        public void SurfaceDestroyed(ISurfaceHolder holder)
+        {
         }
     }
 }
