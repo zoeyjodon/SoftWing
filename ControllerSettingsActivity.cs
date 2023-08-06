@@ -389,7 +389,7 @@ namespace SoftWing
             switch (control_message.Update)
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
-                    Log.Debug(TAG, "Accept(UpdateType.Pressed)");
+                    Log.Debug(TAG, "Accept(UpdateType.Pressed) " + CONTROL_TO_STRING_MAP[selected_control]);
                     {
                         if (IsAnalogControl(selected_control))
                         {
@@ -401,7 +401,7 @@ namespace SoftWing
                     }
                     break;
                 case ControlUpdateMessage.UpdateType.Released:
-                    Log.Debug(TAG, "Accept(UpdateType.Released)");
+                    Log.Debug(TAG, "Accept(UpdateType.Released)" + CONTROL_TO_STRING_MAP[selected_control]);
                     {
                         if (!IsAnalogControl(selected_control))
                         {
