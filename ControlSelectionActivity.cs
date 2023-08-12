@@ -11,9 +11,6 @@ using Android.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request.Target;
 using Bumptech.Glide.Request;
-using Android.Content;
-using Android.Runtime;
-using SoftWing.SwSystem;
 using System.Collections.Generic;
 using static SoftWing.SwSystem.SwSettings;
 
@@ -83,10 +80,11 @@ namespace SoftWing
             var set_key_code = GetControlKeycode(control);
             var set_key_string = "";
             List<string> inputNames = new List<string>();
-            foreach (var key_string in STRING_TO_KEYCODE_MAP.Keys)
+            foreach (Keycode key_code in Enum.GetValues(typeof(Keycode)))
             {
+                var key_string = KeycodeToString(key_code);
                 inputNames.Add(key_string);
-                if (set_key_code == STRING_TO_KEYCODE_MAP[key_string])
+                if (set_key_code == key_code)
                 {
                     set_key_string = key_string;
                 }
@@ -116,7 +114,14 @@ namespace SoftWing
             Spinner spinner = (Spinner)sender;
             var key_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            var key = STRING_TO_KEYCODE_MAP[key_string];
+            var key = GetControlKeycode(control);
+            foreach (Keycode key_code in Enum.GetValues(typeof(Keycode)))
+            {
+                if (key_string == KeycodeToString(key_code))
+                {
+                    key = key_code;
+                }
+            }
             if (GetControlKeycode(control) == key)
             {
                 Log.Debug(TAG, "Item already selected, ignoring");

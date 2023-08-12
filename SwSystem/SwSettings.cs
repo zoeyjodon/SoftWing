@@ -132,60 +132,6 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Right     , "D-Pad Right"          },
             { ControlId.D_Pad_Center    , "D-Pad Center"         }
         };
-        public static Dictionary<string, Keycode> STRING_TO_KEYCODE_MAP = new Dictionary<string, Keycode>
-        {
-            { "A", Keycode.A },
-            { "B", Keycode.B },
-            { "C", Keycode.C },
-            { "D", Keycode.D },
-            { "E", Keycode.E },
-            { "F", Keycode.F },
-            { "G", Keycode.G },
-            { "H", Keycode.H },
-            { "I", Keycode.I },
-            { "J", Keycode.J },
-            { "K", Keycode.K },
-            { "L", Keycode.L },
-            { "M", Keycode.M },
-            { "N", Keycode.N },
-            { "O", Keycode.O },
-            { "P", Keycode.P },
-            { "Q", Keycode.Q },
-            { "R", Keycode.R },
-            { "S", Keycode.S },
-            { "T", Keycode.T },
-            { "U", Keycode.U },
-            { "V", Keycode.V },
-            { "W", Keycode.W },
-            { "X", Keycode.X },
-            { "Y", Keycode.Y },
-            { "Z", Keycode.Z },
-            { "Escape", Keycode.Escape },
-            { "Tab", Keycode.Tab },
-            { "Enter", Keycode.Enter},
-            { "Space", Keycode.Space },
-            { "D-Pad Up", Keycode.DpadUp },
-            { "D-Pad Down", Keycode.DpadDown },
-            { "D-Pad Left", Keycode.DpadLeft },
-            { "D-Pad Right", Keycode.DpadRight },
-            { "D-Pad Center", Keycode.DpadCenter },
-            { "Button 1", Keycode.Button1 },
-            { "Button 2", Keycode.Button2 },
-            { "Button 3", Keycode.Button3 },
-            { "Button 4", Keycode.Button4 },
-            { "Button A", Keycode.ButtonA },
-            { "Button B", Keycode.ButtonB },
-            { "Button X", Keycode.ButtonX },
-            { "Button Y", Keycode.ButtonY },
-            { "Button Z", Keycode.ButtonZ },
-            { "Button L1", Keycode.ButtonL1 },
-            { "Button L2", Keycode.ButtonL2 },
-            { "Button R1", Keycode.ButtonR1 },
-            { "Button R2", Keycode.ButtonR2 },
-            { "Button SELECT", Keycode.ButtonSelect },
-            { "Button START", Keycode.ButtonStart },
-            { "Touch Control", Keycode.Unknown }
-        };
         private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
         {
             { ControlId.L1_Button       , Keycode.ButtonL1       },
@@ -493,7 +439,7 @@ namespace SoftWing.SwSystem
                         Log.Debug(TAG, line);
                         var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
                         var control = GetControlFromString(control_key_str[0]);
-                        var key = STRING_TO_KEYCODE_MAP[control_key_str[1]];
+                        var key = StringToKeycode(control_key_str[1]);
                         CONTROL_TO_KEY_MAP[control] = key;
                         if (control_key_str.Length > 2)
                         {
@@ -526,23 +472,27 @@ namespace SoftWing.SwSystem
                     MotionDescription motion;
                     CONTROL_TO_MOTION_MAP.TryGetValue(control, out motion);
 
-                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + GetStringFromKeycode(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
+                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + KeycodeToString(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
                     writer.WriteLine(writetext);
                 }
             }
         }
 
-        private static string GetStringFromKeycode(Keycode key)
+        public static string KeycodeToString(Keycode key)
         {
-            Log.Debug(TAG, "GetStringFromKeycode: " + key.ToString());
-            foreach (var key_string in STRING_TO_KEYCODE_MAP.Keys)
+            return Enum.GetName(typeof(Keycode), key);
+        }
+
+        public static Keycode StringToKeycode(string key_string)
+        {
+            foreach (Keycode key_code in Enum.GetValues(typeof(Keycode)))
             {
-                if (STRING_TO_KEYCODE_MAP[key_string] == key)
+                if (key_string == KeycodeToString(key_code))
                 {
-                    return key_string;
+                    return key_code;
                 }
             }
-            return "";
+            return Keycode.Unknown;
         }
 
         private static string GetStringFromMotion(MotionDescription motion)
