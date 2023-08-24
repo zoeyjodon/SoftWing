@@ -33,7 +33,6 @@ namespace SoftWing.SwSystem
         public enum ControlId : int
         {
             Unknown,
-            All,
             L1_Button,
             L2_Button,
             R1_Button,
@@ -132,7 +131,7 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Right     , "D-Pad Right"          },
             { ControlId.D_Pad_Center    , "D-Pad Center"         }
         };
-        private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
+        private static Dictionary<ControlId, Keycode> DEFAULT_CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
         {
             { ControlId.L1_Button       , Keycode.ButtonL1       },
             { ControlId.L2_Button       , Keycode.ButtonL2       },
@@ -157,6 +156,7 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Right     , Keycode.DpadRight      },
             { ControlId.D_Pad_Center    , Keycode.DpadCenter     }
         };
+        private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>(DEFAULT_CONTROL_TO_KEY_MAP);
         private static Dictionary<ControlId, MotionDescription> CONTROL_TO_MOTION_MAP = new Dictionary<ControlId, MotionDescription>
         {
             { ControlId.L1_Button       , Default_Motion},
@@ -292,6 +292,7 @@ namespace SoftWing.SwSystem
             if (!File.Exists(KEYMAP_SELECTION_PATH))
             {
                 Log.Debug(TAG, "Selected keymap record not found");
+                SetSelectedKeymap(KEYMAP_FILENAMES[0]);
                 return KEYMAP_FILENAMES[0];
             }
             var stream = File.OpenRead(KEYMAP_SELECTION_PATH);
@@ -325,6 +326,7 @@ namespace SoftWing.SwSystem
             if (!File.Exists(LAYOUT_SELECTION_PATH))
             {
                 Log.Debug(TAG, "Selected layout record not found");
+                SetSelectedLayout(Default_Layout);
                 return Default_Layout;
             }
             var stream = File.OpenRead(LAYOUT_SELECTION_PATH);
@@ -403,6 +405,7 @@ namespace SoftWing.SwSystem
             {
                 CONTROL_TO_MOTION_MAP[control] = Default_Motion;
             }
+            CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>(DEFAULT_CONTROL_TO_KEY_MAP);
         }
 
         private static void UpdateLocalKeymap()
@@ -418,14 +421,11 @@ namespace SoftWing.SwSystem
 
             ResetLocalKeymap();
             var keymapName = GetSelectedKeymap();
-            if (!Directory.Exists(KEYMAP_DIRECTORY))
-            {
-                Directory.CreateDirectory(KEYMAP_DIRECTORY);
-            }
             var keymapPath = Path.Combine(KEYMAP_DIRECTORY, keymapName);
             if (!File.Exists(keymapPath))
             {
-                Log.Debug(TAG, "Keymap not found");
+                Log.Debug(TAG, "Keymap not found: " + keymapPath);
+                UpdateStoredKeymap();
                 return;
             }
             try
@@ -441,10 +441,7 @@ namespace SoftWing.SwSystem
                         var control = GetControlFromString(control_key_str[0]);
                         var key = StringToKeycode(control_key_str[1]);
                         CONTROL_TO_KEY_MAP[control] = key;
-                        if (control_key_str.Length > 2)
-                        {
-                            CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[2]);
-                        }
+                        CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[2]);
 
                         line = reader.ReadLine();
                     }
@@ -459,18 +456,19 @@ namespace SoftWing.SwSystem
 
         private static void UpdateStoredKeymap()
         {
-            Log.Debug(TAG, "UpdateStoredKeymap");
             var keymapName = GetSelectedKeymap();
-            Log.Debug(TAG, "Got keymap: " + keymapName);
-            var keymapPath = Path.Combine(FileSystem.AppDataDirectory, keymapName);
+            var keymapPath = Path.Combine(KEYMAP_DIRECTORY, keymapName);
+            Log.Debug(TAG, "UpdateStoredKeymap: " + keymapPath);
             using (var writer = File.CreateText(keymapPath))
             {
-                foreach (var control in CONTROL_TO_KEY_MAP.Keys)
+                foreach (ControlId control in Enum.GetValues(typeof(ControlId)))
                 {
-                    Keycode key;
-                    CONTROL_TO_KEY_MAP.TryGetValue(control, out key);
-                    MotionDescription motion;
-                    CONTROL_TO_MOTION_MAP.TryGetValue(control, out motion);
+                    if (control == ControlId.Unknown)
+                    {
+                        continue;
+                    }
+                    Keycode key = CONTROL_TO_KEY_MAP.GetValueOrDefault(control, Keycode.Unknown);
+                    MotionDescription motion = CONTROL_TO_MOTION_MAP.GetValueOrDefault(control, Default_Motion);
 
                     var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + KeycodeToString(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
                     writer.WriteLine(writetext);

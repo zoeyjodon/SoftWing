@@ -218,6 +218,12 @@ namespace SoftWing
 
         private bool MotionHasChanged(MotionDescription motion)
         {
+            var invalid_motion = MotionDescription.InvalidMotion();
+            // Ignore initial position setup
+            if ((invalid_motion.endX == lastMotion.endX) && (invalid_motion.endY == invalid_motion.endY))
+            {
+                lastMotion = motion;
+            }
             return (motion.endX != lastMotion.endX) ||
                    (motion.endY != lastMotion.endY);
         }
