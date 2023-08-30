@@ -20,6 +20,7 @@ namespace SoftWing
     {
         private const String TAG = "ControllerSettingsActivity";
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
+        private const String NEW_PROFILE_ITEM = "New Profile";
         private int ignore_spinner_count = 0;
         private MessageDispatcher dispatcher;
         private ControlId selected_control = ControlId.A_Button;
@@ -39,6 +40,7 @@ namespace SoftWing
             ConfigureBackgroundButton();
             ConfigureControlLabel(selected_control);
             MotionConfigurationActivity.control = selected_control;
+            ControlSelectionActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
             ConfigureAnalogSpinner();
@@ -185,6 +187,22 @@ namespace SoftWing
             Log.Debug(TAG, "DirectionSpinnerItemSelectedDone");
         }
 
+        private void UpdateProfileSpinner()
+        {
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
+
+            var keymaps = new List<string> { NEW_PROFILE_ITEM };
+            keymaps.AddRange(GetKeymapList());
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, keymaps);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+
+            spinner.Adapter = adapter;
+            int spinner_position = adapter.GetPosition(GetSelectedKeymap());
+            ignore_spinner_count++;
+            spinner.SetSelection(spinner_position);
+            spinner.Invalidate();
+        }
+
         private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
             Log.Debug(TAG, "ProfileSpinnerItemSelected");
@@ -196,7 +214,25 @@ namespace SoftWing
             }
             Spinner spinner = (Spinner)sender;
             var profile_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-            SetSelectedKeymap(profile_string);
+            if (profile_string == NEW_PROFILE_ITEM)
+            {
+                EditText input = new EditText(this);
+                Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                dialog.SetTitle("Enter Profile Name");
+                dialog.SetView(input);
+                dialog.SetPositiveButton("OK", (c, ev) =>
+                {
+                    var keymap_name = input.Text.Trim();
+                    keymap_name = keymap_name.Replace(' ', '_');
+                    SetSelectedKeymap(keymap_name);
+                    UpdateProfileSpinner();
+                });
+                dialog.Show();
+            }
+            else
+            {
+                SetSelectedKeymap(profile_string);
+            }
         }
 
         private void ConfigureProfileSpinner()
@@ -204,19 +240,9 @@ namespace SoftWing
             Log.Debug(TAG, "ConfigureProfileSpinner");
             var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
             spinner.Prompt = "Select Controller Profile";
-
-            var set_keymap = GetSelectedKeymap();
-            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, KEYMAP_FILENAMES);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinner.Adapter = adapter;
-
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ProfileSpinnerItemSelected);
-            ignore_spinner_count++;
 
-            int spinner_position = adapter.GetPosition(set_keymap);
-            spinner.SetSelection(spinner_position);
-
-            spinner.Invalidate();
+            UpdateProfileSpinner();
         }
 
         private void UpdateLayoutVisibility()
@@ -284,9 +310,9 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
-            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_layout_string);
+            ignore_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -314,9 +340,9 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(VibrationSpinnerItemSelected);
-            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_vibration_string);
+            ignore_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -351,6 +377,7 @@ namespace SoftWing
 
             var adapter = (ArrayAdapter)spinner.Adapter;
             int spinner_position = adapter.GetPosition(set_direction_string);
+            ignore_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -374,7 +401,6 @@ namespace SoftWing
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
 
-            ignore_spinner_count++;
             RefreshAnalogSpinner();
         }
 
