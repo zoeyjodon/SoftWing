@@ -231,8 +231,28 @@ namespace SoftWing
             }
             else
             {
-                SetSelectedKeymap(profile_string);
+                ProfileSpinnerItemPrompt(profile_string);
             }
+        }
+
+        private void ProfileSpinnerItemPrompt(string profile_name)
+        {
+            Log.Debug(TAG, "ProfileSpinnerItemPrompt");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Profile \"" + profile_name + "\"");
+            alert.SetButton3("Use", (c, ev) => {
+                SetSelectedKeymap(profile_name);
+            });
+            alert.SetButton2("Cancel", (c, ev) => { });
+            alert.SetButton("Delete", (c, ev) =>
+            {
+                DeleteStoredKeymap(profile_name);
+                SetSelectedKeymap(Default_Keymap_Filename);
+                UpdateProfileSpinner();
+            });
+            alert.Show();
         }
 
         private void ConfigureProfileSpinner()
@@ -241,7 +261,7 @@ namespace SoftWing
             var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
             spinner.Prompt = "Select Controller Profile";
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ProfileSpinnerItemSelected);
-
+            
             UpdateProfileSpinner();
         }
 
@@ -400,7 +420,7 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
-
+            
             RefreshAnalogSpinner();
         }
 

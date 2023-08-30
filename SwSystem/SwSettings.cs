@@ -15,7 +15,6 @@ namespace SoftWing.SwSystem
         private static string KEYMAP_SELECTION_FILENAME = "SelectedKeymap.txt";
         private static string KEYMAP_SELECTION_PATH = Path.Combine(FileSystem.AppDataDirectory, KEYMAP_SELECTION_FILENAME);
         private static string KEYMAP_DIRECTORY = Path.Combine(FileSystem.AppDataDirectory, "keymaps");
-        private static string DEFAULT_KEYMAP_FILENAME = "Default";
         private static string OPEN_SOUND_FILENAME = "open_sound.txt";
         private static string CLOSE_SOUND_FILENAME = "close_sound.txt";
         private static string OPEN_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, OPEN_SOUND_FILENAME);
@@ -27,6 +26,7 @@ namespace SoftWing.SwSystem
         private const string CONTROL_KEY_DELIMITER = "=";
         private const string MOTION_DELIMITER = ",";
         private static bool local_keymap_updated = false;
+        public static string Default_Keymap_Filename = "Default";
         public const bool Default_Vibration_Enable = true;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public static int Default_Layout = Resource.Layout.input_a;
@@ -291,7 +291,7 @@ namespace SoftWing.SwSystem
             Log.Debug(TAG, "GetKeymapList");
             if (!Directory.Exists(KEYMAP_DIRECTORY))
             {
-                return new List<string> { DEFAULT_KEYMAP_FILENAME };
+                return new List<string> { Default_Keymap_Filename };
             }
             var output = new List<string> { };
             foreach (string file in Directory.GetFiles(KEYMAP_DIRECTORY))
@@ -305,8 +305,8 @@ namespace SoftWing.SwSystem
             if (!File.Exists(KEYMAP_SELECTION_PATH))
             {
                 Log.Debug(TAG, "Selected keymap record not found");
-                SetSelectedKeymap(DEFAULT_KEYMAP_FILENAME);
-                return DEFAULT_KEYMAP_FILENAME;
+                SetSelectedKeymap(Default_Keymap_Filename);
+                return Default_Keymap_Filename;
             }
             var stream = File.OpenRead(KEYMAP_SELECTION_PATH);
             using (var reader = new StreamReader(stream))
@@ -420,6 +420,12 @@ namespace SoftWing.SwSystem
                 CONTROL_TO_MOTION_MAP[control] = Default_Motion;
             }
             CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>(DEFAULT_CONTROL_TO_KEY_MAP);
+        }
+
+        public static void DeleteStoredKeymap(string name)
+        {
+            var keymapPath = Path.Combine(KEYMAP_DIRECTORY, name);
+            File.Delete(keymapPath);
         }
 
         private static void UpdateLocalKeymap()
