@@ -42,7 +42,7 @@ namespace SoftWing
         private const String TAG = "SoftWingAccessibility";
         private const long GESTURE_START_DELAY_MS = 0;
         private const long FIRST_STROKE_DURATION_MS = 10;
-        private const long CONTINUOUS_STROKE_DURATION_MS = 500;
+        private const long CONTINUOUS_STROKE_DURATION_MS = 100;
         private long HOLD_STROKE_DURATION_MS = GestureDescription.MaxGestureDuration - FIRST_STROKE_DURATION_MS;
         private int MAX_GESTURE_RETRIES = 10;
 
@@ -185,18 +185,22 @@ namespace SoftWing
             Log.Info(TAG, "CancelGesture");
 
             //extendedMotionHandler.RemoveCallbacks(extendedMotionCallback);
-            Path path = new Path();
-            path.MoveTo(activeMotions[id].endX, activeMotions[id].endY);
-            path.LineTo(activeMotions[id].endX, activeMotions[id].endY);
-            var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
-            GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
-            gestureBuilder.AddStroke(stroke);
-            TryDispatchGesture(gestureBuilder.Build());
+            var motion = activeMotions[id];
             activeMotions.Remove(id);
-
             if (activeMotions.Count > 0)
             {
                 RunActiveGestures();
+            }
+            else if (motion.type != MotionType.Continuous)
+            {
+                // Force-cancel the gesture with a quick motion
+                Path path = new Path();
+                path.MoveTo(motion.endX, motion.endY);
+                path.LineTo(motion.endX, motion.endY);
+                var stroke = new GestureDescription.StrokeDescription(path, 0, 1, false);
+                GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+                gestureBuilder.AddStroke(stroke);
+                TryDispatchGesture(gestureBuilder.Build());
             }
         }
 
