@@ -386,8 +386,8 @@ namespace SoftWing.SwSystem
             Log.Debug(TAG, "SetControlMotion");
             if (IsAnalogControl(control))
             {
-                var analog_control = (ControlId)GetAnalogFromDirection(control);
-                foreach (var dir_control in ANALOG_TO_DIRECTION_MAP[analog_control].Values)
+                control = (ControlId)GetAnalogFromDirection(control);
+                foreach (var dir_control in ANALOG_TO_DIRECTION_MAP[control].Values)
                 {
                     CONTROL_TO_KEY_MAP[dir_control] = Keycode.Unknown;
                 }

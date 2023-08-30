@@ -21,7 +21,10 @@ namespace SoftWing
         private const String TAG = "ControllerSettingsActivity";
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
         private const String NEW_PROFILE_ITEM = "New Profile";
-        private int ignore_spinner_count = 0;
+        private int vibration_spinner_count = 0;
+        private int direction_spinner_count = 0;
+        private int profile_spinner_count = 0;
+        private int layout_spinner_count = 0;
         private MessageDispatcher dispatcher;
         private ControlId selected_control = ControlId.A_Button;
 
@@ -152,11 +155,11 @@ namespace SoftWing
 
         private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "VibrationSpinnerItemSelected");
+            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (vibration_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                vibration_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -169,11 +172,11 @@ namespace SoftWing
 
         private void DirectionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "DirectionSpinnerItemSelected");
+            Log.Debug(TAG, "DirectionSpinnerItemSelected: " + direction_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (direction_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                direction_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -198,18 +201,18 @@ namespace SoftWing
 
             spinner.Adapter = adapter;
             int spinner_position = adapter.GetPosition(GetSelectedKeymap());
-            ignore_spinner_count++;
+            profile_spinner_count++;
             spinner.SetSelection(spinner_position);
             spinner.Invalidate();
         }
 
         private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "ProfileSpinnerItemSelected");
+            Log.Debug(TAG, "ProfileSpinnerItemSelected: " + profile_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (profile_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                profile_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -294,11 +297,11 @@ namespace SoftWing
 
         private void LayoutSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "LayoutSpinnerItemSelected");
+            Log.Debug(TAG, "LayoutSpinnerItemSelected: " + layout_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (layout_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                layout_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -332,7 +335,7 @@ namespace SoftWing
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
 
             int spinner_position = adapter.GetPosition(set_layout_string);
-            ignore_spinner_count++;
+            layout_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -362,7 +365,7 @@ namespace SoftWing
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(VibrationSpinnerItemSelected);
 
             int spinner_position = adapter.GetPosition(set_vibration_string);
-            ignore_spinner_count++;
+            vibration_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -397,7 +400,7 @@ namespace SoftWing
 
             var adapter = (ArrayAdapter)spinner.Adapter;
             int spinner_position = adapter.GetPosition(set_direction_string);
-            ignore_spinner_count++;
+            direction_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -420,7 +423,7 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
-            
+            direction_spinner_count++;
             RefreshAnalogSpinner();
         }
 
