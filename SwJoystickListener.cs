@@ -99,7 +99,6 @@ namespace SoftWing
 
         public void OnMove(double angle, float strength)
         {
-            Log.Info(TAG, "OnMove: " + angle.ToString() + ", " + strength.ToString());
             bool motionComplete = strength == 0;
             var angleMotion = CalculateMotion(angle, strength);
 

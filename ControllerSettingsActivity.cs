@@ -22,7 +22,6 @@ namespace SoftWing
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
         private const String NEW_PROFILE_ITEM = "New Profile";
         private int vibration_spinner_count = 0;
-        private int direction_spinner_count = 0;
         private int profile_spinner_count = 0;
         private int layout_spinner_count = 0;
         private MessageDispatcher dispatcher;
@@ -170,13 +169,14 @@ namespace SoftWing
             SetVibrationEnable(enable);
         }
 
-        private void DirectionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        private void AnalogSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "DirectionSpinnerItemSelected: " + direction_spinner_count.ToString());
+            Log.Debug(TAG, "AnalogSpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
-            if (direction_spinner_count != 0)
+            if ((!IsAnalogControl(selected_control)) ||
+                (GetControlMotion(selected_control).type == MotionType.Invalid))
             {
-                direction_spinner_count--;
+                Log.Debug(TAG, "Cannot set direction for control");
                 return;
             }
             Spinner spinner = (Spinner)sender;
@@ -187,7 +187,6 @@ namespace SoftWing
             var motion = GetControlMotion(selected_control);
             motion.directionCount = direction;
             SetControlMotion(selected_control, motion);
-            Log.Debug(TAG, "DirectionSpinnerItemSelectedDone");
         }
 
         private void UpdateProfileSpinner()
@@ -234,6 +233,7 @@ namespace SoftWing
             }
             else
             {
+                UpdateProfileSpinner();
                 ProfileSpinnerItemPrompt(profile_string);
             }
         }
@@ -245,15 +245,18 @@ namespace SoftWing
             Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
             var alert = dialog.Create();
             alert.SetTitle("Profile \"" + profile_name + "\"");
-            alert.SetButton3("Use", (c, ev) => {
+            alert.SetButton("Use", (c, ev) => {
                 SetSelectedKeymap(profile_name);
+                UpdateProfileSpinner();
+                RefreshAnalogSpinner();
             });
             alert.SetButton2("Cancel", (c, ev) => { });
-            alert.SetButton("Delete", (c, ev) =>
+            alert.SetButton3("Delete", (c, ev) =>
             {
                 DeleteStoredKeymap(profile_name);
                 SetSelectedKeymap(Default_Keymap_Filename);
                 UpdateProfileSpinner();
+                RefreshAnalogSpinner();
             });
             alert.Show();
         }
@@ -381,10 +384,10 @@ namespace SoftWing
 
             Log.Debug(TAG, "Control = " + CONTROL_TO_STRING_MAP[selected_control] + " directions = " + set_direction.ToString());
 
-            if (!IsAnalogControl(selected_control))
+            if ((!IsAnalogControl(selected_control)) || 
+                (GetControlMotion(selected_control).type == MotionType.Invalid))
             {
                 spinner.Visibility = ViewStates.Invisible;
-                spinner.Invalidate();
                 return;
             }
 
@@ -395,12 +398,12 @@ namespace SoftWing
                 if (DIRECTION_TO_STRING_MAP[key] == set_direction)
                 {
                     set_direction_string = key;
+                    break;
                 }
             }
 
             var adapter = (ArrayAdapter)spinner.Adapter;
             int spinner_position = adapter.GetPosition(set_direction_string);
-            direction_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -422,8 +425,7 @@ namespace SoftWing
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
-            direction_spinner_count++;
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(AnalogSpinnerItemSelected);
             RefreshAnalogSpinner();
         }
 
