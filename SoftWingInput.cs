@@ -18,7 +18,7 @@ namespace SoftWing
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
-        private View? keyboardView = null;
+        private View keyboardView = null;
         private MessageDispatcher dispatcher;
 
         public static IBinder InputSessionToken;

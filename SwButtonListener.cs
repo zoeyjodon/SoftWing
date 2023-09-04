@@ -4,7 +4,6 @@ using System;
 using SoftWing.SwSystem;
 using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
-using Android.App;
 using Xamarin.Essentials;
 using static SoftWing.SwSystem.SwSettings;
 

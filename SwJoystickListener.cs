@@ -2,12 +2,10 @@
 using System;
 using SoftWing.SwSystem;
 using SoftWing.SwSystem.Messages;
-using Android.App;
 using static SoftWing.SwSystem.SwSettings;
 using static Android.Views.View;
 using Android.Views;
 using Android.Graphics;
-using static AndroidX.Core.Content.PM.ShortcutInfoCompat;
 using Android.Runtime;
 
 namespace SoftWing

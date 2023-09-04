@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Util;
-using Android.Widget;
 using System;
 
 namespace SoftWing

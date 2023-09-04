@@ -28,7 +28,9 @@ namespace SoftWing
             Manifest.Permission.Vibrate,
             Manifest.Permission.ForegroundService,
             Manifest.Permission.WriteSettings,
-            Manifest.Permission.ReceiveBootCompleted
+            Manifest.Permission.BindNotificationListenerService,
+            Manifest.Permission.PostNotifications,
+            Manifest.Permission.ReceiveBootCompleted,
         };
         private DonationHandler donation;
         private MessageDispatcher dispatcher;
@@ -63,6 +65,35 @@ namespace SoftWing
             RegisterReceiver(new SwBootReceiver(), new IntentFilter(Intent.ActionBootCompleted));
             donation.Start();
             EnsureControllerEnabled();
+            EnsureNotificationsEnabled();
+        }
+
+        private void EnsureNotificationsEnabled()
+        {
+            Log.Info(TAG, "EnsureNotificationsEnabled");
+            if (NotificationManagerCompat.From(Application.Context).AreNotificationsEnabled())
+            {
+                SwDisplayManager.SetNotification();
+                return;
+            }
+
+            Log.Info(TAG, "PromptNotificationsEnable");
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Enable Notifications");
+            var message = "In order for the controller to be opened and swivel sounds to work, notifications must be enabled.";
+            alert.SetMessage(message);
+            alert.SetButton("OK", (c, ev) =>
+            {
+                alert.Cancel();
+                var enableIntent = new Intent(Settings.ActionAllAppsNotificationSettings);
+                enableIntent.SetFlags(ActivityFlags.NewTask);
+                StartActivity(enableIntent);
+            });
+            alert.SetButton2("SKIP", (c, ev) =>
+            {
+            });
+            alert.Show();
         }
 
         private void EnsureSwAccessibility()

@@ -8,7 +8,6 @@ using Android.Provider;
 using System;
 using Android.Media;
 using SoftWing.SwSystem.Messages;
-using System.IO;
 using SoftWing.SwSystem;
 using System.Threading.Tasks;
 
@@ -20,11 +19,11 @@ namespace SoftWing
         private const String TAG = "SwDisplayManager";
         private DisplayManagerHelper lg_display_manager;
         private LgSwivelStateCallback swivel_state_cb;
-        private SwSystem.MessageDispatcher dispatcher;
+        private MessageDispatcher dispatcher;
         private static SwDisplayManager instance;
 
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
-        private const int NOTIFICATION_ONGOING_ID = 1001;
+        private const int NOTIFICATION_ONGOING_ID = 3532;
         private static NotificationReceiver notification_receiver = null;
 
         private const int IME_TRANSITION_DELAY_MS = 1000;
@@ -56,7 +55,7 @@ namespace SoftWing
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
             Log.Debug(TAG, "OnStartCommand");
-            SetNotification();
+            SetNotificationInternal();
             return StartCommandResult.Sticky;
         }
 
@@ -96,9 +95,21 @@ namespace SoftWing
             notificationManager.CreateNotificationChannel(channel);
         }
 
-        private void SetNotification()
+        public static void SetNotification()
         {
-            Log.Debug(TAG, "SetNotification()");
+            if (instance != null)
+            {
+                instance.SetNotificationInternal();
+            }
+            else
+            {
+                StartSwDisplayManager();
+            }
+        }
+
+        public void SetNotificationInternal()
+        {
+            Log.Debug(TAG, "SetNotificationInternal()");
 
             CreateNotificationChannel();
             var text = "Controller notification enabled.";

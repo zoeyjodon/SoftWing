@@ -3,10 +3,7 @@ using Android.OS;
 using Android.Support.V7.App;
 using System;
 using Android.Util;
-using Android.Widget;
-using Android.Views;
 using Android.Content.PM;
-using Android.Text.Method;
 
 namespace SoftWing
 {

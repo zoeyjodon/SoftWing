@@ -10,7 +10,6 @@ using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
 using Android.Widget;
 using SoftWing.SwSystem;
-using System.Collections.Generic;
 
 namespace SoftWing
 {
@@ -46,7 +45,9 @@ namespace SoftWing
                  SystemUiFlags.Fullscreen |
                  SystemUiFlags.LayoutStable |
                  SystemUiFlags.ImmersiveSticky;
+#pragma warning disable CS0618 // Type or member is obsolete
             Window.DecorView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             surfacePaintOuter.StrokeWidth = STROKE_WIDTH_OUTER;
             surfacePaintOuter.Color = Color.Black;
