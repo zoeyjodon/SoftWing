@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.App;
 using Android.Content;
-using Android.Util;
 using Android.Service.QuickSettings;
 
 namespace SoftWing

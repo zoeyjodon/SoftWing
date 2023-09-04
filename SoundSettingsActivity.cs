@@ -12,7 +12,6 @@ using Android.Content;
 using System.IO;
 using SoftWing.SwSystem.Messages;
 using Xamarin.Essentials;
-using Android.Database;
 
 namespace SoftWing
 {

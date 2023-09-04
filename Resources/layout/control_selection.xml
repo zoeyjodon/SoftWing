@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:id="@+id/motionSelection"
     android:columnCount="5"
-    android:rowCount="5">
+    android:rowCount="7">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,7 +16,7 @@
         android:layout_row="0"
         android:layout_column="0"
         android:layout_columnSpan="5"
-        android:text="Select a Touch Input Type"
+        android:text="Select an Input Type"
         android:textSize="@dimen/std_text_size"/>
     <TextView
         android:layout_width="match_parent"
@@ -25,6 +25,7 @@
         android:layout_column="0"
         android:layout_columnSpan="5"
         android:text="\n
+        Key: A keyevent will be sent instead of any touch events\n\n
         Tap: Only a single point will be pressed in response to this control\n\n
         Swipe: This control presses a starting point, then immediately drags to a finishing point where it will hold indefinitely\n\n
         Continuous: This control presses a starting point, then drags to a finishing point before returning to the start and repeating the process\n\n"
@@ -66,4 +67,27 @@
         android:layout_height="wrap_content"
         android:layout_row="3"
         android:layout_column="4"/>
+    <GridLayout
+        android:padding="@dimen/std_grid_padding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_row="5"
+        android:layout_columnSpan="5"
+        android:columnCount="3">
+        <TextView
+            android:text="KEYCODE: "
+            android:textSize="50px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="0"/>
+        <Spinner
+            android:id="@+id/inputKeycode"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            style="@style/ImageButtonStyle"
+            android:layout_column="2"
+            android:layout_row="0"/>
+    </GridLayout>
 </GridLayout>

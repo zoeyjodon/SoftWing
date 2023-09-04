@@ -15,10 +15,13 @@ namespace SoftWing.SwSystem.Messages
         public UpdateType Update { get; }
         public ControlId Id { get; }
 
-        public ControlUpdateMessage(ControlId id_in, UpdateType update)
+        public Keycode? Key { get; }
+
+        public ControlUpdateMessage(ControlId id_in, UpdateType update, Keycode? key)
         {
             Update = update;
             Id = id_in;
+            Key = key;
         }
 
         public MessageType getMessageType()

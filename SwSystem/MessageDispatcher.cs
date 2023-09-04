@@ -5,7 +5,6 @@
  * \author Lucas Jodon 
  * \date   8/14/2020
 ***********************************************************************/
-using Android.App;
 using Android.OS;
 using System.Collections.Generic;
 

@@ -8,7 +8,6 @@ using Android.Widget;
 using Android.Views;
 using System.Collections.Generic;
 using Android.Content.PM;
-using Com.Jackandphantom.Joystickview;
 using SoftWing.SwSystem.Messages;
 using Android.Content;
 using Android.Runtime;
@@ -21,10 +20,12 @@ namespace SoftWing
     {
         private const String TAG = "ControllerSettingsActivity";
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
-        private int ignore_spinner_count = 0;
+        private const String NEW_PROFILE_ITEM = "New Profile";
+        private int vibration_spinner_count = 0;
+        private int profile_spinner_count = 0;
+        private int layout_spinner_count = 0;
         private MessageDispatcher dispatcher;
-        private SwSettings.ControlId selected_control = SwSettings.ControlId.A_Button;
-        private ViewGroup selected_layout = null;
+        private ControlId selected_control = ControlId.A_Button;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -41,12 +42,12 @@ namespace SoftWing
             ConfigureBackgroundButton();
             ConfigureControlLabel(selected_control);
             MotionConfigurationActivity.control = selected_control;
+            ControlSelectionActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
             ConfigureAnalogSpinner();
             ConfigureProfileSpinner();
             ConfigureLayoutSpinner();
-            RefreshInputHighlighting();
         }
 
         protected override void OnStart()
@@ -97,75 +98,45 @@ namespace SoftWing
             };
         }
 
-        private void SetInputBackground(View vin, ControlId id)
-        {
-            Log.Debug(TAG, "SetInputBackground");
-            if (id == selected_control)
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
-            }
-            else if (SwSettings.GetControlMotion(id).type == MotionType.Invalid)
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.Red);
-            }
-            else
-            {
-                vin.SetBackgroundColor(Android.Graphics.Color.Transparent);
-            }
-        }
-
-        private void RefreshInputHighlighting()
-        {
-            Log.Debug(TAG, "RefreshInputHighlighting");
-            for (int index = 0; index < selected_layout.ChildCount; index++)
-            {
-                View nextChild = selected_layout.GetChildAt(index);
-                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
-                {
-                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
-                    SetInputBackground(nextChild, control_id);
-                }
-            }
-        }
-
         private void SetInputListener(View vin, ControlId id)
         {
             vin.SetOnTouchListener(new SwButtonListener(vin, id, true));
         }
 
-        private void SetJoystickListener(JoyStickView joystick, ControlId id)
+        private void SetJoystickListener(View joystick, ControlId id)
         {
-            var listener = new SwJoystickListener(id);
-            joystick.SetOnMoveListener(listener);
+           var listener = new SwJoystickListener((SurfaceView)joystick, id, true);
+           joystick.SetOnTouchListener(listener);
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
         {
             Log.Debug(TAG, "SetInputListeners");
 
-            for (int index = 0; index < keyboard_view_group.ChildCount; index++)
+            
+            foreach (var key in RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View nextChild = keyboard_view_group.GetChildAt(index);
-                if (RESOURCE_TO_CONTROL_MAP.ContainsKey(nextChild.Id))
+                View control = keyboard_view_group.FindViewById<View>(key);
+                if (control == null) {
+                    continue;
+                }
+                var control_id = RESOURCE_TO_CONTROL_MAP[control.Id];
+                if (IsAnalogControl(control_id))
                 {
-                    var control_id = RESOURCE_TO_CONTROL_MAP[nextChild.Id];
-                    if (IsAnalogControl(control_id))
-                    {
-                        SetJoystickListener((JoyStickView)nextChild, control_id);
-                    }
-                    else
-                    {
-                        SetInputListener(nextChild, control_id);
-                    }
+                    SetJoystickListener(control, control_id);
+                }
+                else
+                {
+                    SetInputListener(control, control_id);
                 }
             }
         }
 
-        private void ConfigureControlLabel(SwSettings.ControlId control)
+        private void ConfigureControlLabel(ControlId control)
         {
             Log.Debug(TAG, "ConfigureControlLabel");
             var label = FindViewById<TextView>(Resource.Id.inputName);
-            label.Text = SwSettings.CONTROL_TO_STRING_MAP[control];
+            label.Text = CONTROL_TO_STRING_MAP[control];
         }
 
         private void ConfigureControlButton()
@@ -175,60 +146,119 @@ namespace SoftWing
 
             button.Click += delegate
             {
+                Log.Debug(TAG, "ControlSelectionActivity.control = " + ControlSelectionActivity.control.ToString());
                 Log.Debug(TAG, "MotionConfigurationActivity.control = " + MotionConfigurationActivity.control.ToString());
-                StartActivity(typeof(MotionSelectionActivity));
+                StartActivity(typeof(ControlSelectionActivity));
             };
         }
 
         private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "VibrationSpinnerItemSelected");
+            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (vibration_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                vibration_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
             var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            var enable = SwSettings.VIBRATION_TO_STRING_MAP[vibration_string];
+            var enable = VIBRATION_TO_STRING_MAP[vibration_string];
 
-            SwSettings.SetVibrationEnable(enable);
+            SetVibrationEnable(enable);
         }
 
-        private void DirectionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        private void AnalogSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "DirectionSpinnerItemSelected");
+            Log.Debug(TAG, "AnalogSpinnerItemSelected");
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if ((!IsAnalogControl(selected_control)) ||
+                (GetControlMotion(selected_control).type == MotionType.Invalid))
             {
-                ignore_spinner_count--;
+                Log.Debug(TAG, "Cannot set direction for control");
                 return;
             }
             Spinner spinner = (Spinner)sender;
             var direction_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            var direction = SwSettings.DIRECTION_TO_STRING_MAP[direction_string];
+            var direction = DIRECTION_TO_STRING_MAP[direction_string];
 
-            var motion = SwSettings.GetControlMotion(selected_control);
+            var motion = GetControlMotion(selected_control);
             motion.directionCount = direction;
-            SwSettings.SetControlMotion(selected_control, motion);
+            SetControlMotion(selected_control, motion);
+        }
+
+        private void UpdateProfileSpinner()
+        {
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
+
+            var keymaps = new List<string> { NEW_PROFILE_ITEM };
+            keymaps.AddRange(GetKeymapList());
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, keymaps);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+
+            spinner.Adapter = adapter;
+            int spinner_position = adapter.GetPosition(GetSelectedKeymap());
+            profile_spinner_count++;
+            spinner.SetSelection(spinner_position);
+            spinner.Invalidate();
         }
 
         private void ProfileSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "ProfileSpinnerItemSelected");
+            Log.Debug(TAG, "ProfileSpinnerItemSelected: " + profile_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (profile_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                profile_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
             var profile_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-            SwSettings.SetSelectedKeymap(profile_string);
-            RefreshInputHighlighting();
+            if (profile_string == NEW_PROFILE_ITEM)
+            {
+                EditText input = new EditText(this);
+                Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+                dialog.SetTitle("Enter Profile Name");
+                dialog.SetView(input);
+                dialog.SetPositiveButton("OK", (c, ev) =>
+                {
+                    var keymap_name = input.Text.Trim();
+                    keymap_name = keymap_name.Replace(' ', '_');
+                    SetSelectedKeymap(keymap_name);
+                    UpdateProfileSpinner();
+                });
+                dialog.Show();
+            }
+            else
+            {
+                UpdateProfileSpinner();
+                ProfileSpinnerItemPrompt(profile_string);
+            }
+        }
+
+        private void ProfileSpinnerItemPrompt(string profile_name)
+        {
+            Log.Debug(TAG, "ProfileSpinnerItemPrompt");
+
+            Android.App.AlertDialog.Builder dialog = new Android.App.AlertDialog.Builder(this);
+            var alert = dialog.Create();
+            alert.SetTitle("Profile \"" + profile_name + "\"");
+            alert.SetButton("Use", (c, ev) => {
+                SetSelectedKeymap(profile_name);
+                UpdateProfileSpinner();
+                RefreshAnalogSpinner();
+            });
+            alert.SetButton2("Cancel", (c, ev) => { });
+            alert.SetButton3("Delete", (c, ev) =>
+            {
+                DeleteStoredKeymap(profile_name);
+                SetSelectedKeymap(Default_Keymap_Filename);
+                UpdateProfileSpinner();
+                RefreshAnalogSpinner();
+            });
+            alert.Show();
         }
 
         private void ConfigureProfileSpinner()
@@ -236,19 +266,9 @@ namespace SoftWing
             Log.Debug(TAG, "ConfigureProfileSpinner");
             var spinner = FindViewById<Spinner>(Resource.Id.controllerProfile);
             spinner.Prompt = "Select Controller Profile";
-
-            var set_keymap = SwSettings.GetSelectedKeymap();
-            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, SwSettings.KEYMAP_FILENAMES);
-            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
-            spinner.Adapter = adapter;
-
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ProfileSpinnerItemSelected);
-            ignore_spinner_count++;
-
-            int spinner_position = adapter.GetPosition(set_keymap);
-            spinner.SetSelection(spinner_position);
-
-            spinner.Invalidate();
+            
+            UpdateProfileSpinner();
         }
 
         private void UpdateLayoutVisibility()
@@ -261,41 +281,36 @@ namespace SoftWing
             inputViewB.Visibility = ViewStates.Gone;
             inputViewC.Visibility = ViewStates.Gone;
 
-            var layout = SwSettings.GetSelectedLayout();
-            switch (layout)
+            switch (GetSelectedLayout())
             {
                 case (Resource.Layout.input_b):
                     inputViewB.Visibility = ViewStates.Visible;
                     SetInputListeners(inputViewB);
-                    selected_layout = inputViewB;
                     break;
                 case (Resource.Layout.input_c):
                     inputViewC.Visibility = ViewStates.Visible;
                     SetInputListeners(inputViewC);
-                    selected_layout = inputViewC;
                     break;
                 default:
                     inputViewA.Visibility = ViewStates.Visible;
                     SetInputListeners(inputViewA);
-                    selected_layout = inputViewA;
                     break;
             }
-            RefreshInputHighlighting();
         }
 
         private void LayoutSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
         {
-            Log.Debug(TAG, "LayoutSpinnerItemSelected");
+            Log.Debug(TAG, "LayoutSpinnerItemSelected: " + layout_spinner_count.ToString());
             // Ignore the initial "Item Selected" calls during UI setup
-            if (ignore_spinner_count != 0)
+            if (layout_spinner_count != 0)
             {
-                ignore_spinner_count--;
+                layout_spinner_count--;
                 return;
             }
             Spinner spinner = (Spinner)sender;
             var layout_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-            var layout = SwSettings.LAYOUT_TO_STRING_MAP[layout_string];
-            SwSettings.SetSelectedLayout(layout);
+            var layout = LAYOUT_TO_STRING_MAP[layout_string];
+            SetSelectedLayout(layout);
             UpdateLayoutVisibility();
         }
 
@@ -305,13 +320,13 @@ namespace SoftWing
             var spinner = FindViewById<Spinner>(Resource.Id.controllerLayout);
             spinner.Prompt = "Select Controller Layout";
 
-            var set_layout = SwSettings.GetSelectedLayout();
+            var set_layout = GetSelectedLayout();
             var set_layout_string = "";
             List<string> inputNames = new List<string>();
-            foreach (var layout_str in SwSettings.LAYOUT_TO_STRING_MAP.Keys)
+            foreach (var layout_str in LAYOUT_TO_STRING_MAP.Keys)
             {
                 inputNames.Add(layout_str);
-                if (set_layout == SwSettings.LAYOUT_TO_STRING_MAP[layout_str])
+                if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
                 {
                     set_layout_string = layout_str;
                 }
@@ -321,9 +336,9 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
-            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_layout_string);
+            layout_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -335,13 +350,13 @@ namespace SoftWing
             var spinner = FindViewById<Spinner>(Resource.Id.vibrationEnable);
             spinner.Prompt = "Enable/Disable vibration on button press";
 
-            var set_vibration = SwSettings.GetVibrationEnable();
+            var set_vibration = GetVibrationEnable();
             var set_vibration_string = "";
             List<string> inputNames = new List<string>();
-            foreach (var vib_str in SwSettings.VIBRATION_TO_STRING_MAP.Keys)
+            foreach (var vib_str in VIBRATION_TO_STRING_MAP.Keys)
             {
                 inputNames.Add(vib_str);
-                if (set_vibration == SwSettings.VIBRATION_TO_STRING_MAP[vib_str])
+                if (set_vibration == VIBRATION_TO_STRING_MAP[vib_str])
                 {
                     set_vibration_string = vib_str;
                 }
@@ -351,9 +366,9 @@ namespace SoftWing
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(VibrationSpinnerItemSelected);
-            ignore_spinner_count++;
 
             int spinner_position = adapter.GetPosition(set_vibration_string);
+            vibration_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();
@@ -365,24 +380,25 @@ namespace SoftWing
 
             var spinner = FindViewById<Spinner>(Resource.Id.analogDirections);
 
-            var set_direction = SwSettings.GetControlMotion(selected_control).directionCount;
+            var set_direction = GetControlMotion(selected_control).directionCount;
 
             Log.Debug(TAG, "Control = " + CONTROL_TO_STRING_MAP[selected_control] + " directions = " + set_direction.ToString());
 
-            if (!IsAnalogControl(selected_control))
+            if ((!IsAnalogControl(selected_control)) || 
+                (GetControlMotion(selected_control).type == MotionType.Invalid))
             {
                 spinner.Visibility = ViewStates.Invisible;
-                spinner.Invalidate();
                 return;
             }
 
             spinner.Visibility = ViewStates.Visible;
             var set_direction_string = "";
-            foreach (var key in SwSettings.DIRECTION_TO_STRING_MAP.Keys)
+            foreach (var key in DIRECTION_TO_STRING_MAP.Keys)
             {
-                if (SwSettings.DIRECTION_TO_STRING_MAP[key] == set_direction)
+                if (DIRECTION_TO_STRING_MAP[key] == set_direction)
                 {
                     set_direction_string = key;
+                    break;
                 }
             }
 
@@ -401,7 +417,7 @@ namespace SoftWing
             spinner.Prompt = "Select the number of analog directions";
 
             List<string> inputNames = new List<string>();
-            foreach (var dir_str in SwSettings.DIRECTION_TO_STRING_MAP.Keys)
+            foreach (var dir_str in DIRECTION_TO_STRING_MAP.Keys)
             {
                 inputNames.Add(dir_str);
             }
@@ -409,22 +425,8 @@ namespace SoftWing
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 
-            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(DirectionSpinnerItemSelected);
-
-            ignore_spinner_count++;
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(AnalogSpinnerItemSelected);
             RefreshAnalogSpinner();
-        }
-
-        private bool IsAnalogControl(SwSettings.ControlId id)
-        {
-            switch (id)
-            {
-                case SwSettings.ControlId.L_Analog:
-                case SwSettings.ControlId.R_Analog:
-                    return true;
-                default:
-                    return false;
-            }
         }
 
         public void Accept(SystemMessage message)
@@ -438,26 +440,26 @@ namespace SoftWing
             switch (control_message.Update)
             {
                 case ControlUpdateMessage.UpdateType.Pressed:
-                    Log.Debug(TAG, "Accept(UpdateType.Pressed)");
+                    Log.Debug(TAG, "Accept(UpdateType.Pressed) " + CONTROL_TO_STRING_MAP[selected_control]);
                     {
                         if (IsAnalogControl(selected_control))
                         {
                             ConfigureControlLabel(selected_control);
-                            MotionConfigurationActivity.control = selected_control;
+                            MotionConfigurationActivity.control = (ControlId)GetAnalogFromDirection(selected_control);
+                            ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
-                            RefreshInputHighlighting();
                         }
                     }
                     break;
                 case ControlUpdateMessage.UpdateType.Released:
-                    Log.Debug(TAG, "Accept(UpdateType.Released)");
+                    Log.Debug(TAG, "Accept(UpdateType.Released)" + CONTROL_TO_STRING_MAP[selected_control]);
                     {
                         if (!IsAnalogControl(selected_control))
                         {
                             ConfigureControlLabel(selected_control);
                             MotionConfigurationActivity.control = selected_control;
+                            ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
-                            RefreshInputHighlighting();
                         }
                     }
                     break;
