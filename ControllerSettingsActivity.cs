@@ -46,6 +46,7 @@ namespace SoftWing
             ConfigureControlButton();
             ConfigureVibrationSpinner();
             ConfigureAnalogSpinner();
+            ConfigureButtonBehaviorSpinner();
             ConfigureProfileSpinner();
             ConfigureLayoutSpinner();
         }
@@ -249,6 +250,7 @@ namespace SoftWing
                 SetSelectedKeymap(profile_name);
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
+                RefreshButtonBehaviorSpinner();
             });
             alert.SetButton2("Cancel", (c, ev) => { });
             alert.SetButton3("Delete", (c, ev) =>
@@ -257,6 +259,7 @@ namespace SoftWing
                 SetSelectedKeymap(Default_Keymap_Filename);
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
+                RefreshButtonBehaviorSpinner();
             });
             alert.Show();
         }
@@ -374,23 +377,88 @@ namespace SoftWing
             spinner.Invalidate();
         }
 
+        private void ButtonBehaviorSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "ButtonBehaviorSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (IsAnalogControl(selected_control))
+            {
+                Log.Debug(TAG, "Cannot set button behavior for control");
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var behavior_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var behavior = StringToButtonBehavior(behavior_string);
+            SetControlBehavior(selected_control, behavior);
+        }
+
+        private void RefreshButtonBehaviorSpinner()
+        {
+            Log.Debug(TAG, "RefreshButtonBehaviorSpinner");
+            var behaviorGrid = FindViewById<GridLayout>(Resource.Id.buttonBehaviorGrid);
+            if (IsAnalogControl(selected_control))
+            {
+                behaviorGrid.Visibility = ViewStates.Gone;
+                return;
+            }
+            
+            behaviorGrid.Visibility = ViewStates.Visible;
+            var spinner = FindViewById<Spinner>(Resource.Id.buttonBehavior);
+            var set_behavior = GetControlBehavior(selected_control);
+            var set_behavior_string = ButtonBehaviorToString(set_behavior);
+
+            var adapter = (ArrayAdapter)spinner.Adapter;
+            int spinner_position = adapter.GetPosition(set_behavior_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void ConfigureButtonBehaviorSpinner()
+        {
+            Log.Debug(TAG, "ConfigureButtonBehaviorSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.buttonBehavior);
+            spinner.Prompt = "Select the behavior of the button on press";
+
+            List<string> inputNames = new List<string>();
+            foreach (ButtonBehavior behavior in Enum.GetValues(typeof(ButtonBehavior)))
+            {
+                var behavior_string = ButtonBehaviorToString(behavior);
+                inputNames.Add(behavior_string);
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ButtonBehaviorSpinnerItemSelected);
+            RefreshButtonBehaviorSpinner();
+        }
+
         private void RefreshAnalogSpinner()
         {
             Log.Debug(TAG, "RefreshAnalogSpinner");
-
+            var analogDirectionGrid = FindViewById<GridLayout>(Resource.Id.analogDirectionGrid);
             var spinner = FindViewById<Spinner>(Resource.Id.analogDirections);
 
             var set_direction = GetControlMotion(selected_control).directionCount;
 
             Log.Debug(TAG, "Control = " + CONTROL_TO_STRING_MAP[selected_control] + " directions = " + set_direction.ToString());
 
-            if ((!IsAnalogControl(selected_control)) || 
-                (GetControlMotion(selected_control).type == MotionType.Invalid))
+            if (!IsAnalogControl(selected_control))
             {
+                analogDirectionGrid.Visibility = ViewStates.Gone;
+                return;
+            }
+            else if (GetControlMotion(selected_control).type == MotionType.Invalid)
+            {
+                analogDirectionGrid.Visibility = ViewStates.Visible;
                 spinner.Visibility = ViewStates.Invisible;
                 return;
             }
 
+            analogDirectionGrid.Visibility = ViewStates.Visible;
             spinner.Visibility = ViewStates.Visible;
             var set_direction_string = "";
             foreach (var key in DIRECTION_TO_STRING_MAP.Keys)
@@ -448,6 +516,7 @@ namespace SoftWing
                             MotionConfigurationActivity.control = (ControlId)GetAnalogFromDirection(selected_control);
                             ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
+                            RefreshButtonBehaviorSpinner();
                         }
                     }
                     break;
@@ -460,6 +529,7 @@ namespace SoftWing
                             MotionConfigurationActivity.control = selected_control;
                             ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
+                            RefreshButtonBehaviorSpinner();
                         }
                     }
                     break;

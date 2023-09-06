@@ -119,6 +119,7 @@
     <Compile Include="MotionConfigurationActivity.cs" />
     <Compile Include="DonationHandler.cs" />
     <Compile Include="ControllerSettingsActivity.cs" />
+    <Compile Include="SwSystem\SwControl.cs" />
     <Compile Include="SwTileService.cs" />
     <Compile Include="SoftWingAccessibility.cs" />
     <Compile Include="SoundSettingsActivity.cs" />

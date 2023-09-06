@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:id="@+id/controllerSettings"
     android:columnCount="3"
-    android:rowCount="5">
+    android:rowCount="7">
     <ImageButton
         android:id="@+id/controllerHelpButton"
         android:src="@drawable/help_button"
@@ -18,154 +18,185 @@
         android:layout_column="0"
         android:layout_columnSpan="3"
         android:layout_row="0"/>
-    <LinearLayout
+    <ScrollView
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/std_grid_padding"
+        android:layout_height="wrap_content"
+        android:layout_row="4"
         android:layout_column="0"
-        android:layout_columnSpan="3"
-        android:layout_row="1"/>
+        android:layout_columnSpan="3">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingTop="@dimen/std_grid_padding">
+            <GridLayout
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:id="@+id/backgroundName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Background"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Button
+                    android:id="@+id/setBackgroundButton"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:text="Set Image"
+                    android:textSize="24dp"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vibration"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Spinner
+                    android:id="@+id/vibrationEnable"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Controller Layout"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Spinner
+                    android:id="@+id/controllerLayout"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Controller Profile"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Spinner
+                    android:id="@+id/controllerProfile"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:id="@+id/analogDirectionGrid"
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Analog Directions"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Spinner
+                    android:id="@+id/analogDirections"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:id="@+id/buttonBehaviorGrid"
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button Behavior"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Spinner
+                    android:id="@+id/buttonBehavior"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+            <GridLayout
+                android:padding="@dimen/std_grid_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="1"
+                android:columnCount="3">
+                <TextView
+                    android:id="@+id/inputName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Test"
+                    android:textSize="@dimen/std_text_size"
+                    android:layout_column="0"
+                    android:layout_row="0"/>
+                <Button
+                    android:id="@+id/inputKeycode"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:text="Configure"
+                    android:textSize="24dp"
+                    style="@style/ImageButtonStyle"
+                    android:layout_column="2"
+                    android:layout_row="0"/>
+            </GridLayout>
+        </LinearLayout>
+    </ScrollView>
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:paddingTop="@dimen/std_grid_padding"
-        android:layout_row="4"
+        android:layout_row="6"
         android:layout_column="0"
         android:layout_columnSpan="3">
-        <GridLayout
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:id="@+id/backgroundName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Background"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Button
-                android:id="@+id/setBackgroundButton"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:text="Set Image"
-                android:textSize="24dp"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
-        <GridLayout
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Vibration"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Spinner
-                android:id="@+id/vibrationEnable"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
-        <GridLayout
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Controller Layout"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Spinner
-                android:id="@+id/controllerLayout"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
-        <GridLayout
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Controller Profile"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Spinner
-                android:id="@+id/controllerProfile"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
-        <GridLayout
-            android:id="@+id/analogDirectionGrid"
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Analog Directions"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Spinner
-                android:id="@+id/analogDirections"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
-        <GridLayout
-            android:padding="@dimen/std_grid_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:rowCount="1"
-            android:columnCount="3">
-            <TextView
-                android:id="@+id/inputName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Test"
-                android:textSize="@dimen/std_text_size"
-                android:layout_column="0"
-                android:layout_row="0"/>
-            <Button
-                android:id="@+id/inputKeycode"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:text="Configure"
-                android:textSize="24dp"
-                style="@style/ImageButtonStyle"
-                android:layout_column="2"
-                android:layout_row="0"/>
-        </GridLayout>
         <include
             layout="@layout/input_a"
             android:id="@+id/imeKeyViewA"
@@ -175,10 +206,12 @@
             layout="@layout/input_b"
             android:id="@+id/imeKeyViewB"
             android:layout_width="match_parent"
+            android:visibility="gone"
             android:layout_height="1240px"/>
         <include
             layout="@layout/input_c"
             android:id="@+id/imeKeyViewC"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="1240px"/>
     </LinearLayout>

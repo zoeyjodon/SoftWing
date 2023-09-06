@@ -73,13 +73,13 @@ namespace SoftWing
             return false;
         }
 
-        private void SetJoystickListener(View joystick, SwSettings.ControlId cid)
+        private void SetJoystickListener(View joystick, ControlId cid)
         {
             Log.Debug(TAG, "SetJoystickListener()");
             joystick.SetOnTouchListener(new SwJoystickListener((SurfaceView)joystick, cid));
         }
 
-        private void SetInputListener(View vin, SwSettings.ControlId cid)
+        private void SetInputListener(View vin, ControlId cid)
         {
             Log.Debug(TAG, "SetInputListener()");
             vin.SetOnTouchListener(new SwButtonListener(vin, cid));

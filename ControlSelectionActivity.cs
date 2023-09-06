@@ -5,7 +5,7 @@ using System;
 using Android.Util;
 using Android.Views;
 using Android.Content.PM;
-using SoftWing.SwSystem.Messages;
+using SoftWing.SwSystem;
 using static Android.Views.View;
 using Android.Widget;
 using Bumptech.Glide;
