@@ -229,6 +229,8 @@ namespace SoftWing
                     keymap_name = keymap_name.Replace(' ', '_');
                     SetSelectedKeymap(keymap_name);
                     UpdateProfileSpinner();
+                    // Add the new profile to the notification tray
+                    SwDisplayManager.SetNotification();
                 });
                 dialog.Show();
             }
@@ -260,6 +262,8 @@ namespace SoftWing
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
                 RefreshButtonBehaviorSpinner();
+                // Remove the profile from the notification tray
+                SwDisplayManager.SetNotification();
             });
             alert.Show();
         }

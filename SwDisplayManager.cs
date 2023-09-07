@@ -23,8 +23,8 @@ namespace SoftWing
         private static SwDisplayManager instance;
 
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private const String NOTIFICATION_GROUP_ID = "com.jodonlucas.softwing.KEYBOARD";
         private const int NOTIFICATION_ONGOING_ID = 3532;
-        private static NotificationReceiver notification_receiver = null;
 
         private const int IME_TRANSITION_DELAY_MS = 1000;
         private const int SHOW_IME_DELAY_MS = 2000;
@@ -94,6 +94,32 @@ namespace SoftWing
             NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.CreateNotificationChannel(channel);
         }
+        public void SetProfileNotification(int notification_id, string profile)
+        {
+            Log.Debug(TAG, "SetProfileNotification: " + profile + " - " + notification_id.ToString());
+            var notification_receiver = new NotificationReceiver(profile);
+            var pFilter = new IntentFilter(notification_receiver.ProfileActionString);
+            RegisterReceiver(notification_receiver, pFilter);
+
+            Intent notificationIntent = new Intent(notification_receiver.ProfileActionString);
+            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
+
+            String title = "Show " + profile + " Controller";
+
+            var builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .SetSmallIcon(Resource.Mipmap.ic_launcher_foreground)
+                    .SetColor(Resource.Color.accent_material_dark)
+                    .SetAutoCancel(false)
+                    .SetContentTitle(title)
+                    .SetContentIntent(contentIntent)
+                    .SetOngoing(true)
+                    .SetVisibility((int)NotificationVisibility.Public)
+                    .SetPriority(NotificationCompat.PriorityDefault)
+                    .SetGroup(NOTIFICATION_GROUP_ID);
+
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.Notify(notification_id, builder.Build());
+        }
 
         public static void SetNotification()
         {
@@ -111,32 +137,34 @@ namespace SoftWing
         {
             Log.Debug(TAG, "SetNotificationInternal()");
 
-            CreateNotificationChannel();
-            var text = "Controller notification enabled.";
-
-            notification_receiver = new NotificationReceiver();
-            var pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
-            RegisterReceiver(notification_receiver, pFilter);
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            if (notificationManager.GetNotificationChannel(NOTIFICATION_CHANNEL_ID) == null)
+            {
+                CreateNotificationChannel();
+            }
 
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
             PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
-
             String title = "Show SoftWing Controller";
-            String body = "Select this to open the controller.";
-
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            var notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .SetSmallIcon(Resource.Mipmap.ic_launcher_foreground)
                     .SetColor(Resource.Color.accent_material_dark)
                     .SetAutoCancel(false)
-                    .SetTicker(text)
                     .SetContentTitle(title)
-                    .SetContentText(body)
                     .SetContentIntent(contentIntent)
                     .SetOngoing(true)
                     .SetVisibility((int)NotificationVisibility.Public)
-                    .SetPriority(NotificationCompat.PriorityDefault);
+                    .SetPriority(NotificationCompat.PriorityDefault)
+                    .SetGroup(NOTIFICATION_GROUP_ID)
+                    .SetGroupSummary(true)
+                    .Build();
+            StartForeground(NOTIFICATION_ONGOING_ID, notification);
 
-            StartForeground(NOTIFICATION_ONGOING_ID, mBuilder.Build());
+            var profile_list = SwSettings.GetKeymapList();
+            for (int i = 0; i < profile_list.Count; i++)
+            {
+                SetProfileNotification(NOTIFICATION_ONGOING_ID + i + 1, profile_list[i]);
+            }
         }
 
         private static bool IsUsingSwKeyboard()

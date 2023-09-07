@@ -61,7 +61,6 @@ namespace SoftWing
                  SystemUiFlags.LayoutStable |
                  SystemUiFlags.ImmersiveSticky;
             keyboardView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-            SetInputListeners((ViewGroup)keyboardView);
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
             ImeIsOpen = true;
 
@@ -111,6 +110,7 @@ namespace SoftWing
             base.OnStartInputView(info, restarting);
             dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
+            SetInputListeners((ViewGroup)keyboardView);
             ImeIsOpen = true;
         }
 
