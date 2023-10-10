@@ -24,6 +24,8 @@ namespace SoftWing
 
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
         private const String NOTIFICATION_GROUP_ID = "com.jodonlucas.softwing.KEYBOARD";
+        private static String SW_IME_ID = null;
+        private const String LG_IME_ID = "com.lge.ime/.LgeImeImpl";
         private const int NOTIFICATION_ONGOING_ID = 3532;
 
         private const int IME_TRANSITION_DELAY_MS = 1000;
@@ -203,16 +205,9 @@ namespace SoftWing
                 throw new Exception("Failed to get SoftWingInput service");
             }
             input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
-            // Alert the system to the initial swivel state after the IME has opened
-            DisplayUpdateMessage msg = new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd);
-            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
-            {
-                msg = new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd);
-            }
 
             Log.Debug(TAG, "Waiting for IME to open...");
-            var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-            var end_time = start_time + SHOW_IME_DELAY_MS;
+            var end_time = Java.Lang.JavaSystem.CurrentTimeMillis() + SHOW_IME_DELAY_MS;
             while (!SoftWingInput.ImeIsOpen)
             {
                 // Make sure we aren't waiting forever
@@ -222,24 +217,11 @@ namespace SoftWing
                     return;
                 }
             }
-            Log.Debug(TAG, "Launching switching task");
-            instance.dispatcher.Post(msg);
         }
 
         public static void UseLgKeyboard()
         {
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
-
-            foreach (var InputMethod in imm.EnabledInputMethodList)
-            {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("LgeImeImpl"))
-                {
-                    SetInputMethod(InputMethod.Id);
-                    return;
-                }
-            }
+            SetInputMethod(LG_IME_ID);
         }
 
         public static void UseSwKeyboard()
@@ -249,18 +231,22 @@ namespace SoftWing
                 Log.Debug(TAG, "Already using SW IME, skipping");
                 return;
             }
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
 
-            foreach (var InputMethod in imm.EnabledInputMethodList)
+            if (SW_IME_ID == null)
             {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("SoftWingInput"))
+                InputMethodManager imm = (InputMethodManager)
+                    Application.Context.GetSystemService(InputMethodService);
+                foreach (var InputMethod in imm.EnabledInputMethodList)
                 {
-                    SetInputMethod(InputMethod.Id);
-                    return;
+                    Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
+                    if (InputMethod.Id.Contains("SoftWingInput"))
+                    {
+                        SW_IME_ID = InputMethod.Id;
+                        break;
+                    }
                 }
             }
+            SetInputMethod(SW_IME_ID);
         }
 
         private void StartSound(String audio_path)
@@ -309,23 +295,35 @@ namespace SoftWing
 
         private void HandleShowIme()
         {
-            UseSwKeyboard();
             // Run in a background task so the notification tray isn't held open
             Task.Factory.StartNew(() =>
             {
-                ShowSwKeyboard();
-                // If the notification tray closes and kills the keyboard, reopen it.
-                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-                var end_time = start_time + SHOW_IME_DELAY_MS;
-                while (SoftWingInput.ImeIsOpen)
+                if (!SoftWingInput.ImeIsOpen)
                 {
-                    // If our grace period ends and the IME is still open, no need to reopen.
-                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
+                    UseSwKeyboard();
+                    ShowSwKeyboard();
+                }
+                // If the notification tray closes and kills the keyboard, reopen it.
+                var end_time = Java.Lang.JavaSystem.CurrentTimeMillis() + SHOW_IME_DELAY_MS;
+                while (Java.Lang.JavaSystem.CurrentTimeMillis() < end_time)
+                {
+                    if (!SoftWingInput.ImeIsOpen)
                     {
-                        return;
+                        ShowSwKeyboard();
+                        break;
                     }
                 }
-                ShowSwKeyboard();
+
+                // Handle transition to the bottom screen
+                if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+                {
+                    UseLgKeyboard();
+                    // Give the LG keyboard time to perform the screen transition
+                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
+                    {
+                        UseSwKeyboard();
+                    }, IME_TRANSITION_DELAY_MS);
+                }
             });
         }
 
@@ -340,16 +338,10 @@ namespace SoftWing
                 case DisplayManagerHelper.SwivelEnd:
                     Log.Debug(TAG, "DisplayManagerHelper.SwivelEnd");
                     // We don't want to impose this behavior unless we are displaying the SoftWing IME
-                    if (!IsUsingSwKeyboard() || !SoftWingInput.ImeIsOpen)
+                    if (IsUsingSwKeyboard() && SoftWingInput.ImeIsOpen)
                     {
-                        return;
+                        HandleShowIme();
                     }
-                    UseLgKeyboard();
-                    // Give the LG keyboard time to perform the screen transition
-                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
-                    {
-                        UseSwKeyboard();
-                    }, IME_TRANSITION_DELAY_MS);
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");
