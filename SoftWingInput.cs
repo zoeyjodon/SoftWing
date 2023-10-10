@@ -51,8 +51,7 @@ namespace SoftWing
 
             SwDisplayManager.StartSwDisplayManager();
 
-            var keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
-
+            var keyboardView = LayoutInflater.Inflate(Resource.Layout.input_base, null);
             // Force the controller to hide navigation buttons
             var uiOptions = SystemUiFlags.HideNavigation |
                  SystemUiFlags.LayoutHideNavigation |
@@ -109,13 +108,40 @@ namespace SoftWing
             }
         }
 
+        private void UpdateLayoutVisibility()
+        {
+            var inputViewA = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewA);
+            var inputViewB = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewB);
+            var inputViewC = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewC);
+
+            inputViewA.Visibility = ViewStates.Gone;
+            inputViewB.Visibility = ViewStates.Gone;
+            inputViewC.Visibility = ViewStates.Gone;
+
+            switch (SwSettings.GetSelectedLayout())
+            {
+                case (Resource.Layout.input_b):
+                    inputViewB.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewB);
+                    break;
+                case (Resource.Layout.input_c):
+                    inputViewC.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewC);
+                    break;
+                default:
+                    inputViewA.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewA);
+                    break;
+            }
+        }
+
         public override void OnStartInputView(EditorInfo info, bool restarting)
         {
             Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
             dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
-            SetInputListeners((ViewGroup)this.Window.Window.DecorView);
+            UpdateLayoutVisibility();
             ImeIsOpen = true;
         }
 

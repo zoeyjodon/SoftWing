@@ -20,8 +20,7 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
         private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
-        private static string LAYOUT_SELECTION_FILENAME = "SelectedLayout.txt";
-        private static string LAYOUT_SELECTION_PATH = Path.Combine(FileSystem.AppDataDirectory, LAYOUT_SELECTION_FILENAME);
+        private static string LAYOUT_SELECTION_DIRECTORY = Path.Combine(FileSystem.AppDataDirectory, "layouts");
         private static bool local_keymap_updated = false;
         public static string Default_Keymap_Filename = "Default";
         public const bool Default_Vibration_Enable = true;
@@ -288,6 +287,7 @@ namespace SoftWing.SwSystem
         public static int GetSelectedLayout()
         {
             Log.Debug(TAG, "GetSelectedLayout");
+            var LAYOUT_SELECTION_PATH = Path.Combine(LAYOUT_SELECTION_DIRECTORY, GetSelectedKeymap());
             if (!File.Exists(LAYOUT_SELECTION_PATH))
             {
                 Log.Debug(TAG, "Selected layout record not found");
@@ -305,6 +305,11 @@ namespace SoftWing.SwSystem
         public static void SetSelectedLayout(int layoutId)
         {
             Log.Debug(TAG, "SetSelectedLayout");
+            var LAYOUT_SELECTION_PATH = Path.Combine(LAYOUT_SELECTION_DIRECTORY, GetSelectedKeymap());
+            if (!Directory.Exists(LAYOUT_SELECTION_DIRECTORY))
+            {
+                Directory.CreateDirectory(LAYOUT_SELECTION_DIRECTORY);
+            }
             using (var writer = File.CreateText(LAYOUT_SELECTION_PATH))
             {
                 writer.WriteLine(layoutId.ToString());

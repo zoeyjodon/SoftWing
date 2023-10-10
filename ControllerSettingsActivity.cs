@@ -257,6 +257,7 @@ namespace SoftWing
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
                 RefreshButtonBehaviorSpinner();
+                RefreshLayoutSpinner();
             });
             alert.SetButton2("Cancel", (c, ev) => { });
             alert.SetButton3("Delete", (c, ev) =>
@@ -266,6 +267,7 @@ namespace SoftWing
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
                 RefreshButtonBehaviorSpinner();
+                RefreshLayoutSpinner();
                 // Remove the profile from the notification tray
                 SwDisplayManager.SetNotification();
             });
@@ -325,6 +327,28 @@ namespace SoftWing
             UpdateLayoutVisibility();
         }
 
+        private void RefreshLayoutSpinner()
+        {
+            Log.Debug(TAG, "RefreshLayoutSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerLayout);
+            var set_layout = GetSelectedLayout();
+            var set_layout_string = "";
+            foreach (var layout_str in LAYOUT_TO_STRING_MAP.Keys)
+            {
+                if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
+                {
+                    set_layout_string = layout_str;
+                }
+            }
+
+            var adapter = (ArrayAdapter)spinner.Adapter;
+            int spinner_position = adapter.GetPosition(set_layout_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
         private void ConfigureLayoutSpinner()
         {
             Log.Debug(TAG, "ConfigureLayoutSpinner");
@@ -332,27 +356,17 @@ namespace SoftWing
             spinner.Prompt = "Select Controller Layout";
 
             var set_layout = GetSelectedLayout();
-            var set_layout_string = "";
             List<string> inputNames = new List<string>();
             foreach (var layout_str in LAYOUT_TO_STRING_MAP.Keys)
             {
                 inputNames.Add(layout_str);
-                if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
-                {
-                    set_layout_string = layout_str;
-                }
             }
             var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
-
-            int spinner_position = adapter.GetPosition(set_layout_string);
-            layout_spinner_count++;
-            spinner.SetSelection(spinner_position);
-
-            spinner.Invalidate();
+            RefreshLayoutSpinner();
         }
 
         private void ConfigureVibrationSpinner()
