@@ -27,8 +27,6 @@ namespace SoftWing
         private static String SW_IME_ID = null;
         private const String LG_IME_ID = "com.lge.ime/.LgeImeImpl";
         private const int NOTIFICATION_ONGOING_ID = 3532;
-
-        private const int IME_TRANSITION_DELAY_MS = 1000;
         private const int SHOW_IME_DELAY_MS = 2000;
 
         private static String OPEN_SOUND_PATH;
@@ -322,7 +320,7 @@ namespace SoftWing
                     new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
                     {
                         UseSwKeyboard();
-                    }, IME_TRANSITION_DELAY_MS);
+                    }, SwSettings.GetTransitionDelayMs());
                 }
             });
         }

@@ -22,6 +22,7 @@ namespace SoftWing
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
         private const String NEW_PROFILE_ITEM = "New Profile";
         private int vibration_spinner_count = 0;
+        private int transition_spinner_count = 0;
         private int profile_spinner_count = 0;
         private int layout_spinner_count = 0;
         private MessageDispatcher dispatcher;
@@ -45,6 +46,7 @@ namespace SoftWing
             ControlSelectionActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
+            ConfigureTransitionSpinner();
             ConfigureAnalogSpinner();
             ConfigureButtonBehaviorSpinner();
             ConfigureProfileSpinner();
@@ -155,23 +157,6 @@ namespace SoftWing
                 Log.Debug(TAG, "MotionConfigurationActivity.control = " + MotionConfigurationActivity.control.ToString());
                 StartActivity(typeof(ControlSelectionActivity));
             };
-        }
-
-        private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
-            // Ignore the initial "Item Selected" calls during UI setup
-            if (vibration_spinner_count != 0)
-            {
-                vibration_spinner_count--;
-                return;
-            }
-            Spinner spinner = (Spinner)sender;
-            var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-
-            var enable = VIBRATION_TO_STRING_MAP[vibration_string];
-
-            SetVibrationEnable(enable);
         }
 
         private void AnalogSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -369,6 +354,23 @@ namespace SoftWing
             RefreshLayoutSpinner();
         }
 
+        private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (vibration_spinner_count != 0)
+            {
+                vibration_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var enable = VIBRATION_TO_STRING_MAP[vibration_string];
+
+            SetVibrationEnable(enable);
+        }
+
         private void ConfigureVibrationSpinner()
         {
             Log.Debug(TAG, "ConfigureVibrationSpinner");
@@ -394,6 +396,41 @@ namespace SoftWing
 
             int spinner_position = adapter.GetPosition(set_vibration_string);
             vibration_spinner_count++;
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void TransitionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "TransitionSpinnerItemSelected: " + transition_spinner_count.ToString());
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (transition_spinner_count != 0)
+            {
+                transition_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var delay_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+            SetTransitionDelayMs(int.Parse(delay_string));
+        }
+
+        private void ConfigureTransitionSpinner()
+        {
+            Log.Debug(TAG, "ConfigureTransitionSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.transitionDelay);
+            spinner.Prompt = "Set keyboard transition delay in milliseconds";
+
+            var set_delay= GetTransitionDelayMs();
+            List<string> inputNames = new List<string> { "250", "500", "1000", "1500", "2000", "2500", "3000" };
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(TransitionSpinnerItemSelected);
+
+            int spinner_position = adapter.GetPosition(set_delay.ToString());
+            transition_spinner_count++;
             spinner.SetSelection(spinner_position);
 
             spinner.Invalidate();

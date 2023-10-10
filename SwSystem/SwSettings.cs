@@ -20,10 +20,13 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
         private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
+        private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
+        private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
         private static string LAYOUT_SELECTION_DIRECTORY = Path.Combine(FileSystem.AppDataDirectory, "layouts");
         private static bool local_keymap_updated = false;
         public static string Default_Keymap_Filename = "Default";
         public const bool Default_Vibration_Enable = true;
+        public const int Default_Transition_Delay_ms = 1000;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public static int Default_Layout = Resource.Layout.input_a;
         public enum AnalogDirection : int
@@ -217,6 +220,35 @@ namespace SoftWing.SwSystem
             using (var writer = File.CreateText(VIBRATION_ENABLE_PATH))
             {
                 writer.WriteLine(enable.ToString());
+            }
+        }
+
+        public static int GetTransitionDelayMs()
+        {
+            Log.Debug(TAG, "GetTransitionDelayMs");
+            if (!File.Exists(TRANSITION_DELAY_PATH))
+            {
+                Log.Debug(TAG, "Delay record not found");
+                return Default_Transition_Delay_ms;
+            }
+            var stream = File.OpenRead(TRANSITION_DELAY_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var delayStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                if (int.TryParse(delayStr, out int delay))
+                {
+                    return delay;
+                }
+                return Default_Transition_Delay_ms;
+            }
+        }
+
+        public static void SetTransitionDelayMs(int delay_ms)
+        {
+            Log.Debug(TAG, "SetTransitionDelayMs");
+            using (var writer = File.CreateText(TRANSITION_DELAY_PATH))
+            {
+                writer.WriteLine(delay_ms.ToString());
             }
         }
 
