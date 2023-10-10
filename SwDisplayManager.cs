@@ -28,7 +28,6 @@ namespace SoftWing
 
         private const int IME_TRANSITION_DELAY_MS = 1000;
         private const int SHOW_IME_DELAY_MS = 2000;
-        private const int IME_STARTUP_WAIT_MS = 5000;
 
         private static String OPEN_SOUND_PATH;
         private static String CLOSE_SOUND_PATH;
@@ -199,33 +198,32 @@ namespace SoftWing
             Log.Debug(TAG, "ShowSwKeyboard");
             InputMethodManager input_manager = (InputMethodManager)
                 Application.Context.GetSystemService(InputMethodService);
-            if (input_manager != null)
+            if (input_manager == null)
             {
-                input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
+                throw new Exception("Failed to get SoftWingInput service");
             }
+            input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
             // Alert the system to the initial swivel state after the IME has opened
             DisplayUpdateMessage msg = new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd);
             if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
             {
                 msg = new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd);
             }
-            Task.Factory.StartNew(() =>
+
+            Log.Debug(TAG, "Waiting for IME to open...");
+            var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
+            var end_time = start_time + SHOW_IME_DELAY_MS;
+            while (!SoftWingInput.ImeIsOpen)
             {
-                Log.Debug(TAG, "Waiting for IME to open...");
-                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-                var end_time = start_time + IME_STARTUP_WAIT_MS;
-                while (!SoftWingInput.ImeIsOpen)
+                // Make sure we aren't waiting forever
+                if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
                 {
-                    // Make sure we aren't waiting forever
-                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
-                    {
-                        Log.Error(TAG, "IME NEVER OPENED!");
-                        return;
-                    }
+                    Log.Error(TAG, "IME NEVER OPENED!");
+                    return;
                 }
-                Log.Debug(TAG, "Launching switching task");
-                instance.dispatcher.Post(msg);
-            });
+            }
+            Log.Debug(TAG, "Launching switching task");
+            instance.dispatcher.Post(msg);
         }
 
         public static void UseLgKeyboard()
@@ -312,11 +310,23 @@ namespace SoftWing
         private void HandleShowIme()
         {
             UseSwKeyboard();
-            // Give the IME time to update
-            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
+            // Run in a background task so the notification tray isn't held open
+            Task.Factory.StartNew(() =>
             {
                 ShowSwKeyboard();
-            }, SHOW_IME_DELAY_MS);
+                // If the notification tray closes and kills the keyboard, reopen it.
+                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
+                var end_time = start_time + SHOW_IME_DELAY_MS;
+                while (SoftWingInput.ImeIsOpen)
+                {
+                    // If our grace period ends and the IME is still open, no need to reopen.
+                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
+                    {
+                        return;
+                    }
+                }
+                ShowSwKeyboard();
+            });
         }
 
         private void HandleDisplayUpdate(DisplayUpdateMessage display_message)

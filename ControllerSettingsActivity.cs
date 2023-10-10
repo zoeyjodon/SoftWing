@@ -106,8 +106,12 @@ namespace SoftWing
 
         private void SetJoystickListener(View joystick, ControlId id)
         {
-           var listener = new SwJoystickListener((SurfaceView)joystick, id, true);
-           joystick.SetOnTouchListener(listener);
+            var joystick_frame = (FrameLayout)joystick;
+            joystick_frame.RemoveAllViews();
+            SurfaceView joystickSurface = new SurfaceView(this.BaseContext);
+            joystick_frame.AddView(joystickSurface);
+            var listener = new SwJoystickListener(joystickSurface, id, true);
+            joystickSurface.SetOnTouchListener(listener);
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
