@@ -11,6 +11,22 @@
     android:paddingTop="@dimen/std_grid_padding"
     android:id="@+id/controllerHelp">
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Warning"
+        android:textSize="@dimen/std_text_size"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This process will grant the SoftWing app permissions to write secure settings. This version of the controller can NOT be used without these permissions, since enabling them allows the app to perform the IME switching process without a text box. It is important to understand the risks associated with granting these permissions. For more information, I recommend reading the following XDA forum post:"
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:id="@+id/warningLinkText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/warningLinkText"
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
         android:paddingTop="@dimen/std_grid_padding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,32 +35,25 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1.) Make sure the SoftWingAccessibility service is enabled in your accesibility settings."
+        android:text="1.) Set up adb and device debugging:"
+        android:textSize="@dimen/body_text_size"/>
+    <TextView
+        android:id="@+id/tutorialLinkText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/adbTutorialText"
         android:textSize="@dimen/body_text_size"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="2.) Open the game you want to play on the cover display."
+        android:paddingBottom="@dimen/std_grid_padding"
+        android:text="2.) Once your device is connected to adb, run the following command to grant SoftWing WRITE_SECURE_SETTINGS permissions:"
         android:textSize="@dimen/body_text_size"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="3.) Once the game is open, and any on-screen controls are visible, take a screenshot."
-        android:textSize="@dimen/body_text_size"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="4.) Return to the SoftWing app, and open the Controller Settings."
-        android:textSize="@dimen/body_text_size"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="5.) Tap the 'Set Image' button, and select your screenshot from step 3."
-        android:textSize="@dimen/body_text_size"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="6.) From here, you can tap any control to select and configure it to a touch input. Unconfigured controls will be highlighted in red."
+        android:text="adb shell pm grant com.jodonlucas.softwing android.permission.WRITE_SECURE_SETTINGS"
+        android:background="@color/colorWarning"
         android:textSize="@dimen/body_text_size"/>
     <TextView
         android:paddingTop="@dimen/std_grid_padding"
@@ -60,11 +69,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="2.) Once the desired game has loaded, open the notification tray and tap the SoftWing notification"
+        android:text="2.) Once the desired game has loaded, open the notification tray and tap the SoftWing notification for your desired controller profile."
         android:textSize="@dimen/body_text_size"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="3.) If your wing is not already swiveled open, you may swivel it now. If the process was successful, you should see the SoftWing gamepad open on the second display."
+        android:text="3.) If your wing is not already swiveled open, you may swivel it now. If the process was successful, you should see the SoftWing controller open on the second display.\nIf not, try tapping the notification again."
         android:textSize="@dimen/body_text_size"/>
 </LinearLayout>
