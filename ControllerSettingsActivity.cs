@@ -22,6 +22,7 @@ namespace SoftWing
         private const int REQUEST_IMAGE_FILE_CALLBACK = 302;
         private const String NEW_PROFILE_ITEM = "New Profile";
         private int vibration_spinner_count = 0;
+        private int transition_spinner_count = 0;
         private int profile_spinner_count = 0;
         private int layout_spinner_count = 0;
         private MessageDispatcher dispatcher;
@@ -45,7 +46,9 @@ namespace SoftWing
             ControlSelectionActivity.control = selected_control;
             ConfigureControlButton();
             ConfigureVibrationSpinner();
+            ConfigureTransitionSpinner();
             ConfigureAnalogSpinner();
+            ConfigureButtonBehaviorSpinner();
             ConfigureProfileSpinner();
             ConfigureLayoutSpinner();
         }
@@ -105,8 +108,12 @@ namespace SoftWing
 
         private void SetJoystickListener(View joystick, ControlId id)
         {
-           var listener = new SwJoystickListener((SurfaceView)joystick, id, true);
-           joystick.SetOnTouchListener(listener);
+            var joystick_frame = (FrameLayout)joystick;
+            joystick_frame.RemoveAllViews();
+            SurfaceView joystickSurface = new SurfaceView(this.BaseContext);
+            joystick_frame.AddView(joystickSurface);
+            var listener = new SwJoystickListener(joystickSurface, id, true);
+            joystickSurface.SetOnTouchListener(listener);
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
@@ -150,23 +157,6 @@ namespace SoftWing
                 Log.Debug(TAG, "MotionConfigurationActivity.control = " + MotionConfigurationActivity.control.ToString());
                 StartActivity(typeof(ControlSelectionActivity));
             };
-        }
-
-        private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
-        {
-            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
-            // Ignore the initial "Item Selected" calls during UI setup
-            if (vibration_spinner_count != 0)
-            {
-                vibration_spinner_count--;
-                return;
-            }
-            Spinner spinner = (Spinner)sender;
-            var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
-
-            var enable = VIBRATION_TO_STRING_MAP[vibration_string];
-
-            SetVibrationEnable(enable);
         }
 
         private void AnalogSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -228,6 +218,8 @@ namespace SoftWing
                     keymap_name = keymap_name.Replace(' ', '_');
                     SetSelectedKeymap(keymap_name);
                     UpdateProfileSpinner();
+                    // Add the new profile to the notification tray
+                    SwDisplayManager.SetNotification();
                 });
                 dialog.Show();
             }
@@ -249,6 +241,8 @@ namespace SoftWing
                 SetSelectedKeymap(profile_name);
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
+                RefreshButtonBehaviorSpinner();
+                RefreshLayoutSpinner();
             });
             alert.SetButton2("Cancel", (c, ev) => { });
             alert.SetButton3("Delete", (c, ev) =>
@@ -257,6 +251,10 @@ namespace SoftWing
                 SetSelectedKeymap(Default_Keymap_Filename);
                 UpdateProfileSpinner();
                 RefreshAnalogSpinner();
+                RefreshButtonBehaviorSpinner();
+                RefreshLayoutSpinner();
+                // Remove the profile from the notification tray
+                SwDisplayManager.SetNotification();
             });
             alert.Show();
         }
@@ -314,6 +312,29 @@ namespace SoftWing
             UpdateLayoutVisibility();
         }
 
+        private void RefreshLayoutSpinner()
+        {
+            Log.Debug(TAG, "RefreshLayoutSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.controllerLayout);
+            var set_layout = GetSelectedLayout();
+            var set_layout_string = "";
+            foreach (var layout_str in LAYOUT_TO_STRING_MAP.Keys)
+            {
+                if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
+                {
+                    set_layout_string = layout_str;
+                    break;
+                }
+            }
+
+            var adapter = (ArrayAdapter)spinner.Adapter;
+            int spinner_position = adapter.GetPosition(set_layout_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
         private void ConfigureLayoutSpinner()
         {
             Log.Debug(TAG, "ConfigureLayoutSpinner");
@@ -321,27 +342,34 @@ namespace SoftWing
             spinner.Prompt = "Select Controller Layout";
 
             var set_layout = GetSelectedLayout();
-            var set_layout_string = "";
             List<string> inputNames = new List<string>();
             foreach (var layout_str in LAYOUT_TO_STRING_MAP.Keys)
             {
                 inputNames.Add(layout_str);
-                if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
-                {
-                    set_layout_string = layout_str;
-                }
             }
             var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
             adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
             spinner.Adapter = adapter;
 
             spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(LayoutSpinnerItemSelected);
+            RefreshLayoutSpinner();
+        }
 
-            int spinner_position = adapter.GetPosition(set_layout_string);
-            layout_spinner_count++;
-            spinner.SetSelection(spinner_position);
+        private void VibrationSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "VibrationSpinnerItemSelected: " + vibration_spinner_count.ToString());
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (vibration_spinner_count != 0)
+            {
+                vibration_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var vibration_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
 
-            spinner.Invalidate();
+            var enable = VIBRATION_TO_STRING_MAP[vibration_string];
+
+            SetVibrationEnable(enable);
         }
 
         private void ConfigureVibrationSpinner()
@@ -374,23 +402,123 @@ namespace SoftWing
             spinner.Invalidate();
         }
 
+        private void TransitionSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "TransitionSpinnerItemSelected: " + transition_spinner_count.ToString());
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (transition_spinner_count != 0)
+            {
+                transition_spinner_count--;
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var delay_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+            SetTransitionDelayMs(int.Parse(delay_string));
+        }
+
+        private void ConfigureTransitionSpinner()
+        {
+            Log.Debug(TAG, "ConfigureTransitionSpinner");
+            var spinner = FindViewById<Spinner>(Resource.Id.transitionDelay);
+            spinner.Prompt = "Set keyboard transition delay in milliseconds";
+
+            var set_delay= GetTransitionDelayMs();
+            List<string> inputNames = new List<string> { "250", "500", "1000", "1500", "2000", "2500", "3000" };
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(TransitionSpinnerItemSelected);
+
+            int spinner_position = adapter.GetPosition(set_delay.ToString());
+            transition_spinner_count++;
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void ButtonBehaviorSpinnerItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            Log.Debug(TAG, "ButtonBehaviorSpinnerItemSelected");
+            // Ignore the initial "Item Selected" calls during UI setup
+            if (IsAnalogControl(selected_control))
+            {
+                Log.Debug(TAG, "Cannot set button behavior for control");
+                return;
+            }
+            Spinner spinner = (Spinner)sender;
+            var behavior_string = string.Format("{0}", spinner.GetItemAtPosition(e.Position));
+
+            var behavior = StringToButtonBehavior(behavior_string);
+            SetControlBehavior(selected_control, behavior);
+        }
+
+        private void RefreshButtonBehaviorSpinner()
+        {
+            Log.Debug(TAG, "RefreshButtonBehaviorSpinner");
+            var behaviorGrid = FindViewById<GridLayout>(Resource.Id.buttonBehaviorGrid);
+            if (IsAnalogControl(selected_control))
+            {
+                behaviorGrid.Visibility = ViewStates.Gone;
+                return;
+            }
+            
+            behaviorGrid.Visibility = ViewStates.Visible;
+            var spinner = FindViewById<Spinner>(Resource.Id.buttonBehavior);
+            var set_behavior = GetControlBehavior(selected_control);
+            var set_behavior_string = ButtonBehaviorToString(set_behavior);
+
+            var adapter = (ArrayAdapter)spinner.Adapter;
+            int spinner_position = adapter.GetPosition(set_behavior_string);
+            spinner.SetSelection(spinner_position);
+
+            spinner.Invalidate();
+        }
+
+        private void ConfigureButtonBehaviorSpinner()
+        {
+            Log.Debug(TAG, "ConfigureButtonBehaviorSpinner");
+
+            var spinner = FindViewById<Spinner>(Resource.Id.buttonBehavior);
+            spinner.Prompt = "Select the behavior of the button on press";
+
+            List<string> inputNames = new List<string>();
+            foreach (ButtonBehavior behavior in Enum.GetValues(typeof(ButtonBehavior)))
+            {
+                var behavior_string = ButtonBehaviorToString(behavior);
+                inputNames.Add(behavior_string);
+            }
+            var adapter = new ArrayAdapter<string>(this, Resource.Layout.spinner_item, inputNames);
+            adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            spinner.Adapter = adapter;
+
+            spinner.ItemSelected += new EventHandler<AdapterView.ItemSelectedEventArgs>(ButtonBehaviorSpinnerItemSelected);
+            RefreshButtonBehaviorSpinner();
+        }
+
         private void RefreshAnalogSpinner()
         {
             Log.Debug(TAG, "RefreshAnalogSpinner");
-
+            var analogDirectionGrid = FindViewById<GridLayout>(Resource.Id.analogDirectionGrid);
             var spinner = FindViewById<Spinner>(Resource.Id.analogDirections);
 
             var set_direction = GetControlMotion(selected_control).directionCount;
 
             Log.Debug(TAG, "Control = " + CONTROL_TO_STRING_MAP[selected_control] + " directions = " + set_direction.ToString());
 
-            if ((!IsAnalogControl(selected_control)) || 
-                (GetControlMotion(selected_control).type == MotionType.Invalid))
+            if (!IsAnalogControl(selected_control))
             {
+                analogDirectionGrid.Visibility = ViewStates.Gone;
+                return;
+            }
+            else if (GetControlMotion(selected_control).type == MotionType.Invalid)
+            {
+                analogDirectionGrid.Visibility = ViewStates.Visible;
                 spinner.Visibility = ViewStates.Invisible;
                 return;
             }
 
+            analogDirectionGrid.Visibility = ViewStates.Visible;
             spinner.Visibility = ViewStates.Visible;
             var set_direction_string = "";
             foreach (var key in DIRECTION_TO_STRING_MAP.Keys)
@@ -448,6 +576,7 @@ namespace SoftWing
                             MotionConfigurationActivity.control = (ControlId)GetAnalogFromDirection(selected_control);
                             ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
+                            RefreshButtonBehaviorSpinner();
                         }
                     }
                     break;
@@ -460,6 +589,7 @@ namespace SoftWing
                             MotionConfigurationActivity.control = selected_control;
                             ControlSelectionActivity.control = selected_control;
                             RefreshAnalogSpinner();
+                            RefreshButtonBehaviorSpinner();
                         }
                     }
                     break;

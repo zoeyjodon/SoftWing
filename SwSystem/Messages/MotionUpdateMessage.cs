@@ -1,39 +1,5 @@
 ﻿namespace SoftWing.SwSystem.Messages
 {
-    public enum MotionType
-    {
-        Invalid = -1,
-        Tap = 0,
-        Swipe = 1,
-        Continuous = 2,
-    }
-
-    public struct MotionDescription
-    {
-
-        public MotionDescription(MotionType type_in, float beginX_in, float beginY_in, float endX_in, float endY_in, int directionCount_in)
-        {
-            type = type_in;
-            beginX = beginX_in;
-            beginY = beginY_in;
-            endX = endX_in;
-            endY = endY_in;
-            directionCount = directionCount_in;
-        }
-
-        public static MotionDescription InvalidMotion()
-        {
-            return new MotionDescription(MotionType.Invalid, -1, -1, -1, -1, 8);
-        }
-
-        public MotionType type { get; set; }
-        public float beginX { get; set; }
-        public float beginY { get; set; }
-        public float endX { get; set; }
-        public float endY { get; set; }
-        public int directionCount { get; set; }
-    }
-
     public class MotionUpdateMessage : SystemMessage
     {
         private static int idCount = 0;

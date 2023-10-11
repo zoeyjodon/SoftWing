@@ -8,6 +8,7 @@ using Android.Views.InputMethods;
 using System;
 using SoftWing.SwSystem.Messages;
 using SoftWing.SwSystem;
+using Android.Widget;
 
 namespace SoftWing
 {
@@ -18,7 +19,6 @@ namespace SoftWing
     {
         private const String TAG = "SoftWingInput";
         private const int MULTI_DISPLAY_HEIGHT_PX = 1240;
-        private View keyboardView = null;
         private MessageDispatcher dispatcher;
 
         public static IBinder InputSessionToken;
@@ -51,8 +51,7 @@ namespace SoftWing
 
             SwDisplayManager.StartSwDisplayManager();
 
-            keyboardView = LayoutInflater.Inflate(SwSettings.GetSelectedLayout(), null);
-
+            var keyboardView = LayoutInflater.Inflate(Resource.Layout.input_base, null);
             // Force the controller to hide navigation buttons
             var uiOptions = SystemUiFlags.HideNavigation |
                  SystemUiFlags.LayoutHideNavigation |
@@ -61,9 +60,7 @@ namespace SoftWing
                  SystemUiFlags.LayoutStable |
                  SystemUiFlags.ImmersiveSticky;
             keyboardView.SystemUiVisibility = (StatusBarVisibility)uiOptions;
-            SetInputListeners((ViewGroup)keyboardView);
             keyboardView.SetMinimumHeight(MULTI_DISPLAY_HEIGHT_PX);
-            ImeIsOpen = true;
 
             return keyboardView;
         }
@@ -73,16 +70,22 @@ namespace SoftWing
             return false;
         }
 
-        private void SetJoystickListener(View joystick, SwSettings.ControlId cid)
+        private void SetJoystickListener(View joystick, ControlId cid)
         {
             Log.Debug(TAG, "SetJoystickListener()");
-            joystick.SetOnTouchListener(new SwJoystickListener((SurfaceView)joystick, cid));
+            var joystick_frame = (FrameLayout)joystick;
+            joystick_frame.RemoveAllViews();
+            SurfaceView joystickSurface = new SurfaceView(this.BaseContext);
+            joystick_frame.AddView(joystickSurface);
+            var listener = new SwJoystickListener(joystickSurface, cid);
+            joystickSurface.SetOnTouchListener(listener);
         }
 
-        private void SetInputListener(View vin, SwSettings.ControlId cid)
+        private void SetInputListener(View vin, ControlId cid)
         {
             Log.Debug(TAG, "SetInputListener()");
-            vin.SetOnTouchListener(new SwButtonListener(vin, cid));
+            var listener = new SwButtonListener(vin, cid);
+            vin.SetOnTouchListener(listener);
         }
 
         private void SetInputListeners(ViewGroup keyboard_view_group)
@@ -90,7 +93,7 @@ namespace SoftWing
             Log.Debug(TAG, "SetInputListeners");
             foreach (var key in SwSettings.RESOURCE_TO_CONTROL_MAP.Keys)
             {
-                View control = keyboardView.FindViewById<View>(key);
+                View control = keyboard_view_group.FindViewById<View>(key);
                 var control_id = SwSettings.RESOURCE_TO_CONTROL_MAP[key];
                 switch (key)
                 {
@@ -105,12 +108,40 @@ namespace SoftWing
             }
         }
 
+        private void UpdateLayoutVisibility()
+        {
+            var inputViewA = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewA);
+            var inputViewB = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewB);
+            var inputViewC = this.Window.FindViewById<ViewGroup>(Resource.Id.imeKeyViewC);
+
+            inputViewA.Visibility = ViewStates.Gone;
+            inputViewB.Visibility = ViewStates.Gone;
+            inputViewC.Visibility = ViewStates.Gone;
+
+            switch (SwSettings.GetSelectedLayout())
+            {
+                case (Resource.Layout.input_b):
+                    inputViewB.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewB);
+                    break;
+                case (Resource.Layout.input_c):
+                    inputViewC.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewC);
+                    break;
+                default:
+                    inputViewA.Visibility = ViewStates.Visible;
+                    SetInputListeners(inputViewA);
+                    break;
+            }
+        }
+
         public override void OnStartInputView(EditorInfo info, bool restarting)
         {
             Log.Debug(TAG, "OnStartInputView()");
             base.OnStartInputView(info, restarting);
             dispatcher = MessageDispatcher.GetInstance();
             dispatcher.Subscribe(SwSystem.MessageType.ControlUpdate, this);
+            UpdateLayoutVisibility();
             ImeIsOpen = true;
         }
 

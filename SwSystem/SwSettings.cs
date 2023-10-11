@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Xamarin.Essentials;
-using SoftWing.SwSystem.Messages;
 using System.Linq;
 
 namespace SoftWing.SwSystem
@@ -21,43 +20,15 @@ namespace SoftWing.SwSystem
         private static string CLOSE_SOUND_RECORD_PATH = Path.Combine(FileSystem.AppDataDirectory, CLOSE_SOUND_FILENAME);
         private static string VIBRATION_ENABLE_FILENAME = "vibration_enable.txt";
         private static string VIBRATION_ENABLE_PATH = Path.Combine(FileSystem.AppDataDirectory, VIBRATION_ENABLE_FILENAME);
-        private static string LAYOUT_SELECTION_FILENAME = "SelectedLayout.txt";
-        private static string LAYOUT_SELECTION_PATH = Path.Combine(FileSystem.AppDataDirectory, LAYOUT_SELECTION_FILENAME);
-        private const string CONTROL_KEY_DELIMITER = "=";
-        private const string MOTION_DELIMITER = ",";
+        private static string TRANSITION_DELAY_FILENAME = "transition_delay.txt";
+        private static string TRANSITION_DELAY_PATH = Path.Combine(FileSystem.AppDataDirectory, TRANSITION_DELAY_FILENAME);
+        private static string LAYOUT_SELECTION_DIRECTORY = Path.Combine(FileSystem.AppDataDirectory, "layouts");
         private static bool local_keymap_updated = false;
         public static string Default_Keymap_Filename = "Default";
         public const bool Default_Vibration_Enable = true;
+        public const int Default_Transition_Delay_ms = 1000;
         public static MotionDescription Default_Motion = MotionDescription.InvalidMotion();
         public static int Default_Layout = Resource.Layout.input_a;
-        public enum ControlId : int
-        {
-            Unknown,
-            L1_Button,
-            L2_Button,
-            R1_Button,
-            R2_Button,
-            L_Analog,
-            L_Analog_Up,
-            L_Analog_Down,
-            L_Analog_Left,
-            L_Analog_Right,
-            R_Analog,
-            R_Analog_Up,
-            R_Analog_Down,
-            R_Analog_Left,
-            R_Analog_Right,
-            X_Button,
-            Y_Button,
-            A_Button,
-            B_Button,
-            Start_Button,
-            D_Pad_Up,
-            D_Pad_Down,
-            D_Pad_Left,
-            D_Pad_Right,
-            D_Pad_Center
-        }
         public enum AnalogDirection : int
         {
             Up, Down, Left, Right
@@ -131,51 +102,34 @@ namespace SoftWing.SwSystem
             { ControlId.D_Pad_Right     , "D-Pad Right"          },
             { ControlId.D_Pad_Center    , "D-Pad Center"         }
         };
-        private static Dictionary<ControlId, Keycode> DEFAULT_CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>
+        private static Dictionary<ControlId, SwControl> DEFAULT_CONTROL_MAP = new Dictionary<ControlId, SwControl>
         {
-            { ControlId.L1_Button       , Keycode.ButtonL1       },
-            { ControlId.L2_Button       , Keycode.ButtonL2       },
-            { ControlId.R1_Button       , Keycode.ButtonR1       },
-            { ControlId.R2_Button       , Keycode.ButtonR2       },
-            { ControlId.L_Analog_Up     , Keycode.W              },
-            { ControlId.L_Analog_Down   , Keycode.S              },
-            { ControlId.L_Analog_Left   , Keycode.A              },
-            { ControlId.L_Analog_Right  , Keycode.D              },
-            { ControlId.R_Analog_Up     , Keycode.Button1        },
-            { ControlId.R_Analog_Down   , Keycode.Button2        },
-            { ControlId.R_Analog_Left   , Keycode.Button3        },
-            { ControlId.R_Analog_Right  , Keycode.Button4        },
-            { ControlId.X_Button        , Keycode.ButtonX        },
-            { ControlId.Y_Button        , Keycode.ButtonY        },
-            { ControlId.A_Button        , Keycode.ButtonA        },
-            { ControlId.B_Button        , Keycode.ButtonB        },
-            { ControlId.Start_Button    , Keycode.ButtonStart    },
-            { ControlId.D_Pad_Up        , Keycode.DpadUp         },
-            { ControlId.D_Pad_Down      , Keycode.DpadDown       },
-            { ControlId.D_Pad_Left      , Keycode.DpadLeft       },
-            { ControlId.D_Pad_Right     , Keycode.DpadRight      },
-            { ControlId.D_Pad_Center    , Keycode.DpadCenter     }
+            { ControlId.L1_Button       , new SwControl(ControlId.L1_Button     , key_in: Keycode.ButtonL1)      },
+            { ControlId.L2_Button       , new SwControl(ControlId.L2_Button     , key_in: Keycode.ButtonL2)      },
+            { ControlId.R1_Button       , new SwControl(ControlId.R1_Button     , key_in: Keycode.ButtonR1)      },
+            { ControlId.R2_Button       , new SwControl(ControlId.R2_Button     , key_in: Keycode.ButtonR2)      },
+            { ControlId.L_Analog        , new SwControl(ControlId.L_Analog      )                                },
+            { ControlId.L_Analog_Up     , new SwControl(ControlId.L_Analog_Up   , key_in: Keycode.W)             },
+            { ControlId.L_Analog_Down   , new SwControl(ControlId.L_Analog_Down , key_in: Keycode.S)             },
+            { ControlId.L_Analog_Left   , new SwControl(ControlId.L_Analog_Left , key_in: Keycode.A)             },
+            { ControlId.L_Analog_Right  , new SwControl(ControlId.L_Analog_Right, key_in: Keycode.D)             },
+            { ControlId.R_Analog        , new SwControl(ControlId.R_Analog      )                                },
+            { ControlId.R_Analog_Up     , new SwControl(ControlId.R_Analog_Up   , key_in: Keycode.Button1)       },
+            { ControlId.R_Analog_Down   , new SwControl(ControlId.R_Analog_Down , key_in: Keycode.Button2)       },
+            { ControlId.R_Analog_Left   , new SwControl(ControlId.R_Analog_Left , key_in: Keycode.Button3)       },
+            { ControlId.R_Analog_Right  , new SwControl(ControlId.R_Analog_Right, key_in: Keycode.Button4)       },
+            { ControlId.X_Button        , new SwControl(ControlId.X_Button      , key_in: Keycode.ButtonX)       },
+            { ControlId.Y_Button        , new SwControl(ControlId.Y_Button      , key_in: Keycode.ButtonY)       },
+            { ControlId.A_Button        , new SwControl(ControlId.A_Button      , key_in: Keycode.ButtonA)       },
+            { ControlId.B_Button        , new SwControl(ControlId.B_Button      , key_in: Keycode.ButtonB)       },
+            { ControlId.Start_Button    , new SwControl(ControlId.Start_Button  , key_in: Keycode.ButtonStart)   },
+            { ControlId.D_Pad_Up        , new SwControl(ControlId.D_Pad_Up      , key_in: Keycode.DpadUp)        },
+            { ControlId.D_Pad_Down      , new SwControl(ControlId.D_Pad_Down    , key_in: Keycode.DpadDown)      },
+            { ControlId.D_Pad_Left      , new SwControl(ControlId.D_Pad_Left    , key_in: Keycode.DpadLeft)      },
+            { ControlId.D_Pad_Right     , new SwControl(ControlId.D_Pad_Right   , key_in: Keycode.DpadRight)     },
+            { ControlId.D_Pad_Center    , new SwControl(ControlId.D_Pad_Center  , key_in: Keycode.DpadCenter)    }
         };
-        private static Dictionary<ControlId, Keycode> CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>(DEFAULT_CONTROL_TO_KEY_MAP);
-        private static Dictionary<ControlId, MotionDescription> CONTROL_TO_MOTION_MAP = new Dictionary<ControlId, MotionDescription>
-        {
-            { ControlId.L1_Button       , Default_Motion},
-            { ControlId.L2_Button       , Default_Motion},
-            { ControlId.R1_Button       , Default_Motion},
-            { ControlId.R2_Button       , Default_Motion},
-            { ControlId.L_Analog        , Default_Motion},
-            { ControlId.R_Analog        , Default_Motion},
-            { ControlId.X_Button        , Default_Motion},
-            { ControlId.Y_Button        , Default_Motion},
-            { ControlId.A_Button        , Default_Motion},
-            { ControlId.B_Button        , Default_Motion},
-            { ControlId.Start_Button    , Default_Motion},
-            { ControlId.D_Pad_Up        , Default_Motion},
-            { ControlId.D_Pad_Down      , Default_Motion},
-            { ControlId.D_Pad_Left      , Default_Motion},
-            { ControlId.D_Pad_Right     , Default_Motion},
-            { ControlId.D_Pad_Center    , Default_Motion}
-        };
+        private static Dictionary<ControlId, SwControl> CONTROL_MAP = new Dictionary<ControlId, SwControl>(DEFAULT_CONTROL_MAP);
         public static Dictionary<int, ControlId> RESOURCE_TO_CONTROL_MAP = new Dictionary<int, ControlId>
         {
             {Resource.Id.l1_button,         ControlId.L1_Button   },
@@ -269,6 +223,35 @@ namespace SoftWing.SwSystem
             }
         }
 
+        public static int GetTransitionDelayMs()
+        {
+            Log.Debug(TAG, "GetTransitionDelayMs");
+            if (!File.Exists(TRANSITION_DELAY_PATH))
+            {
+                Log.Debug(TAG, "Delay record not found");
+                return Default_Transition_Delay_ms;
+            }
+            var stream = File.OpenRead(TRANSITION_DELAY_PATH);
+            using (var reader = new StreamReader(stream))
+            {
+                var delayStr = reader.ReadLine().Replace("\n", "").Replace("\r", "");
+                if (int.TryParse(delayStr, out int delay))
+                {
+                    return delay;
+                }
+                return Default_Transition_Delay_ms;
+            }
+        }
+
+        public static void SetTransitionDelayMs(int delay_ms)
+        {
+            Log.Debug(TAG, "SetTransitionDelayMs");
+            using (var writer = File.CreateText(TRANSITION_DELAY_PATH))
+            {
+                writer.WriteLine(delay_ms.ToString());
+            }
+        }
+
         public static bool IsAnalogControl(ControlId id)
         {
             return GetAnalogFromDirection(id) != null;
@@ -336,6 +319,7 @@ namespace SoftWing.SwSystem
         public static int GetSelectedLayout()
         {
             Log.Debug(TAG, "GetSelectedLayout");
+            var LAYOUT_SELECTION_PATH = Path.Combine(LAYOUT_SELECTION_DIRECTORY, GetSelectedKeymap());
             if (!File.Exists(LAYOUT_SELECTION_PATH))
             {
                 Log.Debug(TAG, "Selected layout record not found");
@@ -353,10 +337,34 @@ namespace SoftWing.SwSystem
         public static void SetSelectedLayout(int layoutId)
         {
             Log.Debug(TAG, "SetSelectedLayout");
+            var LAYOUT_SELECTION_PATH = Path.Combine(LAYOUT_SELECTION_DIRECTORY, GetSelectedKeymap());
+            if (!Directory.Exists(LAYOUT_SELECTION_DIRECTORY))
+            {
+                Directory.CreateDirectory(LAYOUT_SELECTION_DIRECTORY);
+            }
             using (var writer = File.CreateText(LAYOUT_SELECTION_PATH))
             {
                 writer.WriteLine(layoutId.ToString());
             }
+        }
+
+        public static void SetControlBehavior(ControlId control, ButtonBehavior behavior)
+        {
+            Log.Debug(TAG, "SetControlBehavior");
+            if (IsAnalogControl(control))
+            {
+                Log.Error(TAG, "Cannot set control behavior for analog");
+                return;
+            }
+            CONTROL_MAP[control].behavior = behavior;
+            UpdateStoredKeymap();
+        }
+
+        public static ButtonBehavior GetControlBehavior(ControlId control)
+        {
+            Log.Debug(TAG, "GetControlBehavior");
+            UpdateLocalKeymap();
+            return CONTROL_MAP[control].behavior;
         }
 
         public static void SetControlKeycode(ControlId control, Keycode key)
@@ -364,13 +372,10 @@ namespace SoftWing.SwSystem
             Log.Debug(TAG, "SetControlKeycode");
             if (IsAnalogControl(control))
             {
-                CONTROL_TO_MOTION_MAP[(ControlId)GetAnalogFromDirection(control)] = Default_Motion;
+                CONTROL_MAP[(ControlId)GetAnalogFromDirection(control)].motion = MotionDescription.InvalidMotion();
             }
-            else
-            {
-                CONTROL_TO_MOTION_MAP[control] = Default_Motion;
-            }
-            CONTROL_TO_KEY_MAP[control] = key;
+            CONTROL_MAP[control].key = key;
+            CONTROL_MAP[control].motion = MotionDescription.InvalidMotion();
             UpdateStoredKeymap();
         }
 
@@ -378,7 +383,7 @@ namespace SoftWing.SwSystem
         {
             Log.Debug(TAG, "GetControlKeycode");
             UpdateLocalKeymap();
-            return CONTROL_TO_KEY_MAP[control];
+            return CONTROL_MAP[control].key;
         }
 
         public static void SetControlMotion(ControlId control, MotionDescription motion)
@@ -389,14 +394,11 @@ namespace SoftWing.SwSystem
                 control = (ControlId)GetAnalogFromDirection(control);
                 foreach (var dir_control in ANALOG_TO_DIRECTION_MAP[control].Values)
                 {
-                    CONTROL_TO_KEY_MAP[dir_control] = Keycode.Unknown;
+                    CONTROL_MAP[dir_control].key = Keycode.Unknown;
                 }
             }
-            else
-            {
-                CONTROL_TO_KEY_MAP[control] = Keycode.Unknown;
-            }
-            CONTROL_TO_MOTION_MAP[control] = motion;
+            CONTROL_MAP[control].motion = motion;
+            CONTROL_MAP[control].key = Keycode.Unknown;
             UpdateStoredKeymap();
         }
 
@@ -408,18 +410,14 @@ namespace SoftWing.SwSystem
             {
                 control = (ControlId)GetAnalogFromDirection(control);
             }
-            return CONTROL_TO_MOTION_MAP[control];
+            return CONTROL_MAP[control].motion;
         }
 
         private static void ResetLocalKeymap()
         {
             Log.Debug(TAG, "ResetLocalKeymap");
             var control_keys = CONTROL_TO_STRING_MAP.Keys;
-            foreach (var control in control_keys)
-            {
-                CONTROL_TO_MOTION_MAP[control] = Default_Motion;
-            }
-            CONTROL_TO_KEY_MAP = new Dictionary<ControlId, Keycode>(DEFAULT_CONTROL_TO_KEY_MAP);
+            CONTROL_MAP = new Dictionary<ControlId, SwControl>(DEFAULT_CONTROL_MAP);
         }
 
         public static void DeleteStoredKeymap(string name)
@@ -457,12 +455,8 @@ namespace SoftWing.SwSystem
                     while (line != null)
                     {
                         Log.Debug(TAG, "\t" + line);
-                        var control_key_str = line.Split(CONTROL_KEY_DELIMITER);
-                        var control = GetControlFromString(control_key_str[0]);
-                        var key = StringToKeycode(control_key_str[1]);
-                        CONTROL_TO_KEY_MAP[control] = key;
-                        CONTROL_TO_MOTION_MAP[control] = GetMotionFromString(control_key_str[2]);
-
+                        var new_control = SwControl.Deserialize(line);
+                        CONTROL_MAP[new_control.id] = new_control;
                         line = reader.ReadLine();
                     }
                 }
@@ -487,10 +481,7 @@ namespace SoftWing.SwSystem
                     {
                         continue;
                     }
-                    Keycode key = CONTROL_TO_KEY_MAP.GetValueOrDefault(control, Keycode.Unknown);
-                    MotionDescription motion = CONTROL_TO_MOTION_MAP.GetValueOrDefault(control, Default_Motion);
-
-                    var writetext = CONTROL_TO_STRING_MAP[control] + CONTROL_KEY_DELIMITER + KeycodeToString(key) + CONTROL_KEY_DELIMITER + GetStringFromMotion(motion);
+                    var writetext = CONTROL_MAP[control].Serialize();
                     Log.Debug(TAG, "\t" + writetext);
                     writer.WriteLine(writetext);
                 }
@@ -514,43 +505,21 @@ namespace SoftWing.SwSystem
             return Keycode.Unknown;
         }
 
-        private static string GetStringFromMotion(MotionDescription motion)
+        public static string ButtonBehaviorToString(ButtonBehavior behavior)
         {
-            Log.Debug(TAG, "GetStringFromMotion");
-            return motion.beginX.ToString() + MOTION_DELIMITER +
-                motion.beginY.ToString() + MOTION_DELIMITER +
-                motion.endX.ToString() + MOTION_DELIMITER +
-                motion.endY.ToString() + MOTION_DELIMITER +
-                ((Int32)motion.directionCount).ToString() + MOTION_DELIMITER +
-                ((Int32)motion.type).ToString();
+            return Enum.GetName(typeof(ButtonBehavior), behavior);
         }
 
-        private static MotionDescription GetMotionFromString(string motionString)
+        public static ButtonBehavior StringToButtonBehavior(string behavior_string)
         {
-            Log.Debug(TAG, "GetMotionFromString");
-            MotionDescription output = MotionDescription.InvalidMotion();
-            var motions = motionString.Split(MOTION_DELIMITER);
-            output.beginX = float.Parse(motions[0]);
-            output.beginY = float.Parse(motions[1]);
-            output.endX = float.Parse(motions[2]);
-            output.endY = float.Parse(motions[3]);
-            output.directionCount = Int32.Parse(motions[4]);
-            output.type = (MotionType)Int32.Parse(motions[5]);
-
-            return output;
-        }
-
-        private static ControlId GetControlFromString(string control_string)
-        {
-            Log.Debug(TAG, "GetControlFromString");
-            foreach (var control in CONTROL_TO_STRING_MAP.Keys)
+            foreach (ButtonBehavior behavior in Enum.GetValues(typeof(ButtonBehavior)))
             {
-                if (CONTROL_TO_STRING_MAP[control] == control_string)
+                if (behavior_string == ButtonBehaviorToString(behavior))
                 {
-                    return control;
+                    return behavior;
                 }
             }
-            return 0;
+            return ButtonBehavior.Temporary;
         }
     }
 }

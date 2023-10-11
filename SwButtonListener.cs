@@ -18,9 +18,11 @@ namespace SoftWing
         private ControlId id = ControlId.Unknown;
         private MotionDescription motion = MotionDescription.InvalidMotion();
         private Keycode key = Keycode.Unknown;
+        private ButtonBehavior behavior = ButtonBehavior.Temporary;
         private int motionId = MotionUpdateMessage.GetMotionId();
         private MessageDispatcher dispatcher;
         private bool setup_mode;
+        private bool toggle_active = false;
 
         public SwButtonListener(View button_in, ControlId id_in, bool setup_mode = false)
         {
@@ -32,6 +34,10 @@ namespace SoftWing
             dispatcher = MessageDispatcher.GetInstance();
             vibrate_enabled = SwSettings.GetVibrationEnable();
             this.setup_mode = setup_mode;
+            if (!setup_mode)
+            {
+                behavior = SwSettings.GetControlBehavior(id);
+            }
         }
 
         ~SwButtonListener()
@@ -39,27 +45,52 @@ namespace SoftWing
             Log.Info(TAG, "~SwButtonListener");
         }
 
+        public void ButtonPress()
+        {
+            Log.Info(TAG, "ButtonPress");
+            button.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
+            if (vibrate_enabled)
+            {
+                Vibration.Vibrate(KEY_VIBRATION_TIME);
+            }
+            ReportEvent(ControlUpdateMessage.UpdateType.Pressed);
+        }
+
+        public void ButtonRelease()
+        {
+            Log.Info(TAG, "ButtonRelease");
+            button.SetBackgroundColor(Android.Graphics.Color.Transparent);
+            if (vibrate_enabled)
+            {
+                Vibration.Vibrate(KEY_VIBRATION_TIME);
+            }
+            ReportEvent(ControlUpdateMessage.UpdateType.Released);
+        }
+
         public bool OnTouch(View v, MotionEvent e)
         {
+            Log.Info(TAG, "OnTouch: " + ButtonBehaviorToString(behavior));
             switch (e.Action)
             {
                 case MotionEventActions.Down:
-                    Log.Info(TAG, "OnTouch - Down");
-                    button.SetBackgroundColor(Android.Graphics.Color.SkyBlue);
-                    if (vibrate_enabled)
+                    if (behavior == ButtonBehavior.Temporary)
                     {
-                        Vibration.Vibrate(KEY_VIBRATION_TIME);
+                        ButtonPress();
                     }
-                    ReportEvent(ControlUpdateMessage.UpdateType.Pressed);
+                    else if (behavior == ButtonBehavior.Toggle)
+                    {
+                        if (!toggle_active)
+                        {
+                            ButtonPress();
+                        }
+                        toggle_active = !toggle_active;
+                    }
                     break;
                 case MotionEventActions.Up:
-                    Log.Info(TAG, "OnTouch - Up");
-                    button.SetBackgroundColor(Android.Graphics.Color.Transparent);
-                    if (vibrate_enabled)
+                    if ((behavior == ButtonBehavior.Temporary) || (behavior == ButtonBehavior.Toggle && !toggle_active))
                     {
-                        Vibration.Vibrate(KEY_VIBRATION_TIME);
+                        ButtonRelease();
                     }
-                    ReportEvent(ControlUpdateMessage.UpdateType.Released);
                     break;
                 default:
                     break;

@@ -237,6 +237,10 @@ namespace SoftWing
         {
             Log.Info(TAG, "ResetJoystick");
             var canvas = surfaceHolder.LockCanvas();
+            if (canvas == null)
+            {
+                throw new Exception("ResetJoystick failed to lock the canvas");
+            }
 
             JoystickBackground(canvas);
             canvas.DrawCircle(surface_width / 2, surface_height / 2, SURFACE_RADIUS_INNER, surfacePaintInner);
@@ -249,6 +253,10 @@ namespace SoftWing
         private void MoveJoystick(ISurfaceHolder surfaceHolder, MotionEvent e)
         {
             var canvas = surfaceHolder.LockCanvas();
+            if (canvas == null)
+            {
+                throw new Exception("MoveJoystick failed to lock the canvas");
+            }
 
             JoystickBackground(canvas);
 
@@ -299,10 +307,15 @@ namespace SoftWing
 
         public void SurfaceChanged(ISurfaceHolder holder, [GeneratedEnum] Format format, int width, int height)
         {
+            Log.Info(TAG, "SurfaceChanged: " + holder.JniIdentityHashCode);
+            surface_width = width;
+            surface_height = height;
+            ResetJoystick(holder);
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
+            Log.Info(TAG, "SurfaceCreated: " + holder.JniIdentityHashCode);
             surface_width = holder.SurfaceFrame.Width();
             surface_height = holder.SurfaceFrame.Height();
             ResetJoystick(holder);
@@ -310,6 +323,7 @@ namespace SoftWing
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
+            Log.Info(TAG, "SurfaceDestroyed: " + holder.JniIdentityHashCode);
         }
     }
 }

@@ -23,12 +23,11 @@ namespace SoftWing
         private static SwDisplayManager instance;
 
         private const String NOTIFICATION_CHANNEL_ID = "SWKeyboard";
+        private const String NOTIFICATION_GROUP_ID = "com.jodonlucas.softwing.KEYBOARD";
+        private static String SW_IME_ID = null;
+        private const String LG_IME_ID = "com.lge.ime/.LgeImeImpl";
         private const int NOTIFICATION_ONGOING_ID = 3532;
-        private static NotificationReceiver notification_receiver = null;
-
-        private const int IME_TRANSITION_DELAY_MS = 1000;
         private const int SHOW_IME_DELAY_MS = 2000;
-        private const int IME_STARTUP_WAIT_MS = 5000;
 
         private static String OPEN_SOUND_PATH;
         private static String CLOSE_SOUND_PATH;
@@ -94,6 +93,32 @@ namespace SoftWing
             NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.CreateNotificationChannel(channel);
         }
+        public void SetProfileNotification(int notification_id, string profile)
+        {
+            Log.Debug(TAG, "SetProfileNotification: " + profile + " - " + notification_id.ToString());
+            var notification_receiver = new NotificationReceiver(profile);
+            var pFilter = new IntentFilter(notification_receiver.ProfileActionString);
+            RegisterReceiver(notification_receiver, pFilter);
+
+            Intent notificationIntent = new Intent(notification_receiver.ProfileActionString);
+            PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
+
+            String title = "Show " + profile + " Controller";
+
+            var builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .SetSmallIcon(Resource.Mipmap.ic_launcher_foreground)
+                    .SetColor(Resource.Color.accent_material_dark)
+                    .SetAutoCancel(false)
+                    .SetContentTitle(title)
+                    .SetContentIntent(contentIntent)
+                    .SetOngoing(true)
+                    .SetVisibility((int)NotificationVisibility.Public)
+                    .SetPriority(NotificationCompat.PriorityDefault)
+                    .SetGroup(NOTIFICATION_GROUP_ID);
+
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.Notify(notification_id, builder.Build());
+        }
 
         public static void SetNotification()
         {
@@ -111,32 +136,34 @@ namespace SoftWing
         {
             Log.Debug(TAG, "SetNotificationInternal()");
 
-            CreateNotificationChannel();
-            var text = "Controller notification enabled.";
-
-            notification_receiver = new NotificationReceiver();
-            var pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
-            RegisterReceiver(notification_receiver, pFilter);
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            if (notificationManager.GetNotificationChannel(NOTIFICATION_CHANNEL_ID) == null)
+            {
+                CreateNotificationChannel();
+            }
 
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
             PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
-
             String title = "Show SoftWing Controller";
-            String body = "Select this to open the controller.";
-
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            var notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .SetSmallIcon(Resource.Mipmap.ic_launcher_foreground)
                     .SetColor(Resource.Color.accent_material_dark)
                     .SetAutoCancel(false)
-                    .SetTicker(text)
                     .SetContentTitle(title)
-                    .SetContentText(body)
                     .SetContentIntent(contentIntent)
                     .SetOngoing(true)
                     .SetVisibility((int)NotificationVisibility.Public)
-                    .SetPriority(NotificationCompat.PriorityDefault);
+                    .SetPriority(NotificationCompat.PriorityDefault)
+                    .SetGroup(NOTIFICATION_GROUP_ID)
+                    .SetGroupSummary(true)
+                    .Build();
+            StartForeground(NOTIFICATION_ONGOING_ID, notification);
 
-            StartForeground(NOTIFICATION_ONGOING_ID, mBuilder.Build());
+            var profile_list = SwSettings.GetKeymapList();
+            for (int i = 0; i < profile_list.Count; i++)
+            {
+                SetProfileNotification(NOTIFICATION_ONGOING_ID + i + 1, profile_list[i]);
+            }
         }
 
         private static bool IsUsingSwKeyboard()
@@ -171,49 +198,28 @@ namespace SoftWing
             Log.Debug(TAG, "ShowSwKeyboard");
             InputMethodManager input_manager = (InputMethodManager)
                 Application.Context.GetSystemService(InputMethodService);
-            if (input_manager != null)
+            if (input_manager == null)
             {
-                input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
+                throw new Exception("Failed to get SoftWingInput service");
             }
-            // Alert the system to the initial swivel state after the IME has opened
-            DisplayUpdateMessage msg = new DisplayUpdateMessage(DisplayManagerHelper.NonSwivelEnd);
-            if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+            input_manager.ShowSoftInputFromInputMethod(SoftWingInput.InputSessionToken, ShowFlags.Forced);
+
+            Log.Debug(TAG, "Waiting for IME to open...");
+            var end_time = Java.Lang.JavaSystem.CurrentTimeMillis() + SHOW_IME_DELAY_MS;
+            while (!SoftWingInput.ImeIsOpen)
             {
-                msg = new DisplayUpdateMessage(DisplayManagerHelper.SwivelEnd);
-            }
-            Task.Factory.StartNew(() =>
-            {
-                Log.Debug(TAG, "Waiting for IME to open...");
-                var start_time = Java.Lang.JavaSystem.CurrentTimeMillis();
-                var end_time = start_time + IME_STARTUP_WAIT_MS;
-                while (!SoftWingInput.ImeIsOpen)
+                // Make sure we aren't waiting forever
+                if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
                 {
-                    // Make sure we aren't waiting forever
-                    if (Java.Lang.JavaSystem.CurrentTimeMillis() > end_time)
-                    {
-                        Log.Error(TAG, "IME NEVER OPENED!");
-                        return;
-                    }
+                    Log.Error(TAG, "IME NEVER OPENED!");
+                    return;
                 }
-                Log.Debug(TAG, "Launching switching task");
-                instance.dispatcher.Post(msg);
-            });
+            }
         }
 
         public static void UseLgKeyboard()
         {
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
-
-            foreach (var InputMethod in imm.EnabledInputMethodList)
-            {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("LgeImeImpl"))
-                {
-                    SetInputMethod(InputMethod.Id);
-                    return;
-                }
-            }
+            SetInputMethod(LG_IME_ID);
         }
 
         public static void UseSwKeyboard()
@@ -223,18 +229,22 @@ namespace SoftWing
                 Log.Debug(TAG, "Already using SW IME, skipping");
                 return;
             }
-            InputMethodManager imm = (InputMethodManager)
-                Application.Context.GetSystemService(InputMethodService);
 
-            foreach (var InputMethod in imm.EnabledInputMethodList)
+            if (SW_IME_ID == null)
             {
-                Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
-                if (InputMethod.Id.Contains("SoftWingInput"))
+                InputMethodManager imm = (InputMethodManager)
+                    Application.Context.GetSystemService(InputMethodService);
+                foreach (var InputMethod in imm.EnabledInputMethodList)
                 {
-                    SetInputMethod(InputMethod.Id);
-                    return;
+                    Log.Debug(TAG, "InputMethod: " + InputMethod.Id.ToString());
+                    if (InputMethod.Id.Contains("SoftWingInput"))
+                    {
+                        SW_IME_ID = InputMethod.Id;
+                        break;
+                    }
                 }
             }
+            SetInputMethod(SW_IME_ID);
         }
 
         private void StartSound(String audio_path)
@@ -283,12 +293,36 @@ namespace SoftWing
 
         private void HandleShowIme()
         {
-            UseSwKeyboard();
-            // Give the IME time to update
-            new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
+            // Run in a background task so the notification tray isn't held open
+            Task.Factory.StartNew(() =>
             {
-                ShowSwKeyboard();
-            }, SHOW_IME_DELAY_MS);
+                if (!SoftWingInput.ImeIsOpen)
+                {
+                    UseSwKeyboard();
+                    ShowSwKeyboard();
+                }
+                // If the notification tray closes and kills the keyboard, reopen it.
+                var end_time = Java.Lang.JavaSystem.CurrentTimeMillis() + SHOW_IME_DELAY_MS;
+                while (Java.Lang.JavaSystem.CurrentTimeMillis() < end_time)
+                {
+                    if (!SoftWingInput.ImeIsOpen)
+                    {
+                        ShowSwKeyboard();
+                        break;
+                    }
+                }
+
+                // Handle transition to the bottom screen
+                if (lg_display_manager.SwivelState == DisplayManagerHelper.SwivelSwiveled)
+                {
+                    UseLgKeyboard();
+                    // Give the LG keyboard time to perform the screen transition
+                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
+                    {
+                        UseSwKeyboard();
+                    }, SwSettings.GetTransitionDelayMs());
+                }
+            });
         }
 
         private void HandleDisplayUpdate(DisplayUpdateMessage display_message)
@@ -302,16 +336,10 @@ namespace SoftWing
                 case DisplayManagerHelper.SwivelEnd:
                     Log.Debug(TAG, "DisplayManagerHelper.SwivelEnd");
                     // We don't want to impose this behavior unless we are displaying the SoftWing IME
-                    if (!IsUsingSwKeyboard() || !SoftWingInput.ImeIsOpen)
+                    if (IsUsingSwKeyboard() && SoftWingInput.ImeIsOpen)
                     {
-                        return;
+                        HandleShowIme();
                     }
-                    UseLgKeyboard();
-                    // Give the LG keyboard time to perform the screen transition
-                    new Android.OS.Handler(Android.OS.Looper.MainLooper).PostDelayed(delegate
-                    {
-                        UseSwKeyboard();
-                    }, IME_TRANSITION_DELAY_MS);
                     break;
                 case DisplayManagerHelper.NonSwivelStart:
                     Log.Debug(TAG, "DisplayManagerHelper.NonSwivelStart");

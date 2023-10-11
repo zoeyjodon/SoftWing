@@ -6,7 +6,6 @@ using Android.Util;
 using Android.Graphics;
 using Android.Views;
 using Android.Content.PM;
-using SoftWing.SwSystem.Messages;
 using static Android.Views.View;
 using Android.Widget;
 using SoftWing.SwSystem;
@@ -28,7 +27,7 @@ namespace SoftWing
         private MotionDescription motion = MotionDescription.InvalidMotion();
 
         public static Android.Net.Uri BackgroundImageUri = null;
-        public static SwSettings.ControlId control;
+        public static ControlId control;
         public static MotionType motionType = MotionType.Invalid;
 
         protected override void OnCreate(Bundle savedInstanceState)
