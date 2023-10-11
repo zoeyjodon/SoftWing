@@ -324,6 +324,7 @@ namespace SoftWing
                 if (set_layout == LAYOUT_TO_STRING_MAP[layout_str])
                 {
                     set_layout_string = layout_str;
+                    break;
                 }
             }
 
