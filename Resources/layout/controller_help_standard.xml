@@ -74,6 +74,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="3.) If your wing is not already swiveled open, you may swivel it now. If the process was successful, you should see the SoftWing controller open on the second display.\nIf not, try tapping the notification again."
+        android:text="3.) If your wing is not already swiveled open, you may swivel it now. If the process was successful, you should see the SoftWing controller open on the second display.\nIf not, you may need to increase the 'Transition Delay' in the controller settings."
         android:textSize="@dimen/body_text_size"/>
+    <ImageView
+        android:id="@+id/how_to_image"
+        android:src="@drawable/how_to_use"
+        android:layout_width="1024px"
+        android:layout_height="833px"/>
 </LinearLayout>
