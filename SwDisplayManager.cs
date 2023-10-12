@@ -142,6 +142,9 @@ namespace SoftWing
                 CreateNotificationChannel();
             }
 
+            // Close existing notifications before refreshing
+            notificationManager.CancelAll();
+
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
             PendingIntent contentIntent = PendingIntent.GetBroadcast(Application.Context, 1, notificationIntent, PendingIntentFlags.Mutable);
             String title = "Show SoftWing Controller";
